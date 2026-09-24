@@ -1,11 +1,9 @@
 export const ROOM_HEIGHT = 5.6;
-export const cameraBounds = { minX: -4.55, maxX: 4.55, minY: .65, maxY: ROOM_HEIGHT - .4, minZ: -2.95, maxZ: 21.5 };
+export const cameraBounds = { minX: -4.55, maxX: 4.55, minY: .65, maxY: ROOM_HEIGHT - .4, minZ: -2.95, maxZ: 8.7 };
 
-export function roomOpening(width: number, height: number) {
- const aspect = Math.max(.3, width / Math.max(1, height));
- const fov = aspect < .9 ? 82 : 62;
- const distance = Math.max(11.2, 3.7 + 5.7 / (Math.tan(fov * Math.PI / 360) * aspect));
- return { position: [.6, 3.6, Math.min(21, distance)] as [number, number, number], fov };
+export function roomOpening(width: number, _height: number) {
+ const mobile = width < 650;
+ return { position: (mobile ? [3.9, 2.4, 6.1] : [4.4, 2.35, 5.4]) as [number, number, number], fov: mobile ? 78 : 59 };
 }
 
 /** Applied after orbit damping and transitions, before drawing the frame. */
