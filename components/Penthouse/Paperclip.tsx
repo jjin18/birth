@@ -11,6 +11,6 @@ export default function Paperclip({count,click,position,scale=1}:{count:number;c
  return <group name="fortune-paperclip" position={position} scale={scale} rotation={[0,.22,0]} onClick={e=>{e.stopPropagation();click()}}>
   {[0,1,2].map(i=><RoundedBox key={i} args={[.69,.009,.31]} position={[i*.013,i*.014,0]} radius={.006} smoothness={2} rotation={[0,i*.035,0]} castShadow><meshStandardMaterial color={i%2?'#d8d7cd':'#e8e7df'} roughness={1}/></RoundedBox>)}
   <mesh rotation={[-Math.PI/2,0,0]} position={[.026,.039,0]}><planeGeometry args={[.67,.29]}/><meshStandardMaterial map={texture} roughness={1}/></mesh>
-  <mesh position={[-.19,.055,-.02]} rotation={[0,Math.PI/2,0]} castShadow><tubeGeometry args={[curve,48,.011,8,false]}/><meshStandardMaterial color="#c6b28d" roughness={.28} metalness={.75}/></mesh>
+  <mesh name="fortune-paperclip-metal" position={[-.19,.055,-.02]} rotation={[0,Math.PI/2,0]} castShadow><tubeGeometry args={[curve,48,.016,8,false]}/><meshStandardMaterial color="#697580" roughness={.32} metalness={.65}/></mesh>
  </group>
 }

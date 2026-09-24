@@ -32,8 +32,8 @@ function TableAndObjects({ count, onFortune, onPaperclip, onGloves }: Props) {
     <group name="uploaded-flower-table" position={[0, FLOOR_Y, 0]} dispose={null}><primitive object={object} /></group>
     <group name="tabletop-objects" position={[0, surfaceY + .004, 0]}>
       <PandaTakeout position={[-.45, 0, -.19]} click={onFortune} />
-      <Paperclip position={[.2, .003, -.18]} scale={.28} count={count} click={onPaperclip} />
-      <BoxingGloves position={[.08, .005, .58]} scale={.7} click={onGloves} />
+      <Paperclip position={[.14, .003, -.35]} scale={.32} count={count} click={onPaperclip} />
+      <BoxingGloves position={[-.06, .005, .6]} scale={.7} click={onGloves} />
     </group>
   </>;
 }

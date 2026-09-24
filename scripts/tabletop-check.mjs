@@ -65,7 +65,20 @@ try {
     }));
     let importedLights = 0; table.traverse(node=>{if(node.isLight)importedLights++});
     const tabletopChildren = scene.getObjectByName('tabletop-objects').children.map(child=>child.name).sort();
-    return { tableMin: tableBounds.min.toArray(), tableMax: tableBounds.max.toArray(), surface, objects, gloveCornersSupported, importedLights, tabletopChildren };
+    const paperObject = scene.getObjectByName('fortune-paperclip');
+    const paperSightlines = [[4.4,2.35,5.4],[3.9,2.4,6.1]].flatMap(eye =>
+      [[.16,.04,.03],[-.06,.069,.03]].map(local => {
+        const target = paperObject.localToWorld(new THREE.Vector3(...local));
+        const origin = new THREE.Vector3(...eye);
+        const ray = new THREE.Raycaster(origin,target.clone().sub(origin).normalize());
+        let hit = ray.intersectObjects(scene.children,true)[0]?.object;
+        const ancestors = [];
+        while (hit && hit !== paperObject) { ancestors.push(hit.name || hit.type); hit = hit.parent; }
+        return {eye,local,ancestors,visible:hit === paperObject};
+      })
+    );
+    const paperVisibleFromOpenings = paperSightlines.every(item=>item.visible);
+    return { tableMin: tableBounds.min.toArray(), tableMax: tableBounds.max.toArray(), surface, objects, gloveCornersSupported, importedLights, tabletopChildren, paperVisibleFromOpenings, paperSightlines };
   });
   console.log(JSON.stringify(report));
   await page.screenshot({path:'preview-tabletop.png',timeout:60000});
@@ -76,8 +89,9 @@ try {
   assert(report.gloveCornersSupported,'The entire glove hitbox fits inside the tabletop outline');
   const paper = report.objects.find(object=>object.name==='fortune-paperclip');
   const panda = report.objects.find(object=>object.name==='panda-express');
-  assert(paper.width<.25,'Paper stack is much smaller');
-  assert(paper.min[0]-panda.max[0]>.01 && paper.min[0]-panda.max[0]<.22,'Paper stack sits directly beside the Panda box');
+  assert(paper.width<.29,'Paper stack remains much smaller than the original');
+  assert(paper.min[0]-panda.max[0]>.01 && paper.min[0]-panda.max[0]<.07,'Paper stack sits directly beside the Panda box');
+  assert(report.paperVisibleFromOpenings,'Notes and metal clip are not hidden by the box or gloves from desktop or mobile opening positions');
   assert(paper.min[1]>=report.surface && paper.min[1]-report.surface<.02,'Paper rests on the tabletop');
   for (const [name,local,action] of [
     ['panda-express',[0,.22,.20],'fortune'],
