@@ -30,7 +30,7 @@ export default function Experience(){
  useEffect(()=>{const timers:ReturnType<typeof setTimeout>[]=[];setPanel('home');setTip('');
   if(['wall','gloves','fortune','paperclip'].includes(focus))timers.push(setTimeout(()=>setPanel(focus),700));
   if(focus==='bed'){setTip('😈  Thinking about you.');timers.push(setTimeout(()=>{setTip('');setFocus('home')},2800))}
-  if(focus==='window'&&!windowSeen.current){windowSeen.current=true;setTip('You said you wanted a high-rise in every major city.');timers.push(setTimeout(()=>setTip("So here’s one."),3500));timers.push(setTimeout(()=>{setTip('');setFocus('home')},7000))}
+  if(focus==='window'&&!windowSeen.current){windowSeen.current=true;timers.push(setTimeout(()=>setFocus('home'),7000))}
   return()=>timers.forEach(clearTimeout);
  },[focus]);
  function home(){setFocus('home');setPanel('home');setReset(x=>x+1)}
@@ -38,7 +38,7 @@ export default function Experience(){
   <div className="scene-layer"><Scene interior={interior} city={city} focus={focus} reset={reset} onInteract={interact} onReady={onReady} lampOn={lampOn} onLampToggle={toggleLamp} dogReaction={dogReaction} onDogClick={onDogClick} fortuneCount={fortuneCount} skyMode={skyMode} onSkyUnavailable={setSkyUnavailable}/></div>
   <button className="view-toggle" aria-pressed={interior} onClick={()=>{setInterior(value=>!value);home()}}><ScanEye size={15}/>{interior?'Step outside':'Step inside'}</button>
   <nav className="city-selector room-city-selector" aria-label="Choose your city">{cities.map((c,i)=><button key={c.id} aria-pressed={city===i} onClick={()=>{setCity(i);home()}}><span className="city-dot"/>{c.name}</button>)}</nav>
-  {focus==='window'&&<SkyControls choice={skyChoice} mode={skyMode} city={cities[city].name} onChange={setSkyChoice} unavailable={skyUnavailable}/>}
+  {focus==='window'&&<SkyControls choice={skyChoice} onChange={setSkyChoice} unavailable={skyUnavailable}/>}
   {(tip||dogStatus)&&<div className="moment" role="status">{tip||dogStatus}</div>}
   {focus!=='home'&&focus!=='bed'&&<button className="back-room" onClick={home}><X size={15}/> Back to the room</button>}
   {panel==='wall'&&<WallPanel close={home}/>}
