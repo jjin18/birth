@@ -1,8 +1,9 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
+import Terrier from './Terrier';
 
 type Vec = [number, number, number];
 function Sphere({p,s,c,rotation,roughness=.85}:{p:Vec;s:Vec;c:string;rotation?:Vec;roughness?:number}) {
@@ -35,35 +36,9 @@ export function Lamp({on,toggle}:{on:boolean;toggle:()=>void}) {
 
 export function Dog({reaction,click}:{reaction:number;click:()=>void}) {
  const pointer=usePointer();
- const body=useRef<THREE.Group>(null),head=useRef<THREE.Group>(null),tail=useRef<THREE.Group>(null),eyes=useRef<THREE.Group>(null),jaw=useRef<THREE.Group>(null);
- const excitedUntil=useRef(0);
- const reduced=useMemo(()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches,[]);
- useEffect(()=>{if(reaction)excitedUntil.current=performance.now()+1600},[reaction]);
- useFrame(({clock},delta)=>{
-  const t=clock.elapsedTime,excited=performance.now()<excitedUntil.current;
-  if(body.current)body.current.scale.y=1+(reduced?0:Math.sin(t*1.8)*.025);
-  if(tail.current){tail.current.rotation.y=reduced?0:Math.sin(t*(excited?17:4))*(excited?.9:.23);tail.current.rotation.z=reduced?0:Math.sin(t*3)*.11}
-  if(head.current){head.current.position.y=THREE.MathUtils.lerp(head.current.position.y,excited?.48:.33,1-Math.exp(-delta*8));head.current.rotation.y=reduced?0:Math.sin(t*.65)*.15;head.current.rotation.z=excited?-.12:Math.sin(t*.9)*.025}
-  if(eyes.current)eyes.current.scale.y=!excited&&t%5.3<.17?.08:1;
-  if(jaw.current)jaw.current.position.y=excited?-.04-Math.max(0,Math.sin(t*19))*.045:-.035;
- });
- return <group name="white-dog" position={[.2,.17,2.65]} rotation={[0,-.45,0]} {...pointer} onClick={e=>{e.stopPropagation();click()}}>
-  <mesh position={[0,.02,0]} receiveShadow><cylinderGeometry args={[.74,.72,.09,40]}/><meshStandardMaterial color="#a49580" roughness={1}/></mesh>
-  <group ref={body}>
-   <Sphere p={[-.03,.24,0]} s={[.47,.25,.32]} c="#eee7d8"/>
-   <Sphere p={[.18,.1,.31]} s={[.24,.075,.09]} c="#fff3dd"/>
-   <Sphere p={[.25,.1,-.08]} s={[.23,.075,.085]} c="#f5ead5"/>
-   <group ref={tail} position={[-.43,.25,-.08]}><Sphere p={[-.16,.11,0]} s={[.24,.11,.1]} c="#eee7d8" rotation={[0,0,-.35]}/><Sphere p={[-.31,.18,.015]} s={[.11,.11,.1]} c="#f6eedd"/></group>
-   <group ref={head} position={[.3,.33,.12]}>
-    <Sphere p={[0,0,0]} s={[.25,.24,.23]} c="#f6efdf"/>
-    <Sphere p={[.16,-.06,.09]} s={[.17,.11,.13]} c="#faf2de"/>
-    <Sphere p={[.285,-.04,.12]} s={[.048,.039,.05]} c="#37352e"/>
-    <Sphere p={[-.12,.12,.18]} s={[.115,.19,.08]} c="#d3c6ae" rotation={[0,.2,-.45]}/>
-    <Sphere p={[.06,.14,-.15]} s={[.1,.17,.08]} c="#ded3bd" rotation={[0,-.3,.3]}/>
-    <group ref={eyes} position={[.09,.048,.185]}><Sphere p={[.005,0,.021]} s={[.031,.033,.027]} c="#302e2a"/><Sphere p={[.121,.009,-.145]} s={[.025,.03,.026]} c="#302e2a"/><Sphere p={[.015,.012,.043]} s={[.009,.01,.006]} c="#ffffff"/></group>
-    <group ref={jaw} position={[.17,-.035,.09]}><Sphere p={[.028,-.105,.015]} s={[.12,.026,.07]} c="#4c3d35"/><Sphere p={[.095,-.113,.033]} s={[.05,.016,.03]} c="#bf867f"/></group>
-   </group>
-  </group>
+ return <group name="white-dog" position={[.2,.10,2.65]} rotation={[0,.55,0]} {...pointer} onClick={e=>{e.stopPropagation();click()}}>
+  <mesh position={[0,.005,0]} receiveShadow><cylinderGeometry args={[.74,.72,.08,48]}/><meshStandardMaterial color="#a49580" roughness={1}/></mesh>
+  <Terrier reaction={reaction}/>
  </group>;
 }
 
