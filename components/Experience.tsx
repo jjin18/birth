@@ -8,17 +8,16 @@ import { getFortunes } from '@/lib/fortune-api';
 import WallPanel from './WallPanel';
 import Arcade from './Arcade';
 import FortunePanel from './FortunePanel';
-import SkyControls from './SkyControls';
-import { getDaylight, type SkyChoice } from '@/lib/daylight';
+import { getDaylight } from '@/lib/daylight';
 
 const Scene = dynamic(()=>import('./Penthouse/Scene'), {ssr:false,loading:()=> <div className="loading" role="status" aria-label="Loading the room"><span className="loading-ring"/></div>});
 export default function Experience(){
  const [city,setCity]=useState(0),[focus,setFocus]=useState<Focus>('home'),[reset,setReset]=useState(0),[tip,setTip]=useState(''),[panel,setPanel]=useState<Focus>('home');
  const [lampOn,setLampOn]=useState(true),[dogReaction,setDogReaction]=useState(0),[dogStatus,setDogStatus]=useState(''),[fortuneCount,setFortuneCount]=useState(0),[fortuneRequestId,setFortuneRequestId]=useState('');
  const [interior,setInterior]=useState(true);
- const [now,setNow]=useState<Date|null>(null),[skyChoice,setSkyChoice]=useState<SkyChoice>('auto'),[skyUnavailable,setSkyUnavailable]=useState(false);
+ const [now,setNow]=useState<Date|null>(null),[skyUnavailable,setSkyUnavailable]=useState(false);
  const daylight=useMemo(()=>now?getDaylight(cities[city],now):null,[city,now]);
- const skyMode=skyChoice==='auto'?(daylight?.mode??'dark'):skyChoice;
+ const skyMode=daylight?.mode??'dark';
  const windowSeen=useRef(false),dogTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const onReady=useCallback(()=>{},[]);
  const toggleLamp=useCallback(()=>setLampOn(value=>!value),[]);
@@ -34,11 +33,11 @@ export default function Experience(){
   return()=>timers.forEach(clearTimeout);
  },[focus]);
  function home(){setFocus('home');setPanel('home');setReset(x=>x+1)}
- return <main className="experience" data-sky-mode={skyMode} data-sky-choice={skyChoice} data-city={cities[city].id} data-interior={interior}>
+ return <main className="experience" data-sky-mode={skyMode} data-sky-choice="auto" data-city={cities[city].id} data-interior={interior}>
   <div className="scene-layer"><Scene interior={interior} city={city} focus={focus} reset={reset} onInteract={interact} onReady={onReady} lampOn={lampOn} onLampToggle={toggleLamp} dogReaction={dogReaction} onDogClick={onDogClick} fortuneCount={fortuneCount} skyMode={skyMode} onSkyUnavailable={setSkyUnavailable}/></div>
   <button className="view-toggle" aria-pressed={interior} onClick={()=>{setInterior(value=>!value);home()}}><ScanEye size={15}/>{interior?'Step outside':'Step inside'}</button>
   <nav className="city-selector room-city-selector" aria-label="Choose your city">{cities.map((c,i)=><button key={c.id} aria-pressed={city===i} onClick={()=>{setCity(i);home()}}><span className="city-dot"/>{c.name}</button>)}</nav>
-  {focus==='window'&&<SkyControls choice={skyChoice} onChange={setSkyChoice} unavailable={skyUnavailable}/>}
+  {focus==='window'&&skyUnavailable&&<div className="sky-controls"><p className="sky-caption" role="status">Skyline unavailable — try another city.</p></div>}
   {(tip||dogStatus)&&<div className="moment" role="status">{tip||dogStatus}</div>}
   {focus!=='home'&&focus!=='bed'&&<button className="back-room" onClick={home}><X size={15}/> Back to the room</button>}
   {panel==='wall'&&<WallPanel close={home}/>}
