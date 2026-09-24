@@ -1,9 +1,9 @@
 'use client';
-import { useEffect,useState } from 'react';
-import { Pencil, Swords, Images, ArrowLeft, ArrowUpRight } from 'lucide-react';
 import Modal from './Modal';
-import DrawGame from './DrawGame';
 import MiniFighter from './MiniFighter';
-import SharedAccess from './SharedAccess';
-import { supabase,imageUrl } from '@/lib/supabase';
-export default function Arcade({close}:{close:()=>void}){const [page,setPage]=useState('home'),[art,setArt]=useState<{id:string;prompt:string;image_url:string;created_at:string}[]>([]),[error,setError]=useState('');useEffect(()=>{if(page!=='art'||!supabase)return;supabase.from('drawings').select('*').order('created_at',{ascending:false}).then(async({data,error})=>{if(error){setError(error.message);return}try{setArt(await Promise.all((data||[]).map(async d=>({...d,image_url:await imageUrl(d.image_url)}))))}catch(e){setError((e as Error).message)}})},[page]);return <Modal title={page==='home'?'Jia + Ryan arcade.':page==='draw'?'Draw something.':page==='fight'?'Jia vs. Ryan.':'Our art.'} eyebrow="JUST ONE MORE ROUND" close={close} wide>{page!=='home'&&<button className="text-button" onClick={()=>setPage('home')}><ArrowLeft size={15}/>Back to the arcade</button>}{page==='home'?<><p className="panel-description">Terrible drawings. Friendly rivalry. Excellent company.</p><div className="arcade-cards"><button onClick={()=>setPage('draw')}><Pencil size={28}/><span>01 / A LITTLE CREATIVITY</span><h3>Draw something</h3><p>One draws. One guesses.<br/>Artistic talent entirely optional.</p><ArrowUpRight size={19}/></button><button onClick={()=>setPage('fight')}><Swords size={28}/><span>02 / SETTLE IT HERE</span><h3>Mini fighter</h3><p>A tiny fight.<br/>Disproportionate bragging rights.</p><ArrowUpRight size={19}/></button><button onClick={()=>setPage('art')}><Images size={28}/><span>03 / THE MASTERPIECES</span><h3>Our art</h3><p>Every questionable masterpiece.<br/>Worth keeping anyway.</p><ArrowUpRight size={19}/></button></div></>:page==='draw'?<DrawGame/>:page==='fight'?<MiniFighter/>:<><SharedAccess/>{error&&<p className="error">{error}</p>}<div className="art-grid">{art.map(a=><article key={a.id}><img src={a.image_url} alt={a.prompt}/><h3>{a.prompt}</h3><small>{new Date(a.created_at).toLocaleDateString()}</small></article>)}</div>{!art.length&&<p className="empty">The museum is open. The artists are procrastinating.<br/>Save a drawing after your first round.</p>}</>}</Modal>}
+
+export default function Arcade({close}:{close:()=>void}) {
+ return <Modal title="Jia vs. Ryan." eyebrow="JIA + RYAN ARCADE" close={close} wide>
+  <MiniFighter/>
+ </Modal>;
+}

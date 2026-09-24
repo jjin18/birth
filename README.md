@@ -17,16 +17,15 @@ Open http://127.0.0.1:3022. `npm run build` creates a static production site in 
 - Limited orbit, zoom, reset, and animated camera views. No walking character or modeled city.
 - Five generated 2D skyline textures: Tokyo, New York, Paris, Taipei, San Francisco.
 - Clickable window, laptop, photo wall, and bed. Keyboard-accessible shortcuts and native accessible dialogs.
-- Local 60-second drawing practice with brush colors, eraser, width, clear, pass-and-play guessing, and PNG download.
 - Local Mini Fighter with character choice, movement, jumping, attacks, health, opponent AI, timer, and rematch.
 - A preview memory wall with starter notes and a pin composer.
 - Responsive touch controls and mobile room camera.
 
 ## Deferred by request
 
-The user chose to finish the 3D experience before setting up Supabase. Shared wall persistence, authenticated two-person access, online drawing rooms, and SMS delivery are **not live**. The preview clearly identifies those features as unconnected. The memory composer does not claim to save content. Drawing downloads work without a backend. The bed only shows a visual Easter egg; it sends no message.
+The user chose to finish the 3D experience before setting up Supabase. Shared wall persistence, authenticated two-person access, and SMS delivery are **not live**. The preview clearly identifies those features as unconnected. The memory composer does not claim to save content. The bed only shows a visual Easter egg; it sends no message.
 
-The Supabase client and image upload/read adapters are in `lib/supabase.ts`; do not enable the environment variables until the private schema, membership policies, Storage policies, and accounts are configured. The `/admin` route and online multiplayer are deferred. A future integration must use private Storage, row-level security, authenticated Realtime channels, and server-side SMS credentials plus a cooldown.
+The Supabase client and image upload/read adapters are in `lib/supabase.ts`; do not enable the environment variables until the private schema, membership policies, Storage policies, and accounts are configured. The `/admin` route is deferred. Draw Something and Our Art have been removed entirely at the user's request. A future integration must use private Storage, row-level security, authenticated Realtime channels, and server-side SMS credentials plus a cooldown.
 
 ## Validation
 
@@ -35,7 +34,7 @@ npm run typecheck
 node scripts/smoke.mjs
 ```
 
-The smoke check needs Microsoft Edge and a running preview at port 3022. It checks rendering, city switching, reset, wall dialogs, drawing, fighter controls, the bed Easter egg, browser errors, and mobile overflow.
+The smoke check needs Microsoft Edge and a running preview at port 3022. It checks rendering, city switching, reset, wall dialogs, fighter controls, the bed Easter egg, browser errors, and mobile overflow.
 
 ## Assets and publication
 
