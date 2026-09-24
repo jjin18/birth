@@ -33,7 +33,7 @@ function TableAndObjects({ count, onFortune, onPaperclip, onGloves }: Props) {
     <group name="tabletop-objects" position={[0, surfaceY + .004, 0]}>
       <PandaTakeout position={[-.45, 0, -.19]} click={onFortune} />
       <Paperclip position={[.2, .003, -.18]} scale={.28} count={count} click={onPaperclip} />
-      <BoxingGloves position={[-.15, .005, .45]} scale={.7} click={onGloves} />
+      <BoxingGloves position={[.08, .005, .58]} scale={.7} click={onGloves} />
     </group>
   </>;
 }
