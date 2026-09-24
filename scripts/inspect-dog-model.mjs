@@ -22,6 +22,9 @@ const camera = new THREE.PerspectiveCamera(40, 1, .01, 100);
 camera.position.set(1.1, 1.05, 1.8); camera.lookAt(0, .3, 0);
 const loader = new GLTFLoader(), draco = new DRACOLoader(); draco.setDecoderPath('/draco/'); loader.setDRACOLoader(draco);
 loader.load('/model.glb', gltf => {
+  const showroom = [];
+  gltf.scene.traverse(node => { if (node.isLight || /BLOB|Ground_plane/i.test(node.name)) showroom.push(node); });
+  showroom.forEach(node => node.removeFromParent());
   const bounds = new THREE.Box3().setFromObject(gltf.scene), center = bounds.getCenter(new THREE.Vector3()), size = bounds.getSize(new THREE.Vector3());
   const scale = 1 / Math.max(size.x, size.y, size.z);
   gltf.scene.scale.setScalar(scale);

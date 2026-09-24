@@ -12,13 +12,13 @@ function ChickenPiece({p,seed,map}:{p:V;seed:number;map:THREE.Texture|null}){
  const geometry=useMemo(()=>{const g=new THREE.SphereGeometry(1,24,16),a=g.attributes.position;for(let i=0;i<a.count;i++){const x=a.getX(i),y=a.getY(i),z=a.getZ(i);const r=1+.13*Math.sin(x*14+seed)*Math.sin(z*11+y*8)+.075*Math.sin(y*22+z*17+seed);a.setXYZ(i,x*r*(.065+seed%3*.008),y*r*.061,z*r*(.06+seed%4*.006))}g.computeVertexNormals();return g},[seed]);
  useEffect(()=>()=>geometry.dispose(),[geometry]);return <mesh geometry={geometry} position={p} rotation={[seed*.37,seed*.63,seed*.19]} castShadow receiveShadow><meshPhysicalMaterial key={map?.uuid??'gold'} map={map} color={map?'#fff0d6':'#d9902d'} roughness={.3} clearcoat={.65} clearcoatRoughness={.28}/></mesh>;
 }
-export default function PandaTakeout({click}:{click:()=>void}){
+export default function PandaTakeout({click,position}:{click:()=>void;position:V}){
  const [textures,setTextures]=useState<{logo:THREE.Texture|null;food:THREE.Texture|null}>({logo:null,food:null});
  const geometry=useMemo(()=>({outer:cartonGeometry(),inner:cartonGeometry(.003)}),[]);
  const flap=useMemo(()=>{const shape=new THREE.Shape();shape.moveTo(-.23,0);shape.lineTo(.23,0);shape.lineTo(.205,.135);shape.lineTo(.155,.175);shape.lineTo(-.19,.168);shape.closePath();return new THREE.ShapeGeometry(shape)},[]);
  useEffect(()=>{let active=true;const loaded:THREE.Texture[]=[];new THREE.TextureLoader().load('/textures/panda-box-reference.png',image=>{if(!active){image.dispose();return}image.colorSpace=THREE.SRGBColorSpace;image.anisotropy=4;const logo=image.clone(),food=image.clone();logo.repeat.set(108/679,108/450);logo.offset.set(308/679,(450-355)/450);food.repeat.set(102/679,96/450);food.offset.set(280/679,(450-177)/450);logo.needsUpdate=food.needsUpdate=true;loaded.push(image,logo,food);setTextures({logo,food})});return()=>{active=false;loaded.forEach(t=>t.dispose())}},[]);
  useEffect(()=>()=>{geometry.outer.dispose();geometry.inner.dispose();flap.dispose()},[geometry,flap]);
- return <group name="panda-express" position={[-.45,1.22,0]} rotation={[0,-.24,0]} onClick={e=>{e.stopPropagation();click()}}>
+ return <group name="panda-express" position={position} rotation={[0,-.24,0]} onClick={e=>{e.stopPropagation();click()}}>
   <mesh geometry={geometry.outer} castShadow receiveShadow><meshPhysicalMaterial color="#c51c27" roughness={.47} clearcoat={.18} side={THREE.DoubleSide}/></mesh>
   <mesh geometry={geometry.inner} receiveShadow><meshStandardMaterial color="#f3f0e8" roughness={.92} side={THREE.DoubleSide}/></mesh>
   <mesh position={[0,.003,0]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[.334,.284]}/><meshStandardMaterial color="#eee9de" roughness={1}/></mesh>

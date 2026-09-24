@@ -42,9 +42,9 @@ function Glove({p,rotation,mirror=false}:{p:Vec;rotation:Vec;mirror?:boolean}) {
  </group>;
 }
 
-export function BoxingGloves({click}:{click:()=>void}) {
+export function BoxingGloves({click,position,scale=1}:{click:()=>void;position:Vec;scale?:number}) {
  const pointer=usePointer();
- return <group name="boxing-gloves" position={[-.55,.525,1.55]} {...pointer} onClick={e=>{e.stopPropagation();click()}}>
+ return <group name="boxing-gloves" position={position} scale={scale} {...pointer} onClick={e=>{e.stopPropagation();click()}}>
   <Glove p={[-.24,0,.035]} rotation={[0,-.38,.12]}/>
   <Glove p={[.23,.018,-.065]} rotation={[0,.48,-.14]} mirror/>
   <mesh position={[0,.18,.05]}><boxGeometry args={[1,.55,.9]}/><meshBasicMaterial transparent opacity={0} depthWrite={false}/></mesh>
