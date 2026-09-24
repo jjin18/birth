@@ -4,7 +4,7 @@ const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleF
 const errors=[];
 page.on('pageerror',e=>errors.push(e.message));
 page.on('console',e=>{if(e.type()==='error')errors.push(e.text())});
-await page.goto('http://127.0.0.1:3022',{waitUntil:'networkidle',timeout:90000});
+await page.goto('http://127.0.0.1:3023',{waitUntil:'networkidle',timeout:90000});
 await page.locator('.scene-layer canvas').waitFor({timeout:90000});
 await page.waitForTimeout(5000);
 console.log('Canvas',await page.locator('.scene-layer canvas').evaluate(c=>({width:c.width,height:c.height,rect:{width:c.getBoundingClientRect().width,height:c.getBoundingClientRect().height},context:!!c.getContext('webgl2')})));
@@ -19,7 +19,7 @@ await page.getByRole('button',{name:'Pin something'}).click();
 await page.getByRole('textbox',{name:'A little title'}).fill('A little test');
 await page.getByRole('textbox',{name:'Your words'}).fill('A future memory.');
 await page.keyboard.press('Escape');
-await page.locator('.room-actions').getByRole('button',{name:'The arcade'}).click();
+await page.locator('.room-actions').getByRole('button',{name:'Boxing gloves · play Mini Fighter'}).click();
 await page.getByRole('dialog').waitFor();
 if(await page.getByText(/Draw something|Our art/i).count())throw Error('Removed games still appear');
 await page.getByRole('button',{name:'Let’s settle this'}).click();

@@ -1,43 +1,53 @@
 # Penthouse 22
 
-A Three.js birthday apartment for Jia and Ryan. Built with Next.js, TypeScript, React Three Fiber, and Drei.
+A Three.js birthday apartment for Jia and Ryan, built with Next.js, React Three Fiber and Drei. The private Sites Worker serves the exported frontend and a D1-backed shared fortune collection.
 
 ## Run
 
 ```sh
 npm ci
-npm run dev
+npm run build
+npx wrangler d1 migrations apply DB --local
+npm run preview:shared
 ```
 
-Open http://127.0.0.1:3022. `npm run build` creates a static production site in `out/`.
+Open http://127.0.0.1:3023 for the full preview. `npm run dev` on port 3022 is frontend-only; shared fortunes require the Worker preview. Local preview data is separate from production. Never use Wrangler to deploy this Site; Sites owns production bindings and migrations.
 
 ## Implemented
 
-- A real 3D cutaway apartment: oak flooring, window wall, bed, sofa, desk, laptop, photo wall, kitchen island, Panda Express, hoodie, plants, lamps, and a breathing white dog.
-- Limited orbit, zoom, reset, and animated camera views. No walking character or modeled city.
-- Five generated 2D skyline textures: Tokyo, New York, Paris, Taipei, San Francisco.
-- Clickable window, laptop, photo wall, and bed. Keyboard-accessible shortcuts and native accessible dialogs.
-- Local Mini Fighter with character choice, movement, jumping, attacks, health, opponent AI, timer, and rematch.
-- A preview memory wall with starter notes and a pin composer.
-- Responsive touch controls and mobile room camera.
+- An interactive 3D apartment with bed, sofa, desk, decorative laptop, memory wall and kitchen island. Plants and bedside table have been removed.
+- One floor lamp, on by default, smoothly toggling the room's illumination.
+- A white dog with breathing, blinking, head movement and tail wagging. Clicking plays a locally synthesized double bark and an excited reaction.
+- Red 3D boxing gloves on the coffee table open Mini Fighter. The laptop no longer opens the arcade.
+- Panda Express opens one of 200 authored, unique fortunes. Each draw is immediately saved to the shared paper clip. The collection is available on any device signed into this private Site.
+- D1 transactions and unique IDs prevent repeats, including simultaneous draws. A request UUID makes retries idempotent. After all 200 are opened, the collection remains available without recycling notes.
+- Clickable 3D paper clip and keyboard-accessible shortcuts, native dialogs, responsive controls, orbit, zoom and camera reset.
+- Tokyo, New York, Paris, Taipei and San Francisco skyline backdrops.
+- Local Mini Fighter with character choice, movement, jumping, attacks, opponent AI, health, timer, touch controls and rematch.
+
+## Storage and access
+
+`db/schema.ts` defines shared opened fortunes; generated schema-only migrations are in `drizzle/`. Keep the fortune array's order and wording stable after release because saved notes reference immutable numeric IDs. There is intentionally no reset/delete endpoint.
+
+`worker/index.ts` requires the platform-authenticated user header. The Site's existing private audience is preserved. The local preview identity is enabled only by `LOCAL_PREVIEW=1` on loopback hosts; it is not a production binding. Tests use isolated storage and never consume production fortunes.
 
 ## Deferred by request
 
-The user chose to finish the 3D experience before setting up Supabase. Shared wall persistence, authenticated two-person access, and SMS delivery are **not live**. The preview clearly identifies those features as unconnected. The memory composer does not claim to save content. The bed only shows a visual Easter egg; it sends no message.
-
-The Supabase client and image upload/read adapters are in `lib/supabase.ts`; do not enable the environment variables until the private schema, membership policies, Storage policies, and accounts are configured. The `/admin` route is deferred. Draw Something and Our Art have been removed entirely at the user's request. A future integration must use private Storage, row-level security, authenticated Realtime channels, and server-side SMS credentials plus a cooldown.
+The memory wall remains a clearly labeled preview with a pin composer; shared photo/note saving is not live. SMS and two-person access setup remain deferred. The bed only shows a visual Easter egg and sends no message. Draw Something and Our Art have been removed entirely. No Supabase project or credentials are required for the shared fortunes.
 
 ## Validation
 
 ```sh
-npm run typecheck
+npm run build
+node scripts/fortune-check.mjs
+node scripts/room-check.mjs
 node scripts/smoke.mjs
 ```
 
-The smoke check needs Microsoft Edge and a running preview at port 3022. It checks rendering, city switching, reset, wall dialogs, fighter controls, the bed Easter egg, browser errors, and mobile overflow.
+The isolated fortune test covers all 200 draws, concurrent requests, retries, exhaustion and access guards. Browser checks require Microsoft Edge and the full preview at port 3023; they exercise physical-object clicks, room brightness, bark audio, fighter, shared notes, reload persistence and mobile layout.
 
 ## Assets and publication
 
-Skyline assets are original AI-generated architectural concept illustrations, not photographs. Source prompts are in `docs/skyline-prompts.json`. Runtime images are bundled in `public/cities/`; none rely on image CDNs. The apartment itself is interactive geometry, not a rendered background image.
+Skyline images are original AI-generated architectural concept illustrations, not photographs. Prompts are in `docs/`, assets in `public/cities/`. The apartment and interactive objects are real 3D geometry.
 
-The existing private Sites project identity is retained in `.openai/hosting.json`. The `out/` export can also be deployed to Vercel or any static host. This delivery continues the already-created private Sites URL; no Vercel project has been provisioned.
+`scripts/build.mjs` builds the Next.js export into `dist/client/`, the Worker into `dist/server/index.js`, and hosting metadata/migrations into `dist/.openai/`. The existing Sites identity and private URL are retained. A static-only host cannot run the shared fortunes.

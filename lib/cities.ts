@@ -6,4 +6,4 @@ export const cities = [
  {id:'san-francisco',name:'San Francisco',country:'UNITED STATES',zone:'America/Los_Angeles',coordinates:'37.7749° N, 122.4194° W',color:'#e0a08c',weather:'Somewhere between now and someday.'}
 ] as const;
 export type City = typeof cities[number];
-export type Focus = 'home'|'window'|'laptop'|'wall'|'bed';
+export type Focus = 'home'|'window'|'gloves'|'wall'|'bed'|'fortune'|'paperclip';

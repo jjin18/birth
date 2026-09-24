@@ -3,6 +3,8 @@ node_modules/
 .next-build/
 preview-*.png
 out/
+dist/
+.wrangler/
 .env*
 !.env.example
 *.tsbuildinfo

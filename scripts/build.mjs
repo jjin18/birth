@@ -1,0 +1,15 @@
+import { spawnSync } from 'node:child_process';
+import { mkdir,cp,readFile,rm } from 'node:fs/promises';
+import { resolve,join,sep } from 'node:path';
+import { build } from 'esbuild';
+const root=process.cwd(),dist=resolve(root,'dist');
+const result=spawnSync(process.execPath,['node_modules/next/dist/bin/next','build'],{stdio:'inherit',env:process.env});
+if(result.status!==0)process.exit(result.status||1);
+for(const directory of ['client','server','.openai']){const target=resolve(dist,directory);if(!target.startsWith(dist+sep))throw Error('Invalid build directory');await rm(target,{recursive:true,force:true});await mkdir(target,{recursive:true})}
+await cp(join(root,'out'),join(dist,'client'),{recursive:true});
+await build({entryPoints:['worker/index.ts'],outfile:'dist/server/index.js',bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true});
+await cp('.openai/hosting.json','dist/.openai/hosting.json');
+await cp('drizzle','dist/.openai/drizzle',{recursive:true});
+const config=JSON.parse(await readFile('dist/.openai/hosting.json','utf8'));
+if(config.static||config.d1!=='DB')throw Error('Shared fortunes require the DB Worker binding.');
+console.log('Worker, static assets, and database migrations built.');
