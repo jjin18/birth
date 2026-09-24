@@ -1,6 +1,6 @@
 'use client';
 import { useEffect,useMemo,useState } from 'react';
-import MeshChair from './MeshChair';
+import AeronChair from './AeronChair';
 import { RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
 import { Surface,type SurfaceKind } from './Materials';
@@ -60,5 +60,5 @@ export default function Workstation(){return <group name="detailed-workstation" 
  <mesh position={[.24,1.15,.34]} scale={[.061,.036,.102]} castShadow><sphereGeometry args={[1,24,16]}/><Surface color="#d3d4ca"/></mesh>
  <group position={[-1.02,1.12,.24]}><mesh position={[0,.105,0]} castShadow><cylinderGeometry args={[.078,.065,.2,40,1,true]}/><meshPhysicalMaterial color="#e3dfd4" roughness={.25} side={THREE.DoubleSide}/></mesh><mesh position={[0,.19,0]} rotation={[-Math.PI/2,0,0]}><circleGeometry args={[.070,32]}/><meshPhysicalMaterial color="#382416" roughness={.2}/></mesh><mesh position={[.085,.105,0]} rotation={[0,Math.PI/2,0]}><torusGeometry args={[.05,.012,12,24]}/><meshPhysicalMaterial color="#e3dfd4" roughness={.25}/></mesh></group>
  <Bar from={[-.64,1.21,-.45]} to={[-.64,.93,-.52]} r={.008} c="#242929"/>
- <MeshChair/>
+ <AeronChair/>
 </group>}
