@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 import draco from 'draco3d';
 
-// Compress the supplied static Tripo GLB without simplifying the surface
+// Compress a supplied static, single-mesh GLB without simplifying the surface
 // or changing its embedded images. Draco may discard degenerate faces.
 // The source file is never modified.
 const input = process.argv[2];
-assert(input, 'Pass the source dog GLB path.');
+assert(input, 'Pass the source GLB path.');
+const outputPath = process.argv[3] ?? 'public/models/dog-on-bed.glb';
 const source = readFileSync(input);
 assert.equal(source.readUInt32LE(0), 0x46546c67);
 const jsonLength = source.readUInt32LE(12);
@@ -97,5 +98,5 @@ header.writeUInt32LE(jsonPadded.length, 12); header.writeUInt32LE(0x4e4f534a, 16
 binHeader.writeUInt32LE(binPadded.length, 0); binHeader.writeUInt32LE(0x004e4942, 4);
 const result = Buffer.concat([header, jsonPadded, binHeader, binPadded]);
 assert(result.length < 25 * 1024 * 1024, 'Must fit the hosting asset limit');
-writeFileSync('public/models/dog-on-bed.glb', result);
+writeFileSync(outputPath, result);
 console.log(JSON.stringify({ originalBytes: source.length, optimizedBytes: result.length, triangleCount, degenerateTrianglesDiscarded: indices.length / 3 - triangleCount, texturesPreserved: gltf.images.length }));

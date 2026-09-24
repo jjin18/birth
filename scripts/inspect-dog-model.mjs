@@ -23,7 +23,7 @@ camera.position.set(1.1, 1.05, 1.8); camera.lookAt(0, .3, 0);
 const loader = new GLTFLoader(), draco = new DRACOLoader(); draco.setDecoderPath('/draco/'); loader.setDRACOLoader(draco);
 loader.load('/model.glb', gltf => {
   const bounds = new THREE.Box3().setFromObject(gltf.scene), center = bounds.getCenter(new THREE.Vector3()), size = bounds.getSize(new THREE.Vector3());
-  const scale = 1 / Math.max(size.x, size.z);
+  const scale = 1 / Math.max(size.x, size.y, size.z);
   gltf.scene.scale.setScalar(scale);
   gltf.scene.position.set(-center.x * scale, -bounds.min.y * scale, -center.z * scale);
   scene.add(gltf.scene);

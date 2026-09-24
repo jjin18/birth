@@ -1,9 +1,10 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
+import { useEffect, useState } from 'react';
+import { useThree, type ThreeEvent } from '@react-three/fiber';
 import { RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
 import ImportedDog from './ImportedDog';
+import ImportedLamp from './ImportedLamp';
 
 type Vec = [number, number, number];
 function Sphere({p,s,c,rotation,roughness=.85}:{p:Vec;s:Vec;c:string;rotation?:Vec;roughness?:number}) {
@@ -18,19 +19,8 @@ function usePointer() {
 
 export function Lamp({on,toggle}:{on:boolean;toggle:()=>void}) {
  const pointer=usePointer();
- const bulb=useRef<THREE.PointLight>(null);
- const shade=useRef<THREE.MeshStandardMaterial>(null);
- useFrame((_,delta)=>{
-  const speed=1-Math.exp(-delta*6);
-  if(bulb.current)bulb.current.intensity=THREE.MathUtils.lerp(bulb.current.intensity,on?18:0,speed);
-  if(shade.current)shade.current.emissiveIntensity=THREE.MathUtils.lerp(shade.current.emissiveIntensity,on?.5:0,speed);
- });
- return <group name="room-lamp" position={[-.45,.08,-2.65]} {...pointer} onClick={e=>{e.stopPropagation();toggle()}}>
-  <mesh position={[0,.03,0]} castShadow receiveShadow><cylinderGeometry args={[.23,.23,.06,32]}/><meshStandardMaterial color="#49483a" roughness={.45}/></mesh>
-  <mesh position={[0,1.05,0]} castShadow><cylinderGeometry args={[.025,.025,2.1,20]}/><meshStandardMaterial color="#b9a271" roughness={.35} metalness={.45}/></mesh>
-  <mesh position={[0,2.1,0]} castShadow><cylinderGeometry args={[.27,.37,.46,48]}/><meshStandardMaterial ref={shade} color="#e5cdaa" emissive="#f3b959" emissiveIntensity={.5} roughness={1} side={THREE.DoubleSide}/></mesh>
-  <mesh position={[0,1.91,0]}><sphereGeometry args={[.065,16,12]}/><meshBasicMaterial color={on?'#ffe2ad':'#8b8980'}/></mesh>
-  <pointLight ref={bulb} position={[0,1.94,0]} color="#ffcf8e" intensity={18} distance={7} decay={2}/>
+ return <group name="room-lamp" position={[-.45,.075,-2.65]} {...pointer} onClick={e=>{e.stopPropagation();toggle()}}>
+  <ImportedLamp on={on}/>
  </group>;
 }
 

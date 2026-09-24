@@ -5,8 +5,8 @@ import * as THREE from 'three';
 import { DetailedBed, DetailedSofa } from './SoftFurnishings';
 
 const DESK_URL = '/models/herman-miller-motia-desk.glb';
-const SOFA_URL = '/models/herman-miller-sofa.glb';
-const BED_URL = '/models/uploaded-bed.glb';
+const SOFA_URL = '/models/uploaded-sofa-v2.glb';
+const BED_URL = '/models/uploaded-bed-v2.glb';
 const FLOOR_Y = .075;
 
 function useFurniture(url: string, width: number) {
@@ -44,8 +44,8 @@ export function ImportedDesk({ onSurface }: { onSurface: (height: number) => voi
 }
 
 function SofaModel() {
-  const { object } = useFurniture(SOFA_URL, 2.55);
-  return <group name="herman-miller-sofa" position={[-2.6, FLOOR_Y, 2.44]} rotation={[0, Math.PI, 0]} dispose={null}><primitive object={object} /></group>;
+  const { object } = useFurniture(SOFA_URL, 2.95);
+  return <group name="uploaded-sofa" position={[-3.1, FLOOR_Y, 1.95]} rotation={[0, Math.PI, 0]} dispose={null}><primitive object={object} /></group>;
 }
 
 export function ImportedSofa() {
@@ -53,8 +53,8 @@ export function ImportedSofa() {
 }
 
 function BedModel({ click }: { click: () => void }) {
-  const { object } = useFurniture(BED_URL, 2.62);
-  return <group name="uploaded-bed" position={[-2.5, FLOOR_Y, -.35]} dispose={null} onClick={event => { event.stopPropagation(); click(); }}><primitive object={object} /></group>;
+  const { object } = useFurniture(BED_URL, 3.05);
+  return <group name="uploaded-bed" position={[-3.2, FLOOR_Y, -.95]} dispose={null} onClick={event => { event.stopPropagation(); click(); }}><primitive object={object} /></group>;
 }
 
 export function ImportedBed({ click }: { click: () => void }) {
