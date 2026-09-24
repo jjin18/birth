@@ -25,7 +25,20 @@ try {
   page.on('response', response => { if (response.ok() && response.url().includes('/models/')) loaded.add(new URL(response.url()).pathname); });
   await page.goto('http://127.0.0.1:3023/', { waitUntil: 'networkidle', timeout: 90000 });
   await page.getByRole('button', { name: 'San Francisco', exact: true }).click();
-  await page.waitForTimeout(5000);
+  await page.waitForFunction(() => {
+    function findScene(fiber) {
+      if (!fiber) return null;
+      let object = fiber.stateNode?.object;
+      if (object?.isObject3D) { while (object.parent) object = object.parent; if (object.isScene) return object; }
+      return findScene(fiber.child) || findScene(fiber.sibling);
+    }
+    const names = ['imported-dog-and-bed', 'herman-miller-motia-desk', 'uploaded-sofa', 'herman-miller-aeron-chair', 'uploaded-bed', 'uploaded-floor-lamp'];
+    for (const root of window.renderRoots) {
+      const scene = findScene(root.current);
+      if (scene && names.every(name => scene.getObjectByName(name))) return true;
+    }
+    return false;
+  }, undefined, { timeout: 120000, polling: 500 });
   for (const name of ['dog-on-bed', 'herman-miller-motia-desk', 'uploaded-sofa-v2', 'herman-miller-aeron', 'uploaded-bed-v2', 'uploaded-floor-lamp']) assert(loaded.has('/models/' + name + '.glb'), name + ' loads');
   const graph = await page.evaluate(() => {
     function findScene(fiber) {
