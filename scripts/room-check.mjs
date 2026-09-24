@@ -12,6 +12,7 @@ try{
  page.on('console',e=>{if(e.type()==='error')errors.push(e.text())});
  await page.goto('http://127.0.0.1:3023',{waitUntil:'networkidle',timeout:90000});
  const canvas=page.locator('.scene-layer canvas');await canvas.waitFor();await page.waitForTimeout(4000);
+ await page.getByRole('button',{name:'Room overview',exact:true}).click();await page.waitForTimeout(3500);
  const lamp=()=>page.getByRole('button',{name:/Turn the lamp/});
  assert.equal(await lamp().getAttribute('aria-pressed'),'true');
  const lit=await page.screenshot({path:'preview-room-on.png'});

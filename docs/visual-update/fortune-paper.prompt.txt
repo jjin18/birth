@@ -1,0 +1,9 @@
+Use case: product-mockup
+Asset type: isolated blank fortune-cookie paper texture for a website UI.
+Primary request: Generate exactly ONE photorealistic blank horizontal paper slip. Material inspiration is the thin narrow matte off-white paper of an actual Panda Express fortune, with absolutely no branding or printing.
+Scene/backdrop: genuinely transparent background with an alpha channel, no surface or table, no solid background, no checkerboard pattern baked into the image.
+Composition/framing: wide 3:1 canvas, approximately 1536 x 512 pixels or nearest supported wide format. Single centered horizontal slip with approximately 3:1 proportions, viewed from directly above; fill most of the canvas with only a small transparent margin so all edges remain visible.
+Materials/textures: thin neutral off-white matte paper, subtle fibrous grain and fine paper microtexture; faint vertical fold traces, slightly uneven gently wavy cut edges, soft natural curl and shallow relief. Lightly worn but clean. Keep the broad central area blank and suitable for accessible typography later overlaid in code.
+Lighting/mood: soft diffuse even natural light; restrained shallow shading describes the paper relief. At most a slender soft natural shadow close to the paper edge.
+Color palette: neutral off-white, never yellow or parchment-colored.
+Constraints: one paper slip only; fully blank; preserve real alpha transparency. No text, letters, numbers, symbols, typography, end marks, logos, watermark, blue ink, red ink, or any other ink. No cookie, crumbs, extra objects, collage, multiple views, frame, decorative border, severe creases, ragged torn edges, stains, distressed parchment, heavy shadows, or dramatic curling. Output only the single finished PNG asset.

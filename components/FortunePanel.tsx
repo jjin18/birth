@@ -2,6 +2,7 @@
 import { useEffect,useState } from 'react';
 import { Cookie,Paperclip,Check,RotateCcw } from 'lucide-react';
 import Modal from './Modal';
+import FortuneSlip from './FortuneSlip';
 import { fortunes,type SavedFortune } from '@/lib/fortunes';
 import { getFortunes,openFortune } from '@/lib/fortune-api';
 export default function FortunePanel({mode,requestId,close,onCollection,onOpenClip,onAnother}:{mode:'fortune'|'paperclip';requestId:string;close:()=>void;onCollection:(count:number)=>void;onOpenClip:()=>void;onAnother:()=>void}){
@@ -16,10 +17,10 @@ export default function FortunePanel({mode,requestId,close,onCollection,onOpenCl
   return()=>{active=false;if(interval)clearInterval(interval)};
  },[mode,requestId,retry]);
  return <Modal title={mode==='paperclip'?'A few good words.':'A little good fortune.'} eyebrow={mode==='paperclip'?'THE PAPER CLIP':'PANDA EXPRESS · AFTER DINNER'} close={close} wide={mode==='paperclip'}>
-  {busy?<div className="fortune-loading"><Cookie size={38}/><p>{mode==='fortune'?'Cracking your cookie…':'Gathering your notes…'}</p></div>:error?<div className="empty"><p role="alert">{error}</p><button className="gold-button" onClick={()=>setRetry(x=>x+1)}><RotateCcw size={15}/>Try again</button></div>:mode==='fortune'?<>
-   {note?<article className="fortune-slip"><span className="fortune-number">FORTUNE {String(note.id+1).padStart(3,'0')} / 200</span><p>{fortunes[note.id]}</p><span className="fortune-signature">a little place for us.</span></article>:exhausted?<div className="empty"><Cookie size={38}/><p>All 200 cookies, opened.<br/>Every good word is waiting on your paper clip.</p></div>:null}
+  {busy?<div className="fortune-loading"><img className="fortune-cookie" src="/textures/fortune-cookie.png" alt="" width={280} height={210}/><p>{mode==='fortune'?'Cracking your cookie…':'Gathering your notes…'}</p></div>:error?<div className="empty"><p role="alert">{error}</p><button className="gold-button" onClick={()=>setRetry(x=>x+1)}><RotateCcw size={15}/>Try again</button></div>:mode==='fortune'?<>
+   {note?<div className="fortune-reveal"><img className="fortune-cookie" src="/textures/fortune-cookie.png" alt="Golden baked fortune cookie" width={280} height={210}/><FortuneSlip note={note}/></div>:exhausted?<div className="empty"><Cookie size={38}/><p>All 200 cookies, opened.<br/>Every good word is waiting on your paper clip.</p></div>:null}
    <p className="fortune-saved" role="status"><Check size={15}/>{note?'Saved to your shared paper clip.':'Your collection is complete.'}</p>
    <div className="fortune-actions"><button className="secondary-button" onClick={onOpenClip}><Paperclip size={16}/>Your notes · {saved.length}</button>{saved.length<fortunes.length&&<button className="gold-button" onClick={onAnother}>One more cookie</button>}</div>
-  </>:<><p className="panel-description">{saved.length} of 200 fortunes opened. Kept here, across your devices.</p>{saved.length?<div className="fortune-collection">{saved.map(n=><article className="fortune-slip" key={n.id}><Paperclip className="slip-clip" size={24}/><span className="fortune-number">NO. {String(n.id+1).padStart(3,'0')}</span><p>{fortunes[n.id]}</p><time dateTime={n.openedAt}>{new Date(n.openedAt).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}</time></article>)}</div>:<div className="empty"><Paperclip size={36}/><p>Nothing clipped yet.<br/>There’s a cookie waiting in the Panda Express box.</p><button className="gold-button" onClick={onAnother}><Cookie size={16}/>Open your first cookie</button></div>}</>}
+  </>:<><p className="panel-description">{saved.length} of 200 fortunes opened. Kept here, across your devices.</p>{saved.length?<div className="fortune-collection">{saved.map(n=><FortuneSlip key={n.id} note={n} clipped/>)}</div>:<div className="empty"><Paperclip size={36}/><p>Nothing clipped yet.<br/>There’s a cookie waiting in the Panda Express box.</p><button className="gold-button" onClick={onAnother}><Cookie size={16}/>Open your first cookie</button></div>}</>}
  </Modal>
 }

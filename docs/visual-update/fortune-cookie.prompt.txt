@@ -1,0 +1,10 @@
+Use case: product-mockup
+Asset type: isolated photorealistic fortune cookie for a website UI.
+Primary request: Generate exactly ONE intact actual fortune cookie, matching a real grocery or takeaway fortune cookie.
+Scene/backdrop: genuinely transparent background with an alpha channel; no plate, table, surface, or environment, and no checkerboard pattern baked into the image.
+Subject: a pale golden crescent-shaped folded shell with a tall rounded top and two tapered lobes framing a dark central arch. Keep the opening clearly visible and empty, ready for a separate readable fortune-paper UI to overlap it later. There must be no paper strip anywhere in this image.
+Style/medium: hyperrealistic macro product photography of a real baked cookie; natural edible crumb texture, not a cartoon, 3D toy, or computer-rendered object.
+Composition/framing: one cookie centered and fully visible from a three-quarter front elevated angle, with a small clear margin. Square canvas, approximately 1024 x 1024 pixels or nearest supported square format.
+Materials/textures: crisp thin edge; macro-real crumb texture, fine matte baked surface, subtle baked pores and toasted speckles, lightly toasted edges; pale honey-gold color. Preserve the delicate irregularities of a real thin baked fortune-cookie shell.
+Lighting/mood: soft studio light with gentle highlights and realistic soft shadow close beneath the cookie; preserve the transparent background around the cookie and its shadow.
+Constraints: exactly one intact fortune cookie; clear empty central opening; transparent PNG with real alpha. No paper, fortune slip, text, lettering, logos, watermark, hands, plate, table, environment, crumbs, extra objects, broken pieces, collage, cartoon styling, plastic gloss, or 3D-render appearance. Output only the single finished PNG asset.

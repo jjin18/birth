@@ -1,0 +1,10 @@
+Use case: product-mockup
+Asset type: seamless square PBR base-color texture for photorealistic room upholstery.
+Primary request: Generate exactly ONE natural warm off-white linen/upholstery weave texture, with fine visible individual threads.
+Scene/backdrop: the fabric surface fills the entire square image edge to edge.
+Style/medium: photorealistic natural linen upholstery, fine matte woven fibers, subtle realistic thread thickness variations and a tight understated plain weave. Warm off-white color throughout.
+Composition/framing: perfectly flat orthographic surface capture, no perspective; fine warp and weft threads aligned vertically and horizontally.
+Lighting: perfectly even neutral diffuse illumination; base-color/albedo only, no baked shadows, directional lighting, ambient occlusion, specular highlights, gloss, or vignette.
+Tiling: genuinely seamless and tileable in both axes, with continuous weave alignment across matching opposite edges and no visible joins.
+Output: one opaque square PNG, approximately 1024 x 1024 pixels or nearest supported square format.
+Constraints: no folds, wrinkles, draping, seams, stitching, tufting, shadows, stains, decorative patterns, stripes, prints, text, logos, watermark, borders, objects, furniture, or environment. Only the natural fine thread weave is visible. Do not produce a preview render, a material sphere, a texture atlas, or multiple maps. Output only the single full-frame linen base-color texture.

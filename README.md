@@ -16,6 +16,9 @@ Open http://127.0.0.1:3023 for the full preview. `npm run dev` on port 3022 is f
 ## Implemented
 
 - An interactive 3D apartment with bed, sofa, desk, decorative laptop, memory wall and kitchen island. Plants and bedside table have been removed.
+- An eye-level interior view with an optional room overview, physical wood/linen materials, detailed monitor/laptop/desk/chair, draped bedding, upholstered cushions, ambient occlusion and filmic lighting.
+- Each city has Dark, Day and Sunset skyline assets. Auto uses SunCalc with the city's coordinates and current date: sunrise to evening golden hour is Day, golden hour through civil dusk is Sunset, otherwise Dark. The clock uses the city's timezone, including daylight saving time. Manual sky previews are available.
+- Photorealistic cookie artwork and off-white paper slips with red uppercase Panda Express styling and blue end marks. Asset prompts are preserved in docs/visual-update.
 - One floor lamp, on by default, smoothly toggling the room's illumination.
 - A white dog with breathing, blinking, head movement and tail wagging. Clicking plays a locally synthesized double bark and an excited reaction.
 - Red 3D boxing gloves on the coffee table open Mini Fighter. The laptop no longer opens the arcade.

@@ -1,0 +1,10 @@
+Use case: product-mockup
+Asset type: seamless square PBR base-color texture for a photorealistic room material.
+Primary request: Generate exactly ONE natural warm medium oak wood surface texture.
+Scene/backdrop: the wood surface fills the entire square image edge to edge.
+Style/medium: photorealistic real oak, fine straight grain and realistic subtle wood pores; natural warm medium oak color.
+Composition/framing: flat orthographic surface capture, no perspective; continuous single wood surface, no plank boundaries or seams. Fine straight grain runs vertically through the square.
+Lighting: perfectly even neutral diffuse illumination; base-color/albedo only, no baked directional lighting, shadows, ambient occlusion, specular highlights, gloss, or vignette.
+Tiling: genuinely seamless and tileable in both axes, matching opposite edges without visible joins or obvious repeating motifs.
+Output: one opaque square PNG, approximately 1024 x 1024 pixels or nearest supported square format.
+Constraints: no plank boundaries, boards, grooves between boards, bevels, inlays, perspective, objects, text, patterns added to the wood, logos, watermark, borders, folds, shadows, dramatic knots, damage, or artificial-looking grain. Do not produce a preview render, a material sphere, a texture atlas, or multiple maps. Output only the single full-frame oak base-color texture.
