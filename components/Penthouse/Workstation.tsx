@@ -1,6 +1,7 @@
 'use client';
 import { useEffect,useMemo,useState } from 'react';
 import AeronChair from './AeronChair';
+import { ImportedDesk } from './ImportedFurniture';
 import { RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
 import { Surface,type SurfaceKind } from './Materials';
@@ -32,12 +33,9 @@ function BlueIMac(){
   </group>
  </group>;
 }
-export default function Workstation(){return <group name="detailed-workstation" position={[3.15,0,-1.88]}>
- <Part p={[0,1.04,0]} s={[2.9,.115,1.32]} c="#191d21" kind="paint" r={.025}/>
- <Part p={[-.94,.5,.015]} s={[.62,.94,1.09]} c="#252a2f" r={.026}/>
- {[.22,.48,.74].map(y=><group key={y}><Part p={[-.94,y,.581]} s={[.565,.229,.035]} c="#2c3137" r={.008}/><Part p={[-.94,y+.057,.606]} s={[.21,.013,.022]} c="#60666b" kind="metal" r={.005}/></group>)}
- {[-.47,.47].map(z=><Part key={z} p={[1.11,.52,z]} s={[.05,.98,.055]} c="#3d403a" kind="metal" r={.008}/>)}
- <Part p={[1.11,.12,0]} s={[.05,.045,1.06]} c="#373b38" kind="metal" r={.008}/>
+export default function Workstation(){const [deskSurface,setDeskSurface]=useState(1.2646);return <group name="detailed-workstation" position={[3.15,0,-1.88]}>
+ <ImportedDesk onSurface={setDeskSurface}/>
+ <group name="desktop-accessories" position={[0,deskSurface-1.0975,0]}>
  <Part p={[.02,1.107,.16]} s={[1.26,.012,.59]} c="#141a20" kind="leather" r={.005}/>
  <group name="desktop-monitor" position={[-.64,1.11,-.30]}>
   <Part p={[0,.015,.05]} s={[.42,.023,.31]} c="#444949" kind="metal" r={.012}/><Bar from={[0,.03,-.045]} to={[0,.38,-.08]} r={.028}/>
@@ -60,5 +58,6 @@ export default function Workstation(){return <group name="detailed-workstation" 
  <mesh position={[.24,1.15,.34]} scale={[.061,.036,.102]} castShadow><sphereGeometry args={[1,24,16]}/><Surface color="#d3d4ca"/></mesh>
  <group position={[-1.02,1.12,.24]}><mesh position={[0,.105,0]} castShadow><cylinderGeometry args={[.078,.065,.2,40,1,true]}/><meshPhysicalMaterial color="#e3dfd4" roughness={.25} side={THREE.DoubleSide}/></mesh><mesh position={[0,.19,0]} rotation={[-Math.PI/2,0,0]}><circleGeometry args={[.070,32]}/><meshPhysicalMaterial color="#382416" roughness={.2}/></mesh><mesh position={[.085,.105,0]} rotation={[0,Math.PI/2,0]}><torusGeometry args={[.05,.012,12,24]}/><meshPhysicalMaterial color="#e3dfd4" roughness={.25}/></mesh></group>
  <Bar from={[-.64,1.21,-.45]} to={[-.64,.93,-.52]} r={.008} c="#242929"/>
+ </group>
  <AeronChair/>
 </group>}

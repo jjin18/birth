@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
-import Terrier from './Terrier';
+import ImportedDog from './ImportedDog';
 
 type Vec = [number, number, number];
 function Sphere({p,s,c,rotation,roughness=.85}:{p:Vec;s:Vec;c:string;rotation?:Vec;roughness?:number}) {
@@ -36,9 +36,8 @@ export function Lamp({on,toggle}:{on:boolean;toggle:()=>void}) {
 
 export function Dog({reaction,click}:{reaction:number;click:()=>void}) {
  const pointer=usePointer();
- return <group name="white-dog" position={[.2,.10,2.65]} rotation={[0,.55,0]} {...pointer} onClick={e=>{e.stopPropagation();click()}}>
-  <mesh position={[0,.005,0]} receiveShadow><cylinderGeometry args={[.74,.72,.08,48]}/><meshStandardMaterial color="#a49580" roughness={1}/></mesh>
-  <Terrier reaction={reaction}/>
+ return <group name="white-dog" position={[.2,.075,2.5]} rotation={[0,.35,0]} {...pointer} onClick={e=>{e.stopPropagation();click()}}>
+  <ImportedDog reaction={reaction}/>
  </group>;
 }
 
