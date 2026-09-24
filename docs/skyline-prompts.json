@@ -1,0 +1,42 @@
+{
+  "generator": "built-in image_gen",
+  "generation_calls": 5,
+  "variants": 0,
+  "assets": [
+    {
+      "city": "Tokyo",
+      "path": "C:/Users/jiahui jin/penthouse-assets/tokyo-night-skyline.png",
+      "width": 1536,
+      "height": 1024,
+      "prompt": "Use case: stylized-concept\nAsset type: flat 2D panoramic skyline backdrop to be placed behind 3D apartment windows in Penthouse 22.\nScene/backdrop: Tokyo at night, a dense layered skyline of modern high-rises and smaller urban buildings, with the recognizable red-orange illuminated lattice Tokyo Tower rising clearly above the surrounding city.\nStyle/medium: stylized cinematic architectural concept artwork, polished digital matte painting with crisp architectural silhouettes, restrained painterly detail, and subtle atmospheric depth.\nComposition/framing: one wide landscape image, 1536x1024 pixels or the same 3:2 aspect ratio. Unobstructed view from high-rise elevation looking outward across the city, near-level camera with a slight downward view. The city and all landmark silhouettes occupy the lower 60% of the frame; keep the upper 40% as spacious deep navy night sky. Landmark fully visible and clearly recognizable at backdrop scale, with readable layers of buildings across the width.\nLighting/mood: full nighttime, deep navy sky and cool dark building shadows, warm amber illuminated windows and street lights, subtle cinematic glow.\nConstraints: exterior cityscape only; no interiors, furniture, window frames, glass reflections, balcony railings, people, typography, lettering, labels, logos, watermark, borders, or collage. Generate exactly one complete image, no variants."
+    },
+    {
+      "city": "New York",
+      "path": "C:/Users/jiahui jin/penthouse-assets/new-york-night-skyline.png",
+      "width": 1536,
+      "height": 1024,
+      "prompt": "Use case: stylized-concept\nAsset type: flat 2D panoramic skyline backdrop to be placed behind 3D apartment windows in Penthouse 22.\nScene/backdrop: New York City at night, a dense Manhattan skyline of varied Art Deco and modern skyscrapers, with the recognizable stepped silhouette and illuminated spire of the Empire State Building clearly visible.\nStyle/medium: stylized cinematic architectural concept artwork, polished digital matte painting with crisp architectural silhouettes, restrained painterly detail, and subtle atmospheric depth.\nComposition/framing: one wide landscape image, 1536x1024 pixels or the same 3:2 aspect ratio. Unobstructed view from high-rise elevation looking outward across the city, near-level camera with a slight downward view. The city and all landmark silhouettes occupy the lower 60% of the frame; keep the upper 40% as spacious deep navy night sky. Landmark fully visible and clearly recognizable at backdrop scale, with readable layers of buildings across the width.\nLighting/mood: full nighttime, deep navy sky and cool dark building shadows, warm amber illuminated windows and street lights, subtle cinematic glow.\nConstraints: exterior cityscape only; no interiors, furniture, window frames, glass reflections, balcony railings, people, typography, lettering, labels, logos, watermark, borders, or collage. Generate exactly one complete image, no variants."
+    },
+    {
+      "city": "Paris",
+      "path": "C:/Users/jiahui jin/penthouse-assets/paris-night-skyline.png",
+      "width": 1536,
+      "height": 1024,
+      "prompt": "Use case: stylized-concept\nAsset type: flat 2D panoramic skyline backdrop to be placed behind 3D apartment windows in Penthouse 22.\nScene/backdrop: Paris at night, a broad cityscape of elegant low-rise Haussmann rooftops and illuminated boulevards, with the recognizable golden illuminated Eiffel Tower rising clearly above the surrounding city.\nStyle/medium: stylized cinematic architectural concept artwork, polished digital matte painting with crisp architectural silhouettes, restrained painterly detail, and subtle atmospheric depth.\nComposition/framing: one wide landscape image, 1536x1024 pixels or the same 3:2 aspect ratio. Unobstructed view from high-rise elevation looking outward across the city, near-level camera with a slight downward view. The city and all landmark silhouettes occupy the lower 60% of the frame; keep the upper 40% as spacious deep navy night sky. Landmark fully visible and clearly recognizable at backdrop scale, with readable layers of buildings across the width.\nLighting/mood: full nighttime, deep navy sky and cool dark building shadows, warm amber illuminated windows and street lights, subtle cinematic glow.\nConstraints: exterior cityscape only; no interiors, furniture, window frames, glass reflections, balcony railings, people, typography, lettering, labels, logos, watermark, borders, or collage. Generate exactly one complete image, no variants."
+    },
+    {
+      "city": "Seoul",
+      "path": "C:/Users/jiahui jin/penthouse-assets/seoul-night-skyline.png",
+      "width": 1536,
+      "height": 1024,
+      "prompt": "Use case: stylized-concept\nAsset type: flat 2D panoramic skyline backdrop to be placed behind 3D apartment windows in Penthouse 22.\nScene/backdrop: Seoul at night, a layered cityscape of modern high-rises and dense urban neighborhoods surrounding the dark wooded profile of Namsan hill, with the recognizable illuminated N Seoul Tower and its circular observation deck clearly visible on the hill.\nStyle/medium: stylized cinematic architectural concept artwork, polished digital matte painting with crisp architectural silhouettes, restrained painterly detail, and subtle atmospheric depth.\nComposition/framing: one wide landscape image, 1536x1024 pixels or the same 3:2 aspect ratio. Unobstructed view from high-rise elevation looking outward across the city, near-level camera with a slight downward view. The city and all landmark silhouettes occupy the lower 60% of the frame; keep the upper 40% as spacious deep navy night sky. Landmark fully visible and clearly recognizable at backdrop scale, with readable layers of buildings across the width.\nLighting/mood: full nighttime, deep navy sky and cool dark building shadows, warm amber illuminated windows and street lights, subtle cinematic glow.\nConstraints: exterior cityscape only; no interiors, furniture, window frames, glass reflections, balcony railings, people, typography, lettering, labels, logos, watermark, borders, or collage. Generate exactly one complete image, no variants."
+    },
+    {
+      "city": "San Francisco",
+      "path": "C:/Users/jiahui jin/penthouse-assets/san-francisco-night-skyline.png",
+      "width": 1536,
+      "height": 1024,
+      "prompt": "Use case: stylized-concept\nAsset type: flat 2D panoramic skyline backdrop to be placed behind 3D apartment windows in Penthouse 22.\nScene/backdrop: San Francisco at night, an elevated view across the city and dark bay with varied downtown towers, and the recognizable illuminated western suspension spans of the Bay Bridge visible beyond the city with warm reflections on the water.\nStyle/medium: stylized cinematic architectural concept artwork, polished digital matte painting with crisp architectural silhouettes, restrained painterly detail, and subtle atmospheric depth.\nComposition/framing: one wide landscape image, 1536x1024 pixels or the same 3:2 aspect ratio. Unobstructed view from high-rise elevation looking outward across the city, near-level camera with a slight downward view. The city and all landmark silhouettes occupy the lower 60% of the frame; keep the upper 40% as spacious deep navy night sky. Landmark fully visible and clearly recognizable at backdrop scale, with readable layers of buildings across the width.\nLighting/mood: full nighttime, deep navy sky and cool dark building shadows, warm amber illuminated windows and street lights, subtle cinematic glow.\nConstraints: exterior cityscape only; no interiors, furniture, window frames, glass reflections, balcony railings, people, typography, lettering, labels, logos, watermark, borders, or collage. Generate exactly one complete image, no variants."
+    }
+  ]
+}

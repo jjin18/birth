@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Penthouse 22 — Your life, elevated.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="nav shell">
+    <a class="brand" href="#top"><span class="mark">22</span><span>PENTHOUSE</span></a>
+    <nav><a href="#world">The world</a><a href="#spaces">Spaces</a><a href="#membership">Membership</a></nav>
+    <a class="nav-cta" href="#membership">Request access <span>↗</span></a>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy">
+        <p class="eyebrow">A private world above the ordinary <span>✦</span></p>
+        <h1>Life looks<br><em>different</em><br>from here.</h1>
+        <p class="lede">Penthouse 22 is a new kind of members club: part private residence, part cultural salon, part point of view.</p>
+        <a class="button" href="#membership">Enter the world <span>→</span></a>
+      </div>
+      <div class="hero-art" aria-label="Abstract sunset over a city skyline">
+        <div class="sun"></div><div class="moon"></div><div class="skyline"></div><div class="grain"></div>
+        <div class="art-label">VOLUME 01<br><strong>THE ARRIVAL</strong></div>
+      </div>
+    </section>
+
+    <section class="manifesto shell" id="world">
+      <p class="eyebrow">01 / The world</p>
+      <div><h2>Not a place<br>to <em>belong.</em><br>A place to become.</h2><p class="body-copy">An intentional community for people who move through the world with curiosity. Come for the view. Stay for the conversations, the late nights, and the feeling that something is always about to begin.</p></div>
+    </section>
+
+    <section class="spaces shell" id="spaces">
+      <div class="section-head"><div><p class="eyebrow">02 / The spaces</p><h2>Made for the<br><em>in-between.</em></h2></div><p class="body-copy">Designed around the rituals that make a life feel full: a long lunch, a great record, an unplanned meeting of minds.</p></div>
+      <div class="cards"><article class="space-card card-one"><span>01</span><h3>The Salon</h3><p>Ideas worth staying late for.</p></article><article class="space-card card-two"><span>02</span><h3>Night Floor</h3><p>Where the city gets softer.</p></article><article class="space-card card-three"><span>03</span><h3>The Table</h3><p>Always one more seat.</p></article></div>
+    </section>
+
+    <section class="membership shell" id="membership">
+      <div><p class="eyebrow">03 / Membership</p><h2>Come<br>upstairs.</h2></div>
+      <div class="membership-copy"><p>Membership is intentionally limited. Tell us a little about yourself and we’ll be in touch when the next invitation opens.</p><form><input type="email" placeholder="Your email address" aria-label="Your email address"><button type="submit">Request an invitation <span>↗</span></button></form><small>By joining the list, you agree to hear from Penthouse 22.</small></div>
+    </section>
+  </main>
+  <footer class="shell footer"><span>© 2026 PENTHOUSE 22</span><span>THE VIEW IS BETTER UP HERE.</span><span>Vancouver · 49° 16′ N</span></footer>
+  <script>document.querySelector('form').addEventListener('submit', e => { e.preventDefault(); const b=e.target.querySelector('button'); b.textContent='You’re on the list ✓'; b.disabled=true; });</script>
+</body>
+</html>

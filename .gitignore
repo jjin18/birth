@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.next-build/
+preview-*.png
+out/
+.env*
+!.env.example
+*.tsbuildinfo
+.sites-runtime/
+*.tar.gz

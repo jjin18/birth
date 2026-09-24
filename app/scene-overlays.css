@@ -1,0 +1,2 @@
+.scene-hotspots{position:absolute;inset:0;pointer-events:none}.scene-hotspots .hotspot{position:absolute;left:0;top:0;pointer-events:auto;will-change:transform;visibility:hidden}
+@media(min-width:651px){.city-label{top:14%}}
