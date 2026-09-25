@@ -1,14 +1,14 @@
 'use client';
 import { Suspense, useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
+import { useRoomModel, preloadRoomModel } from './useRoomModel';
+import { applyPackedMaterial } from '@/lib/model-textures';
 import * as THREE from 'three';
-import Terrier from './Terrier';
 
 const MODEL_URL = '/models/dog-on-bed.glb';
 
 function DogModel({ reaction }: { reaction: number }) {
-  const { scene } = useGLTF(MODEL_URL, '/draco/');
+  const { scene } = useRoomModel(MODEL_URL);
   const uniforms = useMemo(() => ({ dogTime: { value: 0 }, dogBark: { value: 0 } }), []);
   const { object, materials } = useMemo(() => {
     const object = scene.clone(true);
@@ -31,6 +31,7 @@ function DogModel({ reaction }: { reaction: number }) {
           `);
         };
         material.customProgramCacheKey = () => 'dog-gentle-breath-v1';
+        applyPackedMaterial(material);
         materials.push(material);
         return material;
       };
@@ -57,7 +58,7 @@ function DogModel({ reaction }: { reaction: number }) {
 }
 
 export default function ImportedDog({ reaction }: { reaction: number }) {
-  return <Suspense fallback={<Terrier reaction={reaction} />}><DogModel reaction={reaction} /></Suspense>;
+  return <Suspense fallback={null}><DogModel reaction={reaction} /></Suspense>;
 }
 
-useGLTF.preload(MODEL_URL, '/draco/');
+preloadRoomModel(MODEL_URL);

@@ -1,13 +1,14 @@
 'use client';
 import { Suspense, useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
+import { useRoomModel, preloadRoomModel } from './useRoomModel';
+import { applyPackedMaterial } from '@/lib/model-textures';
 import * as THREE from 'three';
 
 const MODEL_URL = '/models/uploaded-floor-lamp.glb';
 
 function LampModel({ on }: { on: boolean }) {
-  const { scene } = useGLTF(MODEL_URL, '/draco/');
+  const { scene } = useRoomModel(MODEL_URL);
   const glow = useMemo(() => ({ value: on ? .55 : 0 }), []);
   const { object, materials } = useMemo(() => {
     const object = scene.clone(true);
@@ -32,6 +33,7 @@ function LampModel({ on }: { on: boolean }) {
           `);
         };
         material.customProgramCacheKey = () => 'uploaded-lamp-shade-glow-v1';
+        applyPackedMaterial(material);
         materials.push(material);
         return material;
       };
@@ -60,4 +62,4 @@ export default function ImportedLamp({ on }: { on: boolean }) {
   </>;
 }
 
-useGLTF.preload(MODEL_URL, '/draco/');
+preloadRoomModel(MODEL_URL);

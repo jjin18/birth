@@ -1,6 +1,6 @@
 'use client';
 import { Suspense, useMemo } from 'react';
-import { useGLTF } from '@react-three/drei';
+import { useRoomModel, preloadRoomModel } from './useRoomModel';
 import * as THREE from 'three';
 import PandaTakeout from './PandaTakeout';
 import Paperclip from './Paperclip';
@@ -11,7 +11,7 @@ const FLOOR_Y = .075;
 type Props = { count: number; onFortune: () => void; onPaperclip: () => void; onGloves: () => void };
 
 function TableAndObjects({ count, onFortune, onPaperclip, onGloves }: Props) {
-  const { scene } = useGLTF(MODEL_URL, '/draco/');
+  const { scene } = useRoomModel(MODEL_URL);
   const { object, surfaceY } = useMemo(() => {
     const object = scene.clone(true);
     const showroom: THREE.Object3D[] = [];
@@ -42,4 +42,4 @@ export default function FortuneTable(props: Props) {
   return <group name="fortune-table" position={[2.3, 0, 2.1]}><Suspense fallback={null}><TableAndObjects {...props} /></Suspense></group>;
 }
 
-useGLTF.preload(MODEL_URL, '/draco/');
+preloadRoomModel(MODEL_URL);

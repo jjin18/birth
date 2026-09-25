@@ -5,8 +5,7 @@
     "models/herman-miller-aeron.glb",
     "models/herman-miller-motia-desk.glb",
     "models/uploaded-bed-v2.glb",
-    "models/uploaded-floor-lamp.glb",
-    "models/uploaded-sofa-v2.glb"
+    "models/uploaded-floor-lamp.glb"
   ],
   "textures": [
     "textures/fabric-linen.jpg",

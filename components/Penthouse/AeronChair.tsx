@@ -1,14 +1,12 @@
 'use client';
 import { Suspense, useMemo } from 'react';
-import { useGLTF } from '@react-three/drei';
+import { useRoomModel, preloadRoomModel } from './useRoomModel';
 import * as THREE from 'three';
-import MeshChair from './MeshChair';
 
 const MODEL_URL = '/models/herman-miller-aeron.glb';
-const DECODER_PATH = '/draco/';
 
 function ChairModel() {
-  const { scene } = useGLTF(MODEL_URL, DECODER_PATH);
+  const { scene } = useRoomModel(MODEL_URL);
   const chair = useMemo(() => {
     // The GLB is cached; only change our instance, not the source scene.
     const model = scene.clone(true);
@@ -40,7 +38,7 @@ function ChairModel() {
 }
 
 export default function AeronChair() {
-  return <Suspense fallback={<MeshChair />}><ChairModel /></Suspense>;
+  return <Suspense fallback={null}><ChairModel /></Suspense>;
 }
 
-useGLTF.preload(MODEL_URL, DECODER_PATH);
+preloadRoomModel(MODEL_URL);

@@ -1,16 +1,14 @@
 'use client';
 import { Suspense, useLayoutEffect, useMemo } from 'react';
-import { useGLTF } from '@react-three/drei';
+import { useRoomModel, preloadRoomModel } from './useRoomModel';
 import * as THREE from 'three';
-import { DetailedBed, DetailedSofa } from './SoftFurnishings';
 
 const DESK_URL = '/models/herman-miller-motia-desk.glb';
-const SOFA_URL = '/models/uploaded-sofa-v2.glb';
 const BED_URL = '/models/uploaded-bed-v2.glb';
 const FLOOR_Y = .075;
 
 function useFurniture(url: string, width: number) {
-  const { scene } = useGLTF(url, '/draco/');
+  const { scene } = useRoomModel(url);
   return useMemo(() => {
     const object = scene.clone(true);
     const showroomObjects: THREE.Object3D[] = [];
@@ -43,24 +41,14 @@ export function ImportedDesk({ onSurface }: { onSurface: (height: number) => voi
   return <Suspense fallback={null}><DeskModel onSurface={onSurface} /></Suspense>;
 }
 
-function SofaModel() {
-  const { object } = useFurniture(SOFA_URL, 2.95);
-  return <group name="uploaded-sofa" position={[-3.1, FLOOR_Y, 1.95]} rotation={[0, Math.PI, 0]} dispose={null}><primitive object={object} /></group>;
-}
-
-export function ImportedSofa() {
-  return <Suspense fallback={<DetailedSofa />}><SofaModel /></Suspense>;
-}
-
 function BedModel({ click }: { click: () => void }) {
   const { object } = useFurniture(BED_URL, 3.05);
   return <group name="uploaded-bed" position={[-3.2, FLOOR_Y, -.95]} dispose={null} onClick={event => { event.stopPropagation(); click(); }}><primitive object={object} /></group>;
 }
 
 export function ImportedBed({ click }: { click: () => void }) {
-  return <Suspense fallback={<DetailedBed click={click} />}><BedModel click={click} /></Suspense>;
+  return <Suspense fallback={null}><BedModel click={click} /></Suspense>;
 }
 
-useGLTF.preload(DESK_URL, '/draco/');
-useGLTF.preload(SOFA_URL, '/draco/');
-useGLTF.preload(BED_URL, '/draco/');
+preloadRoomModel(DESK_URL);
+preloadRoomModel(BED_URL);

@@ -6,7 +6,7 @@ import { chromium } from '@playwright/test';
 
 // Exercise the actual tabletop components in isolation from the large room GLBs.
 const { outputFiles } = await build({
-  bundle: true, write: false, format: 'iife', define: { 'process.env.NODE_ENV': '"production"' },
+  bundle: true, write: false, format: 'iife', define: { 'process.env.NODE_ENV': '"production"', 'import.meta.url': JSON.stringify('http://tabletop.test/app.js') },
   plugins: [{ name: 'unrelated-room-models', setup(build) {
     build.onResolve({ filter: /^\.\/Imported(Dog|Lamp)$/ }, args => ({ path: args.path, namespace: 'unused-room-model' }));
     build.onLoad({ filter: /.*/, namespace: 'unused-room-model' }, () => ({ contents: 'export default function UnusedModel(){return null;}' }));
