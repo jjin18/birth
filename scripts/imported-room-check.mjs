@@ -51,7 +51,7 @@ try {
       const scene = findScene(root.current);
       if (!scene) continue;
       window.roomTestScene = scene;
-      const names = ['imported-dog-and-bed', 'herman-miller-motia-desk', 'uploaded-sofa', 'herman-miller-aeron-chair', 'uploaded-bed', 'uploaded-floor-lamp', 'blue-imac', 'desktop-monitor', 'laptop', 'blue-white-mechanical-keyboard'];
+      const names = ['imported-dog-and-bed', 'herman-miller-motia-desk', 'uploaded-sofa', 'herman-miller-aeron-chair', 'uploaded-bed', 'uploaded-floor-lamp', 'blue-imac', 'desktop-monitor', 'laptop', 'mechanical-keyboard'];
       return names.map(name => ({ name, present: !!scene.getObjectByName(name) }));
     }
     return null;

@@ -35,8 +35,22 @@ Local validation: `npm run build`, `npm run test:railway`, then `npm start`.
 Room controls: the bed shows only 😈. An icon-only camera reset appears directly
 below Step inside/outside whenever the view leaves its opening position, including
 manual zoom/orbit and while a modal is open.
-The blue iMac has an unlit black screen with no wallpaper download. Boxing and
-fortune dialogs fit the available viewport; the arena yields space to controls,
+The blue iMac has an unlit black screen with no wallpaper download. The mechanical
+keyboard has charcoal modifiers, slate-grey keys, and red Escape/Enter accents,
+using its original geometry and no new textures. The coffee mug is removed.
+Satin-black legs and feet replace the computer desk's silver finish; its tabletop
+and cached model materials are unchanged. The floor uses
+a darker grey-washed oak finish throughout, sharing the original grain/bump texture
+with no extra downloaded images. `node scripts/room-finishes-check.mjs` checks it.
+The bed headboard is black using a positional tint in the existing material;
+the bedding, packed 2K textures, geometry and vertex attributes stay unchanged.
+The laptop opens a lazy-loaded Spotify playlist with the user's message. Playback
+starts from Spotify's Play button; closing the modal unloads the player. Spotify
+controls playback availability. No player iframe is present on the initial room.
+City toggles run left to right: San Francisco, New York, Taipei, Tokyo. Each shows
+its local 24-hour clock above the name, using IANA time zones and daylight saving
+rules. The clocks share the existing daylight timer; no extra requests or assets.
+Boxing and fortune dialogs fit the available viewport; the arena yields space to controls,
 and short-screen fortunes use a side-by-side layout. Long note collections still
 scroll normally. The local QA harness's `/responsive` route checks laptop, phone,
 and short-landscape frames without changing browser zoom.
@@ -57,6 +71,11 @@ The default local address is `http://127.0.0.1:3023`; notes live in ignored
 `.local-data/`. `DATA_DIR` overrides local storage. `PUBLIC_ORIGINS` is a
 comma-separated list of complete production origins; the two birthday-domain
 origins are included by default.
+
+For Railway-style local previews, run `npm run preview:railway` after building;
+the local Node runtime restarts when its built bundle changes. This avoids serving
+a new frontend against an old fortune API after a rebuild. Production still uses
+the ordinary non-watching `npm start` command.
 
 This deployment is deliberately public: anyone with the URL can see the room
 and participate in the same shared fortune collection. The server does not

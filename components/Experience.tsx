@@ -1,7 +1,7 @@
 'use client';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { cities, type Focus } from '@/lib/cities';
+import { cities, formatCityTime, type Focus } from '@/lib/cities';
 import { getFortunes } from '@/lib/fortune-api';
 import WallPanel from './WallPanel';
 import FortunePanel from './FortunePanel';
@@ -9,6 +9,7 @@ import RoomNavigation, { RoomNavigationContext } from './RoomNavigation';
 import { getDaylight } from '@/lib/daylight';
 
 const Arcade = dynamic(() => import('./Arcade'), { ssr: false });
+const MusicPanel = dynamic(() => import('./MusicPanel'), { ssr: false });
 
 const Scene = dynamic(()=>import('./Penthouse/Scene'), {ssr:false,loading:()=> <div className="loading" role="status" aria-label="Loading the room"><span className="loading-ring"/></div>});
 export default function Experience(){
@@ -26,7 +27,7 @@ export default function Experience(){
  useEffect(()=>{const refresh=()=>{void getFortunes().then(data=>setFortuneCount(data.fortunes.length)).catch(()=>{})};refresh();window.addEventListener('focus',refresh);return()=>window.removeEventListener('focus',refresh)},[]);
  useEffect(()=>{const tick=()=>setNow(new Date());tick();const timer=setInterval(tick,30000);const refresh=()=>{if(document.visibilityState==='visible')tick()};document.addEventListener('visibilitychange',refresh);window.addEventListener('focus',tick);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',refresh);window.removeEventListener('focus',tick)}},[]);
  useEffect(()=>{const timers:ReturnType<typeof setTimeout>[]=[];setPanel('home');setTip('');
-  if(['wall','gloves','fortune','paperclip'].includes(focus))timers.push(setTimeout(()=>setPanel(focus),700));
+  if(['wall','gloves','fortune','paperclip','laptop'].includes(focus))timers.push(setTimeout(()=>setPanel(focus),700));
   if(focus==='bed'){setTip('😈');timers.push(setTimeout(()=>{setTip('');setFocus('home')},2800))}
   if(focus==='window'&&!windowSeen.current){windowSeen.current=true;timers.push(setTimeout(()=>setFocus('home'),7000))}
   return()=>timers.forEach(clearTimeout);
@@ -35,11 +36,12 @@ export default function Experience(){
  return <RoomNavigationContext.Provider value={{interior,canReset:focus!=='home'||cameraAway,reset:home,toggle:()=>{setInterior(value=>!value);home()}}}><main className="experience" data-sky-mode={skyMode} data-sky-choice="auto" data-city={cities[city].id} data-interior={interior}>
   <div className="scene-layer"><Scene interior={interior} city={city} focus={focus} reset={reset} onInteract={interact} onReady={onReady} lampOn={lampOn} onLampToggle={toggleLamp} dogReaction={dogReaction} onDogClick={onDogClick} fortuneCount={fortuneCount} skyMode={skyMode} onSkyUnavailable={setSkyUnavailable} onViewChange={setCameraAway}/></div>
   <RoomNavigation/>
-  <nav className="city-selector room-city-selector" aria-label="Choose your city">{cities.map((c,i)=><button key={c.id} aria-pressed={city===i} onClick={()=>{setCity(i);home()}}><span className="city-dot"/>{c.name}</button>)}</nav>
+  <nav className="city-selector room-city-selector" aria-label="Choose your city">{cities.map((c,i)=><button key={c.id} aria-label={c.name} aria-describedby={`city-time-${c.id}`} aria-pressed={city===i} onClick={()=>{setCity(i);home()}}><time id={`city-time-${c.id}`} className="city-local-time" dateTime={now?.toISOString()}>{formatCityTime(c,now)}</time><span className="city-toggle-name"><span className="city-dot"/>{c.name}</span></button>)}</nav>
   {focus==='window'&&skyUnavailable&&<div className="sky-controls"><p className="sky-caption" role="status">Skyline unavailable — try another city.</p></div>}
   {tip&&<div className="moment moment-emoji" role="status">{tip}</div>}
   {panel==='wall'&&<WallPanel close={home}/>}
   {panel==='gloves'&&<Arcade close={home}/>}
+  {panel==='laptop'&&<MusicPanel close={home}/>}
   {(panel==='fortune'||panel==='paperclip')&&<FortunePanel mode={panel} requestId={fortuneRequestId} close={home} onCollection={setFortuneCount} onOpenClip={()=>interact('paperclip')} onAnother={()=>interact('fortune')}/>}
  </main></RoomNavigationContext.Provider>;
 }

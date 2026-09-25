@@ -1,7 +1,9 @@
 'use client';
-import { Suspense, useLayoutEffect, useMemo } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useRoomModel, preloadRoomModel } from './useRoomModel';
 import * as THREE from 'three';
+import {applyBlackDeskLegs} from '@/lib/desk-finish';
+import {applyBlackHeadboard} from '@/lib/bed-finish';
 
 const DESK_URL = '/models/herman-miller-motia-desk.glb';
 const BED_URL = '/models/uploaded-bed-2k.glb';
@@ -9,7 +11,7 @@ const FLOOR_Y = .075;
 
 function useFurniture(url: string, width: number) {
   const { scene } = useRoomModel(url);
-  return useMemo(() => {
+  const furniture=useMemo(() => {
     const object = scene.clone(true);
     const showroomObjects: THREE.Object3D[] = [];
     object.traverse(node => {
@@ -21,14 +23,18 @@ function useFurniture(url: string, width: number) {
       }
     });
     showroomObjects.forEach(node => node.removeFromParent());
+    const materials=url===DESK_URL?applyBlackDeskLegs(object):[];
+    if(url===BED_URL)applyBlackHeadboard(object);
     const bounds = new THREE.Box3().setFromObject(object);
     const size = bounds.getSize(new THREE.Vector3());
     const center = bounds.getCenter(new THREE.Vector3());
     const scale = width / size.x;
     object.scale.setScalar(scale);
     object.position.set(-center.x * scale, -bounds.min.y * scale, -center.z * scale);
-    return { object, height: size.y * scale };
-  }, [scene, width]);
+    return { object, height: size.y * scale, materials };
+  }, [scene, width, url]);
+  useEffect(()=>()=>furniture.materials.forEach(material=>material.dispose()),[furniture]);
+  return furniture;
 }
 
 function DeskModel({ onSurface }: { onSurface: (height: number) => void }) {

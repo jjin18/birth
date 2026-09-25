@@ -9,4 +9,13 @@
 .panel.arcade-panel .panel-head h2,.panel.fortune-game .panel-head h2{font-size:clamp(23px,4svh,34px);line-height:1.1}
 .panel.arcade-panel .panel-head .eyebrow,.panel.fortune-game .panel-head .eyebrow{font-size:9px;margin-bottom:5px}
 .panel-head .icon-button{flex-shrink:0}
+.panel.music-panel{height:min(550px,var(--panel-available-height));overflow:hidden}
+.music-panel>.panel-inner{height:100%;display:flex;flex-direction:column;padding:clamp(12px,2.5svh,24px)}
+.music-panel .panel-head{flex-shrink:0;gap:12px}
+.music-panel .panel-head h2{font-size:clamp(20px,3.7svh,30px);line-height:1.15}
+.music-panel .eyebrow:empty{display:none}
+.music-panel .panel-description{margin:8px 0 12px;line-height:1.4;flex-shrink:0}
+.music-panel iframe{display:block;flex:1;min-height:152px;max-height:352px;border:0;border-radius:12px;width:100%}
+.music-link{flex-shrink:0;margin-top:10px;color:#d6b889;font-size:12px;text-align:center}
+@media(max-height:500px){.music-panel>.panel-inner{padding:10px 14px}.music-panel .panel-head h2{font-size:20px}.music-panel .panel-description{font-size:12px;margin:5px 0 8px}.music-panel .icon-button{width:32px;height:32px}.music-link{margin-top:6px}}
 @media(max-height:500px){.panel.arcade-panel>.panel-inner,.panel.fortune-game>.panel-inner{padding:9px 14px}.panel.arcade-panel .panel-head h2,.panel.fortune-game .panel-head h2{font-size:22px}.panel.arcade-panel .panel-head .eyebrow,.panel.fortune-game .panel-head .eyebrow{margin-bottom:2px;font-size:8px}.panel.arcade-panel .icon-button,.panel.fortune-game .icon-button{width:32px;height:32px}}

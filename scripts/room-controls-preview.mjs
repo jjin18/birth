@@ -20,7 +20,7 @@ import React,{useState,useCallback} from 'react';import {Canvas} from '@react-th
 import CameraRig from './components/Penthouse/CameraRig';
 export default function Fixture(props){const [away,setAway]=useState(false);const change=useCallback(value=>{setAway(value);props.onViewChange(value)},[props.onViewChange]);return <>
 <Canvas dpr={1} camera={{position:[4.4,2.35,5.4],fov:59}}><CameraRig focus={props.focus} reset={props.reset} interior={props.interior} onViewChange={change}/><ambientLight intensity={2}/><mesh><boxGeometry/><meshStandardMaterial color="#bbb"/></mesh></Canvas>
-<section style={{position:'absolute',left:12,bottom:100,zIndex:4,padding:12,background:'#20303c'}} aria-label="Test object controls"><p>Camera {away?'away from':'at'} original view</p>{['bed','wall','gloves','fortune','paperclip','window'].map(f=><button key={f} onClick={()=>props.onInteract(f)}>Focus {f}</button>)}</section></>}
+<section style={{position:'absolute',left:12,bottom:100,zIndex:4,padding:12,background:'#20303c'}} aria-label="Test object controls"><p>Camera {away?'away from':'at'} original view</p>{['bed','wall','gloves','fortune','paperclip','window','laptop'].map(f=><button key={f} onClick={()=>props.onInteract(f)}>Focus {f}</button>)}</section></>}
 `}));
 }}]});
 const js=result.outputFiles.find(file=>file.path.endsWith('.js')).contents,css=result.outputFiles.find(file=>file.path.endsWith('.css')).contents;

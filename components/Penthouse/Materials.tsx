@@ -1,6 +1,7 @@
 'use client';
 import { createContext,useContext,useEffect,useMemo,useState } from 'react';
 import * as THREE from 'three';
+import {tintFloorShader,floorProgramKey} from '@/lib/room-finishes';
 type Maps={wood:THREE.Texture|null;fabric:THREE.Texture|null};
 const Materials=createContext<Maps>({wood:null,fabric:null});
 export function RoomMaterials({children}:{children:React.ReactNode}){
@@ -11,9 +12,9 @@ export function RoomMaterials({children}:{children:React.ReactNode}){
  },[]);
  return <Materials.Provider value={maps}>{children}</Materials.Provider>;
 }
-export type SurfaceKind='wood'|'fabric'|'metal'|'leather'|'paint'|'stone';
+export type SurfaceKind='wood'|'floor'|'fabric'|'metal'|'leather'|'paint'|'stone';
 export function Surface({color,kind='paint'}:{color:string;kind?:SurfaceKind}){
- const maps=useContext(Materials),map=kind==='wood'?maps.wood:kind==='fabric'?maps.fabric:null;
+ const maps=useContext(Materials),isFloor=kind==='floor',isWood=kind==='wood'||isFloor,map=isWood?maps.wood:kind==='fabric'?maps.fabric:null;
  const tint=useMemo(()=>kind==='wood'?new THREE.Color(color).lerp(new THREE.Color('#fff4df'),.58):new THREE.Color(color),[color,kind]);
- return <meshPhysicalMaterial key={kind+'-'+(map?.uuid??'plain')} color={tint} map={map} bumpMap={map} bumpScale={kind==='wood'?.018:kind==='fabric'?.012:0} roughness={kind==='metal'?.3:kind==='wood'?.47:kind==='leather'?.56:kind==='stone'?.28:kind==='fabric'?.95:.68} metalness={kind==='metal'?.8:0} clearcoat={kind==='wood'?.17:kind==='leather'?.06:0} clearcoatRoughness={.45} sheen={kind==='fabric'?1:0} sheenRoughness={.85} sheenColor={color}/>;
+ return <meshPhysicalMaterial key={kind+'-'+(map?.uuid??'plain')} color={tint} map={map} bumpMap={map} bumpScale={isWood?.018:kind==='fabric'?.012:0} roughness={isFloor?.58:kind==='metal'?.3:kind==='wood'?.47:kind==='leather'?.56:kind==='stone'?.28:kind==='fabric'?.95:.68} metalness={kind==='metal'?.8:0} clearcoat={isWood?.17:kind==='leather'?.06:0} clearcoatRoughness={.45} sheen={kind==='fabric'?1:0} sheenRoughness={.85} sheenColor={color} {...(isFloor?{onBeforeCompile:tintFloorShader,customProgramCacheKey:floorProgramKey}:{})}/>;
 }

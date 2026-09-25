@@ -25,7 +25,7 @@ try {
   await page.goto('http://127.0.0.1:3023/',{waitUntil:'networkidle',timeout:90000});
   await page.waitForFunction(()=>window.packedUploads>=6,undefined,{timeout:90000});
   assert.deepEqual([...models].sort(),expected,'only the six retained models should be requested');
-  assert.deepEqual(await page.locator('button:visible').allTextContents(),['Step outside','Tokyo','New York','Taipei','San Francisco']);
+  assert.deepEqual(await page.locator('button:visible').evaluateAll(buttons=>buttons.map(button=>button.getAttribute('aria-label')||button.textContent)),['Step outside','San Francisco','New York','Taipei','Tokyo']);
   await page.screenshot({path:'preview-optimized-room.png',timeout:60000});
   // Click the real dog mesh at its current room placement, not a UI shortcut.
   const source=readFileSync('components/Penthouse/RoomObjects.tsx','utf8');
