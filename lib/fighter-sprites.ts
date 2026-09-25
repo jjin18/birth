@@ -1,4 +1,5 @@
 import { ARENA, poseFor, type FighterName, type Match, type Pose } from './fighter-game';
+import { paintMotion } from './fighter-effects';
 
 type Frame = { rect: [number, number, number, number]; anchor: number; baseline: number; height: number; clip?: [number, number][] };
 // The atlas keeps each supplied pose's proportions; anchors align feet, not glove width.
@@ -48,6 +49,7 @@ export function paintMatch(ctx: CanvasRenderingContext2D, match: Match, sprites:
     const breathing = !reducedMotion && pose === 'ready' && match.phase !== 'finished' ? Math.sin(now * .004) * 1.4 : 0;
     ctx.fillStyle = '#25232130'; ctx.beginPath();
     ctx.ellipse(f.x, ARENA.floor + 5, f.fallen ? 92 : 49 - f.y * .14, 7 - f.y * .035, 0, 0, Math.PI * 2); ctx.fill();
+    paintMotion(ctx,f,pose,CHARACTER_SCALE[f.name],now,reducedMotion);
     ctx.save();
     ctx.translate(f.x, ARENA.floor - f.y);
     // Front-facing T pose stays symmetrical; all action poses face the opponent.
@@ -62,5 +64,6 @@ export function paintMatch(ctx: CanvasRenderingContext2D, match: Match, sprites:
     }
     ctx.drawImage(sprites[f.name], sx, sy, sw, sh, dx, dy, sw * scale, height);
     ctx.restore();
+    paintMotion(ctx,f,pose,CHARACTER_SCALE[f.name],now,reducedMotion,true);
   }
 }
