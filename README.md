@@ -12,7 +12,9 @@ their geometry, textures, and rendering quality are unchanged.
 
 Railway service setup:
 
-1. Connect `supersigma-67/birth`, production branch `main`, with automatic deploys enabled.
+1. Connect `jjin18/birth`, production branch `main`, with automatic deploys enabled.
+   This full-history fork is the deployment repository; `supersigma-67/birth`
+   remains the original upstream. The local `github` remote publishes to the fork.
 2. Select the Dockerfile builder with path `Dockerfile`. Set the service start
    command to `node dist/railway/server.mjs`, health check to `/healthz`, and
    health-check timeout to 120 seconds. Do not add deprecated `railway.json`.
