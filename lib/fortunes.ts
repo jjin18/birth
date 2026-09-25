@@ -23,7 +23,7 @@ export const fortunes = [
   'New York has a million windows. You only need one good view together.',
   'Paris recommends taking the long way back after dinner.',
   'Taipei has a night-market detour with your names on it.',
-  'San Francisco suggests a jacket and absolutely no sensible itinerary.',
+  'you can just do things - Sam Altman who quoted someone else',
   'Your next favorite city might be the one where you lose track of time.',
   'A map is only a suggestion when the company is this good.',
   'Pack a little lighter. Leave room for the stories.',
@@ -35,7 +35,7 @@ export const fortunes = [
   'Your dream apartment can have more than one address.',
   'Someday, “one day” will quietly become “remember when.”',
   'A new city is an excellent excuse to order a second dessert.',
-  'Your favorite destination might turn out to be the couch after the trip.',
+  'Make something people want.  - YC',
   'The scenic route is still a route.',
   'Some of the best reservations are the ones you forget to make.',
   'The horizon has not run out of possibilities.',
@@ -49,7 +49,7 @@ export const fortunes = [
   'A kitchen dance break improves almost every recipe.',
   'Your finest meal this week may come in a paper container.',
   'Do not underestimate the emotional importance of noodles.',
-  'A snack is not a solution to everything, but it is a promising beginning.',
+  'get me more jasmine tea drinks',
   'Good fortune favors the person who brings fries to share.',
   'Someone is going to steal a bite of your food. You may secretly enjoy this.',
   'The second cup of tea is for staying a little longer.',
@@ -63,7 +63,7 @@ export const fortunes = [
   'A wagging tail is a very convincing argument for coming home early.',
   'Someone with four paws believes you are already successful.',
   'Your smallest roommate has the largest claim on the soft blanket.',
-  'A little fur on your hoodie is proof of excellent company.',
+  'Take some time to rest. you work hard',
   'The dog is not judging your life choices. Only your portion sizes.',
   'A short walk may solve what a long meeting could not.',
   'Your next audience may consist of one very attentive white dog.',
@@ -213,16 +213,18 @@ export const fortunes = [
   'remember to rest <3',
   'you will meet a girl and sleep on the floor',
   'you need a haircut',
-  'dictatorship',
+  "I'm your dictator",
 ] as const;
 
 export type SavedFortune = { id: number; openedAt: string };
 
-// The full ID-to-text catalog remains readable for notes already saved. Only
-// 95 generic notes, five personal notes and nine inside jokes are drawable.
+// Preserve historical IDs. Explicitly removed notes are hidden from both
+// future draws and the paper clip, without deleting anyone else's saved notes.
+export const removedFortuneIds = new Set([10,16,66,76,126,132,138,140,152,156,168,172]);
+export function isVisibleFortune(id:number){return Number.isInteger(id)&&id>=0&&id<fortunes.length&&!removedFortuneIds.has(id)}
 // Replace one generic in each group of 20 without changing historical text IDs.
 export const personalFortuneIds = Array.from({length:5},(_,index)=>209+index);
-export const genericFortuneIds = Array.from({length:100},(_,index)=>index%20===19?personalFortuneIds[Math.floor(index/20)]:index*2);
+export const genericFortuneIds = Array.from({length:100},(_,index)=>index%20===19?personalFortuneIds[Math.floor(index/20)]:index*2).filter(isVisibleFortune);
 export const jokeFortuneIds = Array.from({length:9},(_,index)=>200+index);
 export const activeFortuneIds = [...genericFortuneIds,...jokeFortuneIds];
 export const fortunePoolSize = activeFortuneIds.length;

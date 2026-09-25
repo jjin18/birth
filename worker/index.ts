@@ -1,4 +1,4 @@
-import { genericFortuneIds,jokeFortuneIds,fortunePoolSize } from '../lib/fortunes';
+import { genericFortuneIds,jokeFortuneIds,fortunePoolSize,isVisibleFortune } from '../lib/fortunes';
 const candidates=[...genericFortuneIds.map(id=>`(${id},'generic')`),...jokeFortuneIds.map(id=>`(${id},'joke')`)].join(',');
 type Row = { id: number; opened_at: string };
 type Statement = { bind(...values: unknown[]): Statement; all<T>(): Promise<{results:T[]}> };
@@ -24,7 +24,7 @@ export default {
   try {
    if(request.method==='GET') {
     const {results}=await env.DB.prepare('SELECT id, opened_at FROM opened_fortunes ORDER BY opened_at DESC, id DESC').all<Row>();
-    return json({fortunes:results.map(row=>({id:row.id,openedAt:row.opened_at})),total:fortunePoolSize});
+    return json({fortunes:results.filter(row=>isVisibleFortune(row.id)).map(row=>({id:row.id,openedAt:row.opened_at})),total:fortunePoolSize});
    }
    if(request.method!=='POST')return json({error:'Method not allowed.'},405);
    const origin=request.headers.get('Origin');
@@ -50,6 +50,9 @@ export default {
    ]);
    const row=result[1].results[0];
    if(!row)return json({exhausted:true,total:fortunePoolSize},200);
+   // Retrying an old opening must neither resurrect a removed note nor use
+   // another cookie. The client offers a fresh opening instead.
+   if(!isVisibleFortune(row.id))return json({removed:true,total:fortunePoolSize});
    return json({fortune:{id:row.id,openedAt:row.opened_at},total:fortunePoolSize});
   }catch(error){console.error('Fortune storage failed:',error);return json({error:'Your cookie could not be saved. Please retry; the same opening will never use two fortunes.'},503)}
  }

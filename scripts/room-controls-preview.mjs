@@ -25,7 +25,7 @@ import CameraRig from './components/Penthouse/CameraRig';
 import SceneReady from './components/Penthouse/SceneReady';
 export default function Fixture(props){const [away,setAway]=useState(false);const change=useCallback(value=>{setAway(value);props.onViewChange(value)},[props.onViewChange]);return <>
 ${process.env.ROOM_QA_REAL==='1'?'<RealScene {...props} onViewChange={change}/>' : '<Canvas dpr={1} camera={{position:[4.4,2.35,5.4],fov:59}}><SceneReady onReady={props.onReady}/><CameraRig focus={props.focus} reset={props.reset} interior={props.interior} onViewChange={change}/><ambientLight intensity={2}/><mesh><boxGeometry/><meshStandardMaterial color="#bbb"/></mesh></Canvas>'}
-<section style={{position:'absolute',left:4,top:4,zIndex:4,padding:4,background:'#20303c',display:'grid',fontSize:10}} aria-label="Test object controls"><span>Camera {away?'away':'home'}</span>{['bed','chair','wall','gloves','fortune','paperclip','window','laptop'].map(f=><button style={{fontSize:10}} key={f} onClick={()=>props.onInteract(f)}>Focus {f}</button>)}</section></>}
+<section style={{position:'absolute',left:4,top:4,zIndex:4,padding:4,background:'#20303c',display:'grid',fontSize:10}} aria-label="Test object controls"><span>Camera {away?'away':'home'}</span>{['bed','chair','wall','gloves','fortune','paperclip','window','laptop','dog'].map(f=><button style={{fontSize:10}} key={f} onClick={()=>props.onInteract(f)}>Focus {f}</button>)}</section></>}
 `}));
 }}]});
 const js=result.outputFiles.find(file=>file.path.endsWith('.js')).contents,css=result.outputFiles.find(file=>file.path.endsWith('.css')).contents;

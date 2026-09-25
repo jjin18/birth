@@ -8,6 +8,7 @@ import RoomNavigation, { RoomNavigationContext } from './RoomNavigation';
 import { getDaylight } from '@/lib/daylight';
 import RoomSceneBoundary from './RoomSceneBoundary';
 
+const DogGame = dynamic(() => import('./DogGame'), { ssr: false });
 const Arcade = dynamic(() => import('./Arcade'), { ssr: false });
 const MusicPanel = dynamic(() => import('./MusicPanel'), { ssr: false });
 const WallPanel = dynamic(() => import('./WallPanel'), { ssr: false });
@@ -25,12 +26,12 @@ export default function Experience(){
  const windowSeen=useRef(false);
  const onReady=useCallback(()=>setRoomReady(true),[]);
  const toggleLamp=useCallback(()=>setLampOn(value=>!value),[]);
- const onDogClick=useCallback(()=>setDogReaction(value=>value+1),[]);
+ const onDogClick=useCallback(()=>{setDogReaction(value=>value+1);setFocus('dog')},[]);
  const interact=useCallback((next:Focus)=>{if(next==='fortune')setFortuneRequestId(crypto.randomUUID());if(next==='laptop')setMusicOpened(true);setFocus(next)},[]);
  useEffect(()=>{const refresh=()=>{void getFortunes().then(data=>setFortuneCount(data.fortunes.length)).catch(()=>{})};refresh();window.addEventListener('focus',refresh);return()=>window.removeEventListener('focus',refresh)},[]);
  useEffect(()=>{const tick=()=>setNow(new Date());tick();const timer=setInterval(tick,30000);const refresh=()=>{if(document.visibilityState==='visible')tick()};document.addEventListener('visibilitychange',refresh);window.addEventListener('focus',tick);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',refresh);window.removeEventListener('focus',tick)}},[]);
  useEffect(()=>{const timers:ReturnType<typeof setTimeout>[]=[];setPanel('home');setTip('');
-  if(['wall','gloves','fortune','paperclip','laptop'].includes(focus))timers.push(setTimeout(()=>setPanel(focus),700));
+  if(['wall','gloves','fortune','paperclip','laptop','dog'].includes(focus))timers.push(setTimeout(()=>setPanel(focus),700));
   if(focus==='bed'){setTip('Thank you for sleeping on the floor lol');timers.push(setTimeout(()=>{setTip('');setFocus('home')},4500))}
   if(focus==='chair'){setTip('May your future have ergonomic support');timers.push(setTimeout(()=>{setTip('');setFocus('home')},4500))}
   if(focus==='window'&&!windowSeen.current){windowSeen.current=true;timers.push(setTimeout(()=>setFocus('home'),7000))}
@@ -47,6 +48,7 @@ export default function Experience(){
   {focus==='window'&&skyUnavailable&&<div className="sky-controls"><p className="sky-caption" role="status">Skyline unavailable — try another city.</p></div>}
   {tip&&<div className="moment moment-message" role="status">{tip}</div>}
   {panel==='wall'&&<WallPanel close={home}/>}
+  {panel==='dog'&&<DogGame close={home}/>}
   {panel==='gloves'&&<Arcade close={home}/>}
   {musicOpened&&<MusicPanel open={panel==='laptop'} close={home}/>}
   {(panel==='fortune'||panel==='paperclip')&&<FortunePanel key={panel+'-'+fortuneRequestId} mode={panel} requestId={fortuneRequestId} close={home} onCollection={setFortuneCount} onOpenClip={()=>interact('paperclip')} onAnother={()=>interact('fortune')}/>}

@@ -18,6 +18,7 @@
     "arcade/jia-poses.webp",
     "arcade/ryan-poses.webp"
   ],
+  "goodDog": ["dog/poses.webp", "good-dog.html"],
   "memoryWallImages": [
     "memories/flame.webp",
     "memories/flame-thumb.webp",

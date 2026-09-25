@@ -51,7 +51,7 @@ for(const interior of [true,false]){
 }
 assert.equal(renderStandalone(),'','isolated arcade has no room controls');
 const navigationSource=await readFile('components/RoomNavigation.tsx','utf8');
-assert(navigationSource.includes('<KeysIcon/>')&&!navigationSource.includes('ScanEye'),'both view buttons use the set-of-keys icon');
+assert(navigationSource.includes('<KeyRound size={17}')&&!navigationSource.includes('ScanEye')&&!navigationSource.includes('KeysIcon'),'both view buttons use one themed key icon');
 const rig=await readFile('components/Penthouse/CameraRig.tsx','utf8');
 assert(rig.includes('useLayoutEffect')&&rig.includes('set({camera});invalidate()')&&!rig.includes('<PerspectiveCamera'),'prepared cameras switch without a temporary default-camera restore');
 const effects=await readFile('components/Penthouse/RoomEffects.tsx','utf8');
@@ -111,7 +111,7 @@ assert(panelStyles.includes('.panel.music-panel{height:auto;'),'music popup wrap
 assert(panelStyles.includes(".music-panel .panel-head h2{font:500 14px/1.4 'DM Sans',Arial,sans-serif;letter-spacing:.03em;color:var(--gold)}"),'music heading matches the small plain beige popup style');
 assert(panelStyles.includes('.music-panel iframe{display:block;height:352px;')&&panelStyles.includes('@media(max-height:640px){.music-panel iframe{height:152px}}'),'Spotify uses its full or compact supported player height without stretching');
 assert(!/dog-audio|playBark|dogStatus|Woof!|AudioContext/.test(experience),'dog clicks are silent and have no bark status/timers');
-assert(experience.includes('const onDogClick=useCallback(()=>setDogReaction(value=>value+1),[])'),'silent dog reaction stays interactive');
+assert(experience.includes("const onDogClick=useCallback(()=>{setDogReaction(value=>value+1);setFocus('dog')},[])"),'silent dog interaction opens the training game');
 const table=await readFile('components/Penthouse/FortuneTable.tsx','utf8');
 assert.equal((table.match(/click=\{onFortune\}/g)||[]).length,2,'Panda box and notes share the same popup handler');
 assert(!table.includes('onPaperclip'),'obsolete separate note click callback removed');

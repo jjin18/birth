@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { Miniflare,convertV4MiniflareOptions } from 'miniflare';
 import { transform, build } from 'esbuild';
-import { activeFortuneIds,genericFortuneIds,jokeFortuneIds,total } from './fortune-test-data.mjs';
+import { activeFortuneIds,genericFortuneIds,jokeFortuneIds,removedFortuneIds,total } from './fortune-test-data.mjs';
 
 const source=await readFile('lib/fortunes.ts','utf8');
 const {code}=await transform(source,{loader:'ts',format:'esm'});
@@ -38,6 +38,14 @@ try {
  const legacy=await (await mf.dispatchFetch('http://localhost/api/fortunes')).json();
  assert.equal(legacy.fortunes.length,total+1,'retired notes remain in the saved collection');
  assert.equal((await post()).exhausted,true,'retired notes do not affect active-pool exhaustion');
+ for(const id of removedFortuneIds){
+  const oldRequest=crypto.randomUUID();
+  await db.prepare('INSERT INTO opened_fortunes VALUES (?,?,?,?)').bind(id,oldRequest,'local-preview','2026-09-25T00:00:00.000Z').run();
+  assert.deepEqual(await post(oldRequest),{removed:true,total},'retries of removed notes consume no additional cookie');
+ }
+ const filtered=await (await mf.dispatchFetch('http://localhost/api/fortunes')).json();
+ assert.deepEqual(filtered,legacy,'only explicitly removed notes disappear from the paper clip');
+ assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM opened_fortunes').first()).n,total+1+removedFortuneIds.size,'no saved database rows are deleted');
  assert.equal((await mf.dispatchFetch('https://example.com/api/fortunes')).status,401);
  assert.equal((await mf.dispatchFetch('http://localhost/api/fortunes',{method:'POST',headers:{Origin:'https://evil.example','Content-Type':'application/json'},body:JSON.stringify({requestId:crypto.randomUUID()})})).status,403);
  console.log('PASS: entire fortune pool including inside jokes, concurrent draws, retry safety, shared collection, exhaustion and access guards.');

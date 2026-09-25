@@ -56,6 +56,10 @@ try {
   assert.deepEqual(await getFortunes(),archive);
   responses(Response.json({exhausted:true,total}));
   assert.deepEqual(await openFortune(requestId),{exhausted:true,total});
+  responses(Response.json({removed:true,total}));
+  assert.deepEqual(await openFortune(requestId),{removed:true,total});assert.equal(calls.length,1);
+  responses(Response.json({fortunes:[note,{...note,id:10}],total}));
+  assert.deepEqual(await getFortunes(),archive,'removed notes are filtered even from a stale archive');
   const secondId='12345678-1234-1234-1234-123456789abd';
   responses(Response.json({fortune:{...note,id:200},total}));
   await Promise.all([openFortune(secondId),openFortune(secondId)]);

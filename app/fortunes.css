@@ -49,6 +49,7 @@
 
 .panel.fortune-game{height:min(590px,var(--panel-available-height))}
 .panel.fortune-game>.panel-inner>.panel-head .eyebrow{font:500 14px/1.4 'DM Sans',Arial,sans-serif;color:var(--gold);text-transform:none;letter-spacing:.03em;margin:0}
+.panel.fortune-archive>.panel-inner>.panel-head .eyebrow{font:500 14px/1.4 'DM Sans',Arial,sans-serif;color:var(--gold);text-transform:none;letter-spacing:.03em;margin:0}
 .fortune-game .fortune-crack{flex:1;min-height:0;padding-top:0;margin-top:8px;display:flex;flex-direction:column;justify-content:flex-end}
 .fortune-game .cookie-crack-stage{height:55%;--cookie-width:min(300px,58vw,calc(var(--panel-available-height)*.46));--cookie-split:clamp(44px,11vw,80px)}
 .fortune-game .fortune-note{margin:0}

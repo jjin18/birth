@@ -1,7 +1,7 @@
-import { fortunes, fortunePoolSize, fortuneKindForOpening, type SavedFortune } from './fortunes';
+import { fortunes, fortunePoolSize, fortuneKindForOpening, isVisibleFortune, type SavedFortune } from './fortunes';
 
 type Collection = { fortunes: SavedFortune[]; total: number };
-type Opening = { fortune?: SavedFortune; exhausted?: boolean; total: number };
+type Opening = { fortune?: SavedFortune; exhausted?: boolean; removed?: boolean; total: number };
 const unavailable = 'The paper clip could not be reached. Please try again; this opening will not use a second fortune.';
 const signIn = 'The paper clip is unavailable on this address. Please reopen the apartment and try again.';
 
@@ -23,7 +23,9 @@ function collection(value: unknown): value is Collection {
 }
 function opening(value: unknown): value is Opening {
   return record(value) && value.total === fortunePoolSize &&
-    ((savedFortune(value.fortune) && !value.exhausted) || (value.exhausted === true && value.fortune === undefined));
+    ((savedFortune(value.fortune) && isVisibleFortune(value.fortune.id) && !value.exhausted && !value.removed) ||
+      (value.exhausted === true && !value.removed && value.fortune === undefined) ||
+      (value.removed === true && !value.exhausted && value.fortune === undefined));
 }
 
 async function readResult<T>(response: Response, valid: (data: unknown) => data is T): Promise<T> {
@@ -72,7 +74,7 @@ async function request<T>(init: RequestInit, valid: (data: unknown) => data is T
   throw new FortuneRequestError(unavailable);
 }
 
-export function getFortunes() { return request({ method: 'GET' }, collection); }
+export function getFortunes() { return request({ method: 'GET' }, collection).then(data=>({...data,fortunes:data.fortunes.filter(note=>isVisibleFortune(note.id))})); }
 // A fresh page visit starts a new rhythm. Retries/duplicate mounts do not count
 // as extra cookies; the second successful opening requests an inside joke.
 const openedThisVisit=new Set<string>();

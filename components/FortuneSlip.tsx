@@ -1,7 +1,8 @@
 import { Paperclip } from 'lucide-react';
-import { fortunes,type SavedFortune } from '@/lib/fortunes';
+import { fortunes,isVisibleFortune,type SavedFortune } from '@/lib/fortunes';
 
 export default function FortuneSlip({note,clipped=false}:{note:SavedFortune;clipped?:boolean}){
+ if(!isVisibleFortune(note.id))return null;
  return <article className={`fortune-note${clipped?' fortune-note-clipped':''}`}>
   <div className="fortune-slip">
    <span className="fortune-edge fortune-edge-left" aria-hidden="true"/>
