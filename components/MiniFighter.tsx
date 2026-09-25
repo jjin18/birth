@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { ARENA, CONTROLS, createMatch, poseFor, stepMatch, type Input, type Match } from '@/lib/fighter-game';
+import { ARENA, CONTROLS, ROUND_SECONDS, createMatch, poseFor, stepMatch, type Input, type Match } from '@/lib/fighter-game';
 import { loadSprites, paintMatch, type Sprites } from '@/lib/fighter-sprites';
 
 const gameCodes = new Set<string>(CONTROLS.flatMap(c => [c.left, c.right, c.jump, c.punch]));
@@ -10,7 +10,7 @@ export default function MiniFighter({onFinish,onStart}:{onFinish?:(result:string
   const pointers = useRef(new Map<number, string>()), sprites = useRef<Sprites | null>(null);
   const match = useRef<Match>(createMatch()), paused = useRef(false);
   const recorded=useRef<Match|null>(null);
-  const [view, setView] = useState({ phase: 'lobby', time: 60, hp: [100, 100], result: '', paused: false });
+  const [view, setView] = useState({ phase: 'lobby', time: ROUND_SECONDS, hp: [100, 100], result: '', paused: false });
   const [assetState, setAssetState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [attempt, setAttempt] = useState(0);
   function clearInput() { keys.current.clear(); presses.current.clear(); pointers.current.clear(); }

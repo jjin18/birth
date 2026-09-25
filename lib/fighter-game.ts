@@ -10,6 +10,7 @@ export type Input = { left: boolean; right: boolean; jump: boolean; punch: boole
 export const IDLE_INPUT: Input = { left: false, right: false, jump: false, punch: false };
 export const PUNCH_DAMAGE: Record<FighterName, number> = { Jia: 10, Ryan: 8 };
 export const JUMP_SPEED = 600;
+export const ROUND_SECONDS = 30;
 export const ARENA = { width: 960, height: 520, floor: 453, left: 140, right: 820 };
 export const CONTROLS = [
   { name: 'Jia', left: 'KeyA', right: 'KeyD', jump: 'KeyW', punch: 'KeyS', labels: ['A', 'D', 'W', 'S'] },
@@ -20,7 +21,7 @@ export function createMatch(phase: Phase = 'lobby'): Match {
   const fighter = (name: FighterName, x: number, facing: 1 | -1): Fighter => ({
     name, x, facing, y: 0, vy: 0, hp: 100, move: 0, attack: 0, cooldown: 0, hurt: 0, hit: false, fallen: false,
   });
-  return { fighters: [fighter('Jia', 260, 1), fighter('Ryan', 700, -1)], phase, ready: 1, time: 60, result: '' };
+  return { fighters: [fighter('Jia', 260, 1), fighter('Ryan', 700, -1)], phase, ready: 1, time: ROUND_SECONDS, result: '' };
 }
 
 export function poseFor(fighter: Fighter, phase: Phase): Pose {
