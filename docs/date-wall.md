@@ -1,10 +1,19 @@
 # Editable date wall
 
 Public reads do not require a login. Adding photos or editing memories requires
-the shared `WALL_EDIT_PASSCODE` Railway service variable (at least 16 characters).
-Keep it out of Git and `NEXT_PUBLIC_*` variables. Rotating it revokes all editing
+the shared `WALL_EDIT_PASSCODE` Railway service variable (up to 128 characters).
+Use a long, hard-to-guess passcode for a public wall. A shorter passcode requires
+a separate `WALL_SESSION_SECRET` of at least 32 characters (generate 32 random
+bytes and encode as hex). This protects session signatures, but cannot prevent
+someone guessing an easy passcode. Failed logins remain limited to 8 per 15 minutes.
+Without a separate session key, the passcode must contain at least 16 characters.
+Keep both secrets out of Git and `NEXT_PUBLIC_*` variables. Rotating either revokes all editing
 sessions. Sessions use HTTP-only, same-site cookies and last 12 hours. Click
 **Lock editing** when finished, especially on a shared device.
+
+To upload: open the wall, choose **Edit wall**, unlock with the shared passcode,
+then choose **Add photo or note**. Select a photo, review its automatically read
+capture date, add a title or memory, and choose **Save memory**.
 
 The existing `/data` volume stores entries in the existing SQLite database and
 normalized photos in `wall-images/`. No additional database service is required.

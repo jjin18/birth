@@ -32,7 +32,13 @@ type Entry={id:string;title:string;note:string;alt:string;date:string|null;src:s
 type Upload={id:string;date:string|null;width:number;height:number;bytes:number;created:number};
 export function createWall(db:DatabaseSync,dataDir:string){
  const directory=join(dataDir,'wall-images'),secret=process.env.WALL_EDIT_PASSCODE||'';
- if(secret&&secret.length<16)throw Error('WALL_EDIT_PASSCODE must contain at least 16 characters.');
+ const sessionSecret=process.env.WALL_SESSION_SECRET||'';
+ if(sessionSecret&&sessionSecret.length<32)throw Error('WALL_SESSION_SECRET must contain at least 32 characters.');
+ if(secret&&secret.length<16&&!sessionSecret)throw Error('Short wall passcodes require a separate strong WALL_SESSION_SECRET.');
+ if(secret.length>128)throw Error('WALL_EDIT_PASSCODE must contain at most 128 characters.');
+ // Never let an easy-to-remember passcode become a forgeable session-signing key.
+ // Including the passcode also invalidates existing sessions when it changes.
+ const signingKey=createHmac('sha256',sessionSecret||secret).update(secret).digest();
  db.exec(`CREATE TABLE IF NOT EXISTS wall_entries (id TEXT PRIMARY KEY,title TEXT NOT NULL,note TEXT NOT NULL DEFAULT '',alt TEXT NOT NULL DEFAULT '',date TEXT,src TEXT,thumbnail TEXT,width INTEGER NOT NULL DEFAULT 0,height INTEGER NOT NULL DEFAULT 0,version INTEGER NOT NULL DEFAULT 1,image_id TEXT UNIQUE,bytes INTEGER NOT NULL DEFAULT 0,created INTEGER NOT NULL);
  CREATE TABLE IF NOT EXISTS wall_uploads(id TEXT PRIMARY KEY,date TEXT,width INTEGER NOT NULL,height INTEGER NOT NULL,bytes INTEGER NOT NULL,created INTEGER NOT NULL);`);
  const seed=db.prepare('INSERT OR IGNORE INTO wall_entries(id,title,alt,date,src,thumbnail,width,height,created) VALUES (?,?,?,?,?,?,?,?,?)');
@@ -45,7 +51,7 @@ export function createWall(db:DatabaseSync,dataDir:string){
   const expired=db.prepare('SELECT id FROM wall_uploads WHERE created < ?').all(Date.now()-24*60*60*1000) as {id:string}[];
   for(const item of expired){await removeFiles(item.id);db.prepare('DELETE FROM wall_uploads WHERE id=?').run(item.id)}
  };
- const sign=(value:string)=>createHmac('sha256',secret).update(value).digest('base64url');
+ const sign=(value:string)=>createHmac('sha256',signingKey).update(value).digest('base64url');
  const authenticated=(req:IncomingMessage)=>{
   if(!secret)return false;
   const token=req.headers.cookie?.split(';').map(s=>s.trim()).find(s=>s.startsWith('wall_edit='))?.slice(10)||'';

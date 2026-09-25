@@ -5,13 +5,14 @@ import {mkdtemp,rm,readFile,readdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,sep} from 'node:path';
 import {once} from 'node:events';
+import {createHmac,randomBytes} from 'node:crypto';
 import {DatabaseSync} from 'node:sqlite';
 import sharp from 'sharp';
 import {build} from 'esbuild';
 const temp=await mkdtemp(join(tmpdir(),'birthday-wall-test-')),port=3198,origin=`http://127.0.0.1:${port}`;
-const passcode='disposable-test-passcode-only';let child,cookie='';
-async function start(secret=passcode){
- child=spawn(process.execPath,['dist/railway/server.mjs'],{env:{...process.env,PORT:String(port),DATA_DIR:temp,RAILWAY_ENVIRONMENT_ID:'',RAILWAY_VOLUME_MOUNT_PATH:'',FORTUNES_RESET_KEY:'',FORTUNES_IMPORT_JSON:'',WALL_EDIT_PASSCODE:secret},stdio:['ignore','pipe','pipe'],windowsHide:true});
+const passcode='xy',sessionSecret=randomBytes(32).toString('hex');let child,cookie='';
+async function start(secret=passcode,sessionKey=sessionSecret){
+ child=spawn(process.execPath,['dist/railway/server.mjs'],{env:{...process.env,PORT:String(port),DATA_DIR:temp,RAILWAY_ENVIRONMENT_ID:'',RAILWAY_VOLUME_MOUNT_PATH:'',FORTUNES_RESET_KEY:'',FORTUNES_IMPORT_JSON:'',WALL_EDIT_PASSCODE:secret,WALL_SESSION_SECRET:sessionKey},stdio:['ignore','pipe','pipe'],windowsHide:true});
  let logs='';child.stdout.on('data',x=>logs+=x);child.stderr.on('data',x=>logs+=x);
  for(let i=0;i<100;i++){if(child.exitCode!==null)throw Error(logs);try{if((await fetch(origin+'/healthz')).ok)return}catch{}await new Promise(r=>setTimeout(r,50))}
  throw Error('Server did not start: '+logs);
@@ -27,6 +28,8 @@ try{
  const note={id:crypto.randomUUID(),title:'A written memory',note:'A lovely date\nAnd another line.',date:'2026-01-02'};
  assert.equal((await send('/api/wall',note)).status,401);assert.equal((await upload(Buffer.from('not an image'))).status,401);
  assert.equal((await send('/api/wall/session',{passcode:'bad'})).status,401);await unlock();assert.equal((await get()).canEdit,true);
+ const issued=String(Date.now()),forged=issued+'.'+createHmac('sha256',passcode).update(issued).digest('base64url');
+ assert.equal((await send('/api/wall',note,'POST',{Cookie:'wall_edit='+forged})).status,401,'knowing only the passcode cannot forge a session signature');
  assert.equal((await send('/api/wall',note,'POST',{Origin:'https://evil.example'})).status,403);
  assert.equal((await send('/api/wall',note,'POST',{Origin:''})).status,403);
  assert.equal((await send('/api/wall',note,'POST',{Cookie:'wall_edit=123.bad'})).status,401);
@@ -50,7 +53,7 @@ try{
  assert.equal((await upload(Buffer.from('not an image'))).status,415);assert.equal((await upload(source,{'Content-Type':'image/svg+xml'})).status,415);
  assert.equal((await fetch(origin+'/api/wall/images/'+photo.uploadId+'.txt')).status,404);
  assert.equal((await fetch(origin+'/api/wall/images/fortunes.sqlite')).status,404);
- const saved=await get();await stop();await start();const persisted=await get();assert.deepEqual(persisted.entries,saved.entries);assert.equal(persisted.entries.find(p=>p.id==='curry').title,edit.title);
+ const saved=await get();await stop();await start();const persisted=await get();assert.deepEqual(persisted.entries,saved.entries);assert.equal(persisted.entries.find(p=>p.id==='curry').title,edit.title);assert.equal(persisted.canEdit,true,'valid sessions survive a server restart');
  assert.equal((await fetch(origin+'/api/fortunes').then(r=>r.json())).fortunes.length,0,'fortune collection must be untouched');
  // Read the actual persisted normalized copies, then exercise quota/expiry safely.
  const db=new DatabaseSync(join(temp,'fortunes.sqlite'));assert.equal(db.prepare('SELECT COUNT(*) AS n FROM wall_uploads').get().n,1);
@@ -60,6 +63,8 @@ try{
  const logout=await fetch(origin+'/api/wall/session',{method:'DELETE',headers:{Origin:origin,Cookie:cookie}});assert.equal(logout.status,200);assert.match(logout.headers.get('set-cookie'),/Max-Age=0/);
  await stop();await start('rotated-disposable-passcode');assert.equal((await get()).canEdit,false,'rotating the passcode revokes old cookies');
  for(let i=0;i<8;i++)assert.equal((await send('/api/wall/session',{passcode:'wrong'})).status,401);assert.equal((await send('/api/wall/session',{passcode:'wrong'})).status,429);
+ await stop();await start(passcode,randomBytes(32).toString('hex'));assert.equal((await get()).canEdit,false,'rotating the session key revokes old cookies');await unlock();
+ await stop();await start('disposable-long-passcode-only','');assert.equal((await send('/api/wall/session',{passcode:'disposable-long-passcode-only'})).status,200,'long passcodes remain supported without a separate key');
  // Fuzz the bounds-safe metadata reader without importing app runtime state.
  const built=await build({entryPoints:['server/photo-date.ts'],bundle:true,write:false,format:'esm',platform:'node'});
  const {photoDate,validDate}=await import('data:text/javascript;base64,'+Buffer.from(built.outputFiles[0].contents).toString('base64'));

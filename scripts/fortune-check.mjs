@@ -7,7 +7,7 @@ import { activeFortuneIds,genericFortuneIds,jokeFortuneIds,total } from './fortu
 const source=await readFile('lib/fortunes.ts','utf8');
 const {code}=await transform(source,{loader:'ts',format:'esm'});
 const {fortunes}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
-assert.equal(fortunes.length,209);
+assert.equal(fortunes.length,214);
 assert.equal(new Set(fortunes.map(f=>f.trim().toLowerCase())).size,fortunes.length);
 // Compile only this test's legacy runtime; Railway builds no longer emit it.
 const worker=await build({entryPoints:['worker/index.ts'],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022'});

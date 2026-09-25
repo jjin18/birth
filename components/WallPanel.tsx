@@ -83,7 +83,7 @@ export default function WallPanel({close}:{close:()=>void}){
    <div className="wall-form-actions"><button type="button" className="secondary-button" disabled={busy} onClick={()=>{setDraft(null);setError('');setMessage('')}}>Cancel</button><button className="gold-button" disabled={busy}>{busy?'Preparing…':'Save memory'}</button></div>
   </form>:<>
    <div className="date-wall-toolbar">
-    {canEdit?<><button className="gold-button" onClick={()=>begin()}><Plus size={15}/>Add or write</button><button className="text-button" onClick={lock} disabled={busy}><LockKeyhole size={14}/>Lock editing</button></>:editingEnabled&&<button className="text-button" onClick={()=>{setUnlock(true);setError('');setMessage('')}}><Pencil size={14}/>Edit wall</button>}
+    {canEdit?<><button className="gold-button" onClick={()=>begin()}><Plus size={15}/>Add photo or note</button><button className="text-button" onClick={lock} disabled={busy}><LockKeyhole size={14}/>Lock editing</button></>:editingEnabled&&<button className="text-button" onClick={()=>{setUnlock(true);setError('');setMessage('')}}><Pencil size={14}/>Edit wall</button>}
     {message&&<span className="wall-hint" role="status">{message}</span>}
    </div>
    {photo?<article className="date-detail">

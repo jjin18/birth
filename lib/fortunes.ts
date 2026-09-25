@@ -209,14 +209,21 @@ export const fortunes = [
   'combine the future of medicine and ai',
   'ur the soma tweaker',
   'stussy makes you a socal abb',
+  'Jia is thinking of you',
+  'remember to rest <3',
+  'you will meet a girl and sleep on the floor',
+  'you need a haircut',
+  'dictatorship',
 ] as const;
 
 export type SavedFortune = { id: number; openedAt: string };
 
 // The full ID-to-text catalog remains readable for notes already saved. Only
-// these 100 regular notes and the inside jokes can be drawn from now on.
-export const genericFortuneIds = Array.from({length:100},(_,index)=>index*2);
-export const jokeFortuneIds = Array.from({length:fortunes.length-200},(_,index)=>200+index);
+// 95 generic notes, five personal notes and nine inside jokes are drawable.
+// Replace one generic in each group of 20 without changing historical text IDs.
+export const personalFortuneIds = Array.from({length:5},(_,index)=>209+index);
+export const genericFortuneIds = Array.from({length:100},(_,index)=>index%20===19?personalFortuneIds[Math.floor(index/20)]:index*2);
+export const jokeFortuneIds = Array.from({length:9},(_,index)=>200+index);
 export const activeFortuneIds = [...genericFortuneIds,...jokeFortuneIds];
 export const fortunePoolSize = activeFortuneIds.length;
 export type FortuneKind = 'generic'|'joke';
