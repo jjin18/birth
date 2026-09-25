@@ -45,4 +45,7 @@ const table=await readFile('components/Penthouse/FortuneTable.tsx','utf8');
 assert.equal((table.match(/click=\{onFortune\}/g)||[]).length,2,'Panda box and notes share the same popup handler');
 assert(!table.includes('onPaperclip'),'obsolete separate note click callback removed');
 assert(table.includes('position={[-.45, .003, .12]}'),'note sits immediately in front of box');
+const workstation=await readFile('components/Penthouse/Workstation.tsx','utf8');
+assert(!workstation.includes('imac-reference.png'),'retired iMac wallpaper is never loaded');
+assert(workstation.includes('<meshBasicMaterial color="#050607" toneMapped={false}/>'),'iMac screen is unlit black without reflection/glare');
 console.log('PASS: camera reset detection on desktop/mobile inside/outside, containment, icon-only accessible navigation and emoji-only bed message.');

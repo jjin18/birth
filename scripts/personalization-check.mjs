@@ -11,7 +11,7 @@ try{
  await page.goto('http://127.0.0.1:3023/',{waitUntil:'networkidle',timeout:90000});
  await page.getByRole('button',{name:'San Francisco',exact:true}).click();await page.getByRole('button',{name:'Day',exact:true}).click();await page.waitForTimeout(4000);
  await page.screenshot({path:'preview-terrier-workstation.png',timeout:60000});
- assert(imacLoaded,'user-supplied iMac screen image loads');
+ assert(!imacLoaded,'plain black iMac screen does not download the retired wallpaper');
  const box=await page.locator('canvas').boundingBox();
  const camera=new THREE.PerspectiveCamera(59,box.width/box.height,.08,100);camera.position.set(4.4,2.35,5.4);camera.lookAt(-.45,1.25,-.7);camera.updateMatrixWorld();
  const project=(p)=>{const v=new THREE.Vector3(...p).project(camera);return {x:box.x+(v.x*.5+.5)*box.width,y:box.y+(-v.y*.5+.5)*box.height}};

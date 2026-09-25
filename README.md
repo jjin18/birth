@@ -35,6 +35,11 @@ Local validation: `npm run build`, `npm run test:railway`, then `npm start`.
 Room controls: the bed shows only 😈. An icon-only camera reset appears directly
 below Step inside/outside whenever the view leaves its opening position, including
 manual zoom/orbit and while a modal is open.
+The blue iMac has an unlit black screen with no wallpaper download. Boxing and
+fortune dialogs fit the available viewport; the arena yields space to controls,
+and short-screen fortunes use a side-by-side layout. Long note collections still
+scroll normally. The local QA harness's `/responsive` route checks laptop, phone,
+and short-landscape frames without changing browser zoom.
 
 Fortunes: no numbering or total is displayed. A fresh page visit requests an inside
 joke for cookie two, then every twelfth opening; draws fall back to the other kind

@@ -27,6 +27,11 @@ const js=result.outputFiles.find(file=>file.path.endsWith('.js')).contents,css=r
 const root=resolve('public'),notes=[],requests=new Map();
 createServer(async(req,res)=>{
  const path=new URL(req.url,'http://127.0.0.1').pathname;
+ if(path==='/responsive'){
+  res.setHeader('Content-Type','text/html');
+  res.end('<!doctype html><title>Responsive activity QA</title><body style="margin:0;background:#141b20;color:white;font:16px Arial">'+[['laptop',1280,720],['phone',390,667],['landscape',844,390]].map(([name,width,height])=>`<h2>${name} ${width} × ${height}</h2><iframe id="${name}" title="${name} activity test" src="/" width="${width}" height="${height}" style="display:block;border:0"></iframe>`).join(''));
+  return;
+ }
  if(path==='/'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Room controls QA</title><link rel="stylesheet" href="/bundle.css"><div id="root"></div><script src="/bundle.js"></script>');return}
  if(path==='/bundle.js'||path==='/bundle.css'){res.setHeader('Content-Type',path.endsWith('.js')?'text/javascript':'text/css');res.end(path.endsWith('.js')?js:css);return}
  if(path==='/api/fortunes'){

@@ -19,8 +19,6 @@ function Screen({laptop=false}:{laptop?:boolean}){
  return <mesh><planeGeometry args={laptop?[.65,.405]:[1.17,.66]}/><meshPhysicalMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={.28} roughness={.18} metalness={.06} clearcoat={.65}/></mesh>;
 }
 function BlueIMac(){
- const [map,setMap]=useState<THREE.Texture|null>(null);
- useEffect(()=>{let active=true,texture:THREE.Texture|null=null;new THREE.TextureLoader().load('/textures/imac-reference.png',loaded=>{if(!active){loaded.dispose();return}texture=loaded;loaded.colorSpace=THREE.SRGBColorSpace;loaded.repeat.set(934/1140,518/1140);loaded.offset.set(104/1140,(1140-706)/1140);loaded.anisotropy=4;setMap(loaded)});return()=>{active=false;texture?.dispose()}},[]);
  return <group name="blue-imac" position={[.76,1.11,-.35]}>
   <Part p={[0,.014,.025]} s={[.30,.024,.255]} c="#86aec8" kind="metal" r={.009}/>
   <Part p={[0,.177,-.041]} s={[.241,.325,.023]} c="#79a9c6" kind="metal" r={.009} rotation={[-.14,0,0]}/>
@@ -28,7 +26,7 @@ function BlueIMac(){
    <Part p={[0,0,0]} s={[1.09,.743,.039]} c="#477fa7" kind="metal" r={.018}/>
    <Part p={[0,.050,.023]} s={[1.064,.623,.008]} c="#edf2f5" r={.004}/>
    <Part p={[0,-.306,.024]} s={[1.064,.116,.008]} c="#93b4c9" kind="metal" r={.005}/>
-   <mesh position={[0,.044,.03]}><planeGeometry args={[1.014,.563]}/><meshBasicMaterial key={map?.uuid??'blue'} map={map} color={map?'#ffffff':'#7ab0df'} toneMapped={false}/></mesh>
+   <mesh name="blue-imac-screen" position={[0,.044,.03]}><planeGeometry args={[1.014,.563]}/><meshBasicMaterial color="#050607" toneMapped={false}/></mesh>
    <mesh position={[0,.347,.031]}><sphereGeometry args={[.0045,10,8]}/><meshBasicMaterial color="#1d2935"/></mesh>
   </group>
  </group>;

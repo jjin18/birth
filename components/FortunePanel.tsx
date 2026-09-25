@@ -23,7 +23,7 @@ export default function FortunePanel({mode,requestId,close,onCollection,onOpenCl
   return()=>{active=false;if(interval)clearInterval(interval)};
  },[mode,requestId,retry]);
  useEffect(()=>{if(busy||!note)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;const timer=setTimeout(()=>setRevealed(true),reduced?0:COOKIE_REVEAL_MS);return()=>clearTimeout(timer)},[busy,note]);
- return <Modal title={mode==='paperclip'?'A few good words.':'A little good fortune.'} eyebrow={mode==='paperclip'?'THE PAPER CLIP':'PANDA EXPRESS · AFTER DINNER'} close={close} wide={mode==='paperclip'}>
+ return <Modal title={mode==='paperclip'?'A few good words.':'A little good fortune.'} eyebrow={mode==='paperclip'?'THE PAPER CLIP':'PANDA EXPRESS · AFTER DINNER'} close={close} wide={mode==='paperclip'} className={mode==='fortune'?'fortune-game':'fortune-archive'}>
   {busy?<div className="fortune-loading"><img className="fortune-cookie" src="/textures/fortune-cookie.png" alt="" width={280} height={210}/><p>{mode==='fortune'?'Cracking your cookie…':'Gathering your notes…'}</p></div>:error?<div className="empty"><p role="alert">{error}</p><button className="gold-button" onClick={()=>setRetry(x=>x+1)}><RotateCcw size={15}/>Try again</button></div>:mode==='fortune'?<>
    {note?<FortuneCrack key={requestId} note={note}/>:exhausted?<div className="empty"><Cookie size={38}/><p>Every cookie, opened.<br/>Every good word is waiting on your paper clip.</p></div>:null}
    <p className="fortune-saved" role="status">{(!note||revealed)&&<Check size={15}/>} {note?(revealed?'Saved to your shared paper clip.':'Opening your fortune…'):'Your collection is complete.'}</p>
