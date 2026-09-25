@@ -26,7 +26,7 @@ export function Lamp({on,toggle}:{on:boolean;toggle:()=>void}) {
 
 export function Dog({reaction,click}:{reaction:number;click:()=>void}) {
  const pointer=usePointer();
- return <group name="white-dog" position={[.2,.075,2.5]} rotation={[0,.35,0]} {...pointer} onClick={e=>{e.stopPropagation();click()}}>
+ return <group name="white-dog" position={[-2.7,.075,2.45]} rotation={[0,.35,0]} {...pointer} onClick={e=>{e.stopPropagation();click()}}>
   <ImportedDog reaction={reaction}/>
  </group>;
 }
