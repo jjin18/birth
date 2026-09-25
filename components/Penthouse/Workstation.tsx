@@ -41,7 +41,7 @@ function BlueIMac(){
   </group>
  </group>;
 }
-export default function Workstation({onLaptop}:{onLaptop:()=>void}){const [deskSurface,setDeskSurface]=useState(1.2646);return <group name="detailed-workstation" position={[3.15,0,-1.88]}>
+export default function Workstation({onLaptop,onChair}:{onLaptop:()=>void;onChair:()=>void}){const [deskSurface,setDeskSurface]=useState(1.2646);return <group name="detailed-workstation" position={[3.15,0,-1.88]}>
  <group name="music-desk" onClick={event=>{event.stopPropagation();onLaptop()}}>
  <ImportedDesk onSurface={setDeskSurface}/>
  <group name="desktop-accessories" position={[0,deskSurface-1.0975,0]}>
@@ -68,5 +68,5 @@ export default function Workstation({onLaptop}:{onLaptop:()=>void}){const [deskS
  <Bar from={[-.64,1.21,-.45]} to={[-.64,.93,-.52]} r={.008} c="#242929"/>
  </group>
  </group>
- <AeronChair/>
+ <group name="chair-message-trigger" onClick={event=>{event.stopPropagation();onChair()}}><AeronChair/></group>
 </group>}

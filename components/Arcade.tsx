@@ -20,7 +20,7 @@ export default function Arcade({close}:{close:()=>void}) {
   try{localStorage.setItem(SCORE_KEY,JSON.stringify(current.current))}catch{/* Play still works when browser storage is unavailable. */}
  },[]);
  const begin=useCallback(()=>setWinner(null),[]);
- return <Modal title={<span className="fighter-tally" title="All-time wins saved on this device" aria-label={`All-time wins on this device: Jia ${scores.Jia}, Ryan ${scores.Ryan}`}><span>{winner==='Jia'&&<span aria-label="Winner">👑 </span>}Jia <b>{scores.Jia}</b></span><span className="fighter-tally-divider">—</span><span>{winner==='Ryan'&&<span aria-label="Winner">👑 </span>}Ryan <b>{scores.Ryan}</b></span></span>} eyebrow="" ariaLabel="Local multiplayer boxing" close={close} wide className="arcade-panel">
+ return <Modal title={<span className="fighter-tally" title="All-time wins saved on this device" aria-label={`All-time wins on this device: Jia ${scores.Jia}, Ryan ${scores.Ryan}`}><span>{winner==='Jia'&&<span aria-label="Winner">👑 </span>}Jia <b>{scores.Jia}</b></span><span className="fighter-tally-divider">—</span><span>{winner==='Ryan'&&<span aria-label="Winner">👑 </span>}Ryan <b>{scores.Ryan}</b></span></span>} eyebrow="Fight Mode" ariaLabel="Local multiplayer boxing" close={close} wide className="arcade-panel">
   <MiniFighter onFinish={finish} onStart={begin}/>
  </Modal>;
 }

@@ -14,16 +14,25 @@
 
 /* The original cookie photograph splits into two masked halves; crumbs reuse its baked surface. */
 .fortune-crack{position:relative;padding-top:172px;isolation:isolate}
-.cookie-crack-stage{position:absolute;inset:0 0 auto;height:220px;pointer-events:none;--cookie-width:min(250px,68vw);--cookie-split:clamp(66px,15vw,105px);animation:cookie-anticipation var(--cookie-shake) var(--cookie-hold) ease-in-out both}
+.cookie-crack-stage{position:absolute;inset:0 0 auto;height:220px;pointer-events:none;--cookie-width:min(250px,68vw);--cookie-split:clamp(66px,15vw,105px)}
+.fortune-crack[data-cookie-phase=intact] .cookie-crack-stage{animation:cookie-anticipation var(--cookie-shake) var(--cookie-hold) ease-in-out both}
 .cookie-half{position:absolute;top:0;left:calc(50% - var(--cookie-width)/2);width:var(--cookie-width);height:auto;transform-origin:center;filter:drop-shadow(0 9px 7px #0003);will-change:transform}
 .cookie-half img{display:block;width:100%;height:auto;user-select:none}
-.cookie-whole{position:absolute;top:0;left:calc(50% - var(--cookie-width)/2);width:var(--cookie-width);height:auto;filter:drop-shadow(0 9px 7px #0003);animation:cookie-hide 1ms var(--cookie-crack-delay) steps(1,end) forwards;user-select:none}
-@keyframes cookie-hide{to{opacity:0}}
+.cookie-whole{position:absolute;top:0;left:calc(50% - var(--cookie-width)/2);width:var(--cookie-width);height:auto;filter:drop-shadow(0 9px 7px #0003);user-select:none}
+.cookie-image-fallback{display:block;width:100%;height:auto;aspect-ratio:800/696;color:#e7b76e;fill:#b97938}
+.fortune-crack:is([data-cookie-phase=cracked],[data-cookie-phase=revealed]) .cookie-whole{visibility:hidden}
 @media(max-height:500px){.fortune-game .cookie-whole{top:10%}}
-.cookie-half-left{opacity:0;clip-path:polygon(0 0,50% 0,49% 20%,51% 36%,49% 49%,51% 61%,49% 79%,50% 100%,0 100%);transform:translateX(calc(-1 * var(--cookie-split))) translateY(-14px) rotate(-13deg) scale(.76);animation:cookie-break-left .7s var(--cookie-crack-delay) cubic-bezier(.22,.7,.2,1) forwards}
-.cookie-half-right{opacity:0;clip-path:polygon(50% 0,100% 0,100% 100%,50% 100%,49% 79%,51% 61%,49% 49%,51% 36%,49% 20%);transform:translateX(var(--cookie-split)) translateY(-14px) rotate(13deg) scale(.76);animation:cookie-break-right .7s var(--cookie-crack-delay) cubic-bezier(.22,.7,.2,1) forwards}
-.cookie-unfolding-paper{position:relative;z-index:2;transform-origin:50% 0;animation:fortune-unfold 1s var(--cookie-paper-delay) cubic-bezier(.22,.7,.2,1) both}
-.cookie-crumb{position:absolute;left:50%;top:82px;width:var(--crumb-size);height:calc(var(--crumb-size)*.75);overflow:hidden;clip-path:polygon(12% 8%,75% 0,100% 58%,59% 100%,0 73%);transform:translate(var(--crumb-x),var(--crumb-y)) rotate(var(--crumb-spin));opacity:.9;animation:cookie-crumb-flight 1.25s var(--crumb-delay) cubic-bezier(.2,.55,.3,1) both;filter:drop-shadow(0 2px 1px #0003)}
+.cookie-half-left{opacity:0;clip-path:polygon(0 0,50% 0,49% 20%,51% 36%,49% 49%,51% 61%,49% 79%,50% 100%,0 100%);transform:translateX(calc(-1 * var(--cookie-split))) translateY(-14px) rotate(-13deg) scale(.76)}
+.cookie-half-right{opacity:0;clip-path:polygon(50% 0,100% 0,100% 100%,50% 100%,49% 79%,51% 61%,49% 49%,51% 36%,49% 20%);transform:translateX(var(--cookie-split)) translateY(-14px) rotate(13deg) scale(.76)}
+.fortune-crack:is([data-cookie-phase=cracked],[data-cookie-phase=revealed]) .cookie-half{opacity:1}
+.fortune-crack[data-cookie-phase=cracked] .cookie-half-left{animation:cookie-break-left .7s cubic-bezier(.22,.7,.2,1) forwards}
+.fortune-crack[data-cookie-phase=cracked] .cookie-half-right{animation:cookie-break-right .7s cubic-bezier(.22,.7,.2,1) forwards}
+.cookie-unfolding-paper{position:relative;z-index:2;opacity:0;transform-origin:50% 0}
+.fortune-crack[data-cookie-phase=cracked] .cookie-unfolding-paper{animation:fortune-unfold 1s .15s cubic-bezier(.22,.7,.2,1) both}
+.fortune-crack[data-cookie-phase=revealed] .cookie-unfolding-paper{opacity:1}
+.cookie-crumbs{visibility:hidden}.fortune-crack:is([data-cookie-phase=cracked],[data-cookie-phase=revealed]) .cookie-crumbs{visibility:visible}
+.cookie-crumb{position:absolute;left:50%;top:82px;width:var(--crumb-size);height:calc(var(--crumb-size)*.75);overflow:hidden;clip-path:polygon(12% 8%,75% 0,100% 58%,59% 100%,0 73%);transform:translate(var(--crumb-x),var(--crumb-y)) rotate(var(--crumb-spin));opacity:.9;filter:drop-shadow(0 2px 1px #0003)}
+.fortune-crack[data-cookie-phase=cracked] .cookie-crumb{animation:cookie-crumb-flight 1.25s var(--crumb-delay) cubic-bezier(.2,.55,.3,1) both}
 .cookie-crumb img{position:absolute;width:85px;height:74px;max-width:none;left:-43px;top:-18px}
 .fortune-actions button:disabled{opacity:.5;cursor:wait}
 @keyframes cookie-anticipation{0%,100%{transform:translate(0,0) rotate(0)}5%,15%{transform:translate(-2px,1px) rotate(-1.5deg)}10%,20%{transform:translate(2px,-1px) rotate(1.5deg)}25%,35%,45%{transform:translate(-4px,1px) rotate(-3deg)}30%,40%,50%{transform:translate(4px,-1px) rotate(3deg)}54%,62%,70%,78%{transform:translate(-6px,2px) rotate(-4.5deg)}58%,66%,74%,82%{transform:translate(6px,-2px) rotate(4.5deg)}85%,91%,97%{transform:translate(-9px,2px) rotate(-6deg)}88%,94%{transform:translate(9px,-2px) rotate(6deg)}}
@@ -32,9 +41,10 @@
 @keyframes fortune-unfold{0%,24%{opacity:0;transform:translateY(-120px) scale(.12,.45)}42%{opacity:1;transform:translateY(-75px) scale(.35,.78)}77%{opacity:1;transform:translateY(-8px) scale(.96,.98)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes cookie-crumb-flight{0%,7%{opacity:0;transform:translate(0,0) rotate(0) scale(.45)}18%{opacity:1}45%{opacity:1;transform:translate(calc(var(--crumb-x)*.5),-32px) rotate(calc(var(--crumb-spin)*.4))}86%{opacity:.95;transform:translate(var(--crumb-x),calc(var(--crumb-y) + 4px)) rotate(var(--crumb-spin))}100%{opacity:.9;transform:translate(var(--crumb-x),var(--crumb-y)) rotate(var(--crumb-spin))}}
 @media(max-width:650px){.fortune-crack{padding-top:152px}.cookie-crack-stage{--cookie-width:220px;--cookie-split:75px}}
-@keyframes cookie-reduced-show{to{opacity:1}}
-/* Reduced motion keeps the intact-cookie pause, without shaking or flying crumbs. */
-@media(prefers-reduced-motion:reduce){.cookie-crack-stage,.fortune-loading .fortune-cookie{animation:none}.cookie-half{opacity:0;animation:cookie-reduced-show .01ms var(--cookie-crack-delay) steps(1,end) forwards}.cookie-unfolding-paper{opacity:0;transform:none;animation:cookie-reduced-show .01ms var(--cookie-paper-delay) steps(1,end) forwards}.cookie-crumb{display:none}}
+/* Reduced motion uses a small, localized sway and omits the flying crumbs. */
+@media(prefers-reduced-motion:reduce){.fortune-crack .cookie-crack-stage,.fortune-loading .fortune-cookie,.fortune-crack .cookie-half,.fortune-crack .cookie-unfolding-paper{animation:none!important}.cookie-crumb{display:none}}
+@keyframes cookie-gentle-shake{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-1deg)}40%,80%{transform:rotate(1deg)}}
+@media(prefers-reduced-motion:reduce){.fortune-crack[data-cookie-phase=intact] .cookie-crack-stage{animation:cookie-gentle-shake var(--cookie-shake) ease-in-out!important}}
 @media(max-width:650px){.fortune-collection{grid-template-columns:1fr;gap:10px}.fortune-cookie{height:175px;margin-top:15px;margin-bottom:-18px}.fortune-slip{padding:29px 28px;min-height:145px}.fortune-slip>p{font-size:17px}.fortune-signature{font-size:13px}.fortune-edge{width:20px;height:8px}.fortune-edge-right{width:11px}.fortune-collection .fortune-slip{padding:29px 28px}.fortune-meta{margin-top:16px}.room-actions{gap:7px;max-width:calc(100vw - 40px)}.room-actions button{padding:10px}.room-actions span,.room-actions button>svg:not(:first-child){display:none}}
 
 .panel.fortune-game{height:min(590px,var(--panel-available-height))}

@@ -11,4 +11,4 @@ const cityClocks = new Map(cities.map(city => [city.zone, new Intl.DateTimeForma
 export function formatCityTime(city: City, now: Date | null) {
  return now ? cityClocks.get(city.zone)!.format(now) : '--:--';
 }
-export type Focus = 'home'|'window'|'gloves'|'wall'|'bed'|'fortune'|'paperclip'|'laptop';
+export type Focus = 'home'|'window'|'gloves'|'wall'|'bed'|'chair'|'fortune'|'paperclip'|'laptop';
