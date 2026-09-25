@@ -89,7 +89,7 @@ try {
   camera.position.set(4.4, 2.35, 5.4); camera.lookAt(-.45, 1.25, -.7); camera.updateMatrixWorld();
   const dog = new THREE.Vector3(.2, .57, 2.8).project(camera);
   await page.mouse.click(box.x + (dog.x * .5 + .5) * box.width, box.y + (-dog.y * .5 + .5) * box.height);
-  await page.waitForFunction(() => window.barkStarts > 0, undefined, { timeout: 15000 });
+  assert.equal(await page.evaluate(() => window.barkStarts),0,'dog clicks stay silent');
   assert.equal(await page.getByRole('dialog').count(), 0);
   const lamp = new THREE.Vector3(-.45, 2.15, -2.65).project(camera);
   const lampPoint = { x: box.x + (lamp.x * .5 + .5) * box.width, y: box.y + (-lamp.y * .5 + .5) * box.height };

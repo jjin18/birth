@@ -41,6 +41,8 @@ const experience=await readFile('components/Experience.tsx','utf8');
 assert(!experience.includes('Thinking about you'));
 assert(experience.includes("setTip('😈')"));
 assert(!experience.includes('back-room'));
+assert(!/dog-audio|playBark|dogStatus|Woof!|AudioContext/.test(experience),'dog clicks are silent and have no bark status/timers');
+assert(experience.includes('const onDogClick=useCallback(()=>setDogReaction(value=>value+1),[])'),'silent dog reaction stays interactive');
 const table=await readFile('components/Penthouse/FortuneTable.tsx','utf8');
 assert.equal((table.match(/click=\{onFortune\}/g)||[]).length,2,'Panda box and notes share the same popup handler');
 assert(!table.includes('onPaperclip'),'obsolete separate note click callback removed');

@@ -24,7 +24,7 @@ try{
  const on=await brightness(lit),off=await brightness(dark);assert(on-off>5,'room must visibly dim');console.log('Brightness on/off',on,off);
  await lamp().click();
  await objectClick([.5,.5,2.78]);await page.waitForTimeout(500);
- assert((await page.evaluate(()=>window.barkStarts))>0,'clicking the physical dog must play a bark');
+ assert.equal(await page.evaluate(()=>window.barkStarts),0,'dog clicks stay silent');
  await objectClick([-.55,.8,1.55]);await page.getByRole('dialog').waitFor();
  await page.getByRole('button',{name:'Let’s settle this'}).click();await page.keyboard.press('Space');await page.keyboard.press('Escape');await page.waitForTimeout(3500);
  assert.equal(await page.getByText(/Draw something|Our art/i).count(),0);
@@ -46,5 +46,5 @@ try{
  await mobile.getByRole('button',{name:'Paper clip · saved fortunes'}).click();await mobile.locator('.fortune-collection').waitFor();
  assert.equal(await mobile.locator('.fortune-collection .fortune-slip').count(),notes,'a fresh device must see the same collection');
  await mobile.reload({waitUntil:'networkidle'});await mobile.getByRole('button',{name:'Paper clip · saved fortunes'}).click();await mobile.locator('.fortune-collection').waitFor();assert.equal(await mobile.locator('.fortune-collection .fortune-slip').count(),notes);
- assert.deepEqual(errors,[]);console.log('PASS: physical lamp/dog/gloves/Panda clicks, bark audio, fighter, shared fortunes, mobile, reload persistence; no browser errors.');
+ assert.deepEqual(errors,[]);console.log('PASS: physical lamp/dog/gloves/Panda clicks, silent dog, fighter, shared fortunes, mobile, reload persistence; no browser errors.');
 }finally{await browser.close()}

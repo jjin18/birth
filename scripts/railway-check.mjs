@@ -62,7 +62,20 @@ try {
  assert.deepEqual((await (await fetch(origin+'/api/fortunes')).json()).fortunes,[...imported].reverse());await stop();
  await start({DATA_DIR:importDir,FORTUNES_IMPORT_JSON:JSON.stringify(imported)});
  assert.equal((await (await fetch(origin+'/api/fortunes')).json()).fortunes.length,2);await stop();
- await assert.rejects(start({DATA_DIR:importDir,FORTUNES_IMPORT_JSON:'[{"id":999,"openedAt":"bad"}]'}),/Invalid fortune import/);
+ // An operator reset is one-time, privately backed up, and cannot be reversed
+ // accidentally by a still-configured legacy import on a later deployment.
+ const resetEnv={DATA_DIR:importDir,FORTUNES_IMPORT_JSON:JSON.stringify(imported),FORTUNES_RESET_KEY:'disposable-test-reset'};
+ await start(resetEnv);
+ assert.equal((await (await fetch(origin+'/api/fortunes')).json()).fortunes.length,0);
+ const fresh=(await (await post()).json()).fortune;assert(fresh);await stop();
+ await start(resetEnv);
+ assert.deepEqual((await (await fetch(origin+'/api/fortunes')).json()).fortunes,[fresh]);await stop();
+ await start({DATA_DIR:importDir,FORTUNES_IMPORT_JSON:JSON.stringify(imported),FORTUNES_RESET_KEY:''});
+ assert.deepEqual((await (await fetch(origin+'/api/fortunes')).json()).fortunes,[fresh]);await stop();
+ const resetDb=new DatabaseSync(join(importDir,'fortunes.sqlite'));
+ assert.equal(resetDb.prepare('SELECT COUNT(*) AS n FROM fortune_reset_backup').get().n,2);
+ assert.equal(resetDb.prepare('SELECT COUNT(*) AS n FROM fortune_resets').get().n,1);resetDb.close();
+ await assert.rejects(start({DATA_DIR:join(temp,'invalid-import'),FORTUNES_IMPORT_JSON:'[{"id":999,"openedAt":"bad"}]'}),/Invalid fortune import/);
  await assert.rejects(start({RAILWAY_ENVIRONMENT_ID:'test-production'}),/Mount a Railway volume/);
  console.log('PASS: no-login room, shared notes, identity spoofing resistance, concurrent draws, restart persistence, legacy-note import, exhaustion, request guards, rate limits, exact streamed graphics, range/HEAD/ETag and durable-storage enforcement.');
 }finally{

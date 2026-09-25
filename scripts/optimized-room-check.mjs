@@ -35,7 +35,7 @@ try {
   camera.position.set(4.4,2.35,5.4);camera.lookAt(-.45,1.25,-.7);camera.updateMatrixWorld();
   const point=new THREE.Vector3(dogPosition[0],dogPosition[1]+.2,dogPosition[2]).project(camera);
   await page.mouse.click(bounds.x+(point.x*.5+.5)*bounds.width,bounds.y+(-point.y*.5+.5)*bounds.height);
-  await page.waitForFunction(()=>window.barkStarts>0,undefined,{timeout:10000});
+  assert.equal(await page.evaluate(()=>window.barkStarts),0,'dog clicks stay silent');
   assert.deepEqual(errors,[]);
-  console.log('PASS: final room renders with packed textures, only six current model downloads, no couch request, minimal opening controls, clickable barking dog and no browser errors.');
+  console.log('PASS: final room renders with packed textures, only six current model downloads, no couch request, minimal opening controls, silent dog and no browser errors.');
 } finally { await browser.close(); }

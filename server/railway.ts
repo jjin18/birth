@@ -6,7 +6,7 @@ import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
 import worker from '../worker/index';
 import { fortunes } from '../lib/fortunes';
-import { initializeFortuneStorage } from './fortune-storage';
+import { initializeFortuneStorage,hasFortuneReset,resetFortunesOnce } from './fortune-storage';
 
 const root=resolve('dist/client');
 const onRailway=Boolean(process.env.RAILWAY_ENVIRONMENT_ID);
@@ -18,7 +18,7 @@ const db=new DatabaseSync(join(dataDir,'fortunes.sqlite'),{timeout:5000});
 initializeFortuneStorage(db);
 // Import only note IDs and opening dates, never old account identifiers.
 // Repeated deployments are safe: existing notes are never replaced or reset.
-if(process.env.FORTUNES_IMPORT_JSON){
+if(process.env.FORTUNES_IMPORT_JSON&&!hasFortuneReset(db)){
  const seed:unknown=JSON.parse(process.env.FORTUNES_IMPORT_JSON);
  if(!Array.isArray(seed)||seed.length>fortunes.length)throw Error('Invalid fortune import');
  const ids=new Set<number>();
@@ -32,6 +32,10 @@ if(process.env.FORTUNES_IMPORT_JSON){
   for(const item of seed)insert.run(item.id,`imported-sites-${item.id}`,'imported-room',item.openedAt);
   db.exec('COMMIT');
  }catch(error){db.exec('ROLLBACK');throw error}
+}
+if(process.env.FORTUNES_RESET_KEY){
+ const reset=resetFortunesOnce(db,process.env.FORTUNES_RESET_KEY);
+ if(reset.applied)console.log(`Fortune reset applied; ${reset.archived} previous openings backed up on the persistent volume.`);
 }
 const statement=(sql:string,values:SQLInputValue[]=[])=>({
  bind(...args:unknown[]){return statement(sql,args as SQLInputValue[])},

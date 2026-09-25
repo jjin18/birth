@@ -11,7 +11,7 @@ const jokePositions=Array.from({length:109},(_,i)=>i+1).filter(i=>fortuneKindFor
 assert.deepEqual(jokePositions,[2,14,26,38,50,62,74,86,98]);
 for(const file of ['components/FortuneSlip.tsx','components/FortunePanel.tsx'])assert(!/\b(200|209|109)\b/.test(await readFile(file,'utf8')),'no fixed totals in fortune or collection UI');
 const compiled=await build({entryPoints:['server/fortune-storage.ts'],bundle:true,write:false,format:'esm',platform:'node'});
-const {initializeFortuneStorage}=await import('data:text/javascript;base64,'+Buffer.from(compiled.outputFiles[0].text).toString('base64'));
+const {initializeFortuneStorage,hasFortuneReset,resetFortunesOnce}=await import('data:text/javascript;base64,'+Buffer.from(compiled.outputFiles[0].text).toString('base64'));
 const db=new DatabaseSync(':memory:');
 try {
  db.exec('CREATE TABLE opened_fortunes (id INTEGER PRIMARY KEY CHECK(id >= 0 AND id < 200),request_id TEXT NOT NULL UNIQUE,opened_by TEXT NOT NULL,opened_at TEXT NOT NULL)');
@@ -23,8 +23,24 @@ try {
  db.prepare('INSERT INTO opened_fortunes VALUES (?,?,?,?)').run(208,'new-request','room','2026-09-25T01:00:00.000Z');
  assert.throws(()=>db.prepare('INSERT INTO opened_fortunes VALUES (?,?,?,?)').run(207,'new-request','room','now'),/UNIQUE/);
  assert.throws(()=>db.prepare('INSERT INTO opened_fortunes VALUES (?,?,?,?)').run(-1,'invalid','room','now'),/CHECK/);
+ const allBeforeReset=db.prepare('SELECT * FROM opened_fortunes ORDER BY id').all();
+ assert.equal(hasFortuneReset(db),false);
+ assert.deepEqual(resetFortunesOnce(db,'test-reset'),{applied:true,archived:5});
+ assert.equal(hasFortuneReset(db),true);
+ assert.deepEqual(db.prepare('SELECT id,request_id,opened_by,opened_at FROM fortune_reset_backup WHERE reset_key=? ORDER BY id').all('test-reset'),allBeforeReset,'every saved field remains recoverable');
+ assert.equal(db.prepare('SELECT COUNT(*) AS n FROM opened_fortunes').get().n,0);
+ db.prepare('INSERT INTO opened_fortunes VALUES (?,?,?,?)').run(2,'after-reset','room','2026-09-25T02:00:00.000Z');
+ initializeFortuneStorage(db);
+ assert.deepEqual(resetFortunesOnce(db,'test-reset'),{applied:false,archived:0});
+ assert.equal(db.prepare('SELECT COUNT(*) AS n FROM opened_fortunes').get().n,1,'restarts never erase new notes');
+ assert.throws(()=>resetFortunesOnce(db,'invalid key'),/Invalid fortune reset/);
+ db.exec("CREATE TRIGGER fail_reset BEFORE DELETE ON opened_fortunes BEGIN SELECT RAISE(ABORT,'rollback test'); END");
+ assert.throws(()=>resetFortunesOnce(db,'failed-reset'),/rollback test/);
+ assert.equal(db.prepare('SELECT COUNT(*) AS n FROM opened_fortunes').get().n,1,'a failed reset preserves current notes');
+ assert.equal(db.prepare('SELECT COUNT(*) AS n FROM fortune_reset_backup WHERE reset_key=?').get('failed-reset').n,0,'failed resets leave no partial backup or marker');
+ assert.equal(db.prepare('SELECT COUNT(*) AS n FROM fortune_resets').get().n,1);
 }finally{db.close()}
 const timing=await build({entryPoints:['lib/cookie-motion.ts'],bundle:true,write:false,format:'esm',platform:'node'});
 const motion=await import('data:text/javascript;base64,'+Buffer.from(timing.outputFiles[0].text).toString('base64'));
-assert(motion.COOKIE_HOLD_MS>=1000);assert.equal(motion.COOKIE_CRACK_MS,motion.COOKIE_HOLD_MS+motion.COOKIE_SHAKE_MS);assert(motion.COOKIE_REVEAL_MS>motion.COOKIE_CRACK_MS+1250);
+assert.equal(motion.COOKIE_HOLD_MS,1800);assert.equal(motion.COOKIE_CRACK_MS,motion.COOKIE_HOLD_MS+motion.COOKIE_SHAKE_MS);assert(motion.COOKIE_REVEAL_MS>motion.COOKIE_CRACK_MS+1250);
 console.log('PASS: 100 active regular fortunes, nine exact jokes evenly spaced from opening two, unchanged historical notes, safe storage migration, hidden totals and longer cookie timing.');

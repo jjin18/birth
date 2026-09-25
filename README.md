@@ -45,7 +45,7 @@ Fortunes: no numbering or total is displayed. A fresh page visit requests an ins
 joke for cookie two, then every twelfth opening; draws fall back to the other kind
 only when the requested kind is exhausted. Retries do not advance this rhythm.
 Retired regular fortunes stay in the read-only text catalog so old saved IDs never
-change meaning; they are excluded from new draws. The cookie holds for 1.1 seconds,
+change meaning; they are excluded from new draws. The larger cookie holds for 1.8 seconds,
 shakes for 420 ms, then splits with twelve crumbs. Optional short vibration pulses
 work only on supporting devices. Reduced-motion mode skips shaking and vibration.
 
@@ -72,6 +72,15 @@ objects exported from the old collection. The startup importer preserves those
 IDs/dates without copying account identifiers, and is idempotent across restarts.
 Do not commit real exported notes or deployment variable values to Git.
 
+For an explicitly requested reset, set an operator-only `FORTUNES_RESET_KEY`
+to a unique descriptive key (letters, numbers, underscores or hyphens, max 80).
+On startup, one SQLite transaction archives the opened fortunes in the private
+`fortune_reset_backup` table, clears only `opened_fortunes`, and records the key
+in `fortune_resets`. The same key never resets again; subsequent restarts retain
+new notes and skip the legacy import. Backups remain on the persistent volume,
+are not served publicly, and do not affect photos or the memory wall. There is
+no public reset endpoint. Change the key only for another authorized reset.
+
 Adding these files does **not** connect a Railway account, enable a GitHub hook,
 provision a persistent volume, or update production DNS. Those are separate
 account-side steps. No paid-plan purchase or upgrade is part of the code change.
@@ -94,7 +103,7 @@ Open http://127.0.0.1:3023 for the full preview. `npm run dev` on port 3022 is f
 - Four cities have Dark, Day and Sunset skyline assets. Lighting is always automatic, using SunCalc with the city's coordinates and current date: sunrise to evening golden hour is Day, golden hour through civil dusk is Sunset, otherwise Dark. There is no manual lighting selector.
 - Photorealistic cookie artwork and off-white paper slips with red uppercase Panda Express styling and blue end marks. Asset prompts are preserved in docs/visual-update.
 - One floor lamp, on by default, smoothly toggling the room's illumination.
-- The supplied dog-and-bed model with gentle breathing and a bark reaction. Clicking plays a locally synthesized double bark.
+- The supplied dog-and-bed model with gentle breathing and a silent click reaction. No bark audio or audio context is loaded.
 - Red 3D boxing gloves on the coffee table open Mini Fighter. The laptop no longer opens the arcade.
 - Panda Express and the note directly in front of it open the same fortune popup. The active pool contains 100 regular fortunes and nine inside jokes. Each draw is immediately saved to the shared paper clip. The collection is available on any device signed into this private Site.
 - D1 transactions and unique IDs prevent repeats, including simultaneous draws. A request UUID makes retries idempotent. After the active pool is exhausted, the collection remains available without recycling notes.
@@ -124,7 +133,7 @@ node scripts/room-check.mjs
 node scripts/smoke.mjs
 ```
 
-The isolated fortune test covers every active draw, preserved retired notes, concurrent requests, retries, exhaustion and access guards. Browser checks require Microsoft Edge and the full preview at port 3023; they exercise physical-object clicks, room brightness, bark audio, fighter, shared notes, reload persistence and mobile layout.
+The isolated fortune test covers every active draw, preserved retired notes, concurrent requests, retries, exhaustion and access guards. Browser checks require Microsoft Edge and the full preview at port 3023; they exercise physical-object clicks, room brightness, silent dog interactions, fighter, shared notes, reload persistence and mobile layout.
 
 The fortune client validates status, content type, JSON shape and note IDs before using a response. Empty/truncated/non-JSON responses and transient network/server failures get at most two retries with the same request ID and a 12-second per-attempt timeout; sign-in and permission errors do not loop. A confirmed saved fortune remains visible if the subsequent archive refresh fails. The client and isolated modal tests exercise these failures without changing production notes. The authentication guard is unchanged. Railway performs a transactional, idempotent migration of the old numeric-ID cap; all saved rows and request IDs are preserved.
 

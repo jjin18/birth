@@ -34,7 +34,7 @@
 
 .panel.fortune-game{height:min(590px,var(--panel-available-height))}
 .fortune-game .fortune-crack{flex:1;min-height:0;padding-top:0;margin-top:8px;display:flex;flex-direction:column;justify-content:flex-end}
-.fortune-game .cookie-crack-stage{height:45%;--cookie-width:min(220px,42vw,calc(var(--panel-available-height)*.33));--cookie-split:clamp(48px,12vw,85px)}
+.fortune-game .cookie-crack-stage{height:55%;--cookie-width:min(300px,58vw,calc(var(--panel-available-height)*.46));--cookie-split:clamp(44px,11vw,80px)}
 .fortune-game .fortune-note{margin:0}
 .fortune-game .fortune-slip{min-height:120px;padding:22px 34px}
 .fortune-game .fortune-slip>p{font-size:clamp(14px,2.7svh,19px)}
@@ -44,6 +44,6 @@
 .fortune-game .fortune-actions button{min-height:40px;padding:9px 12px;font-size:12px}
 .fortune-game .panel-description{font-size:11px;margin:5px 0 0}
 .fortune-game .fortune-loading,.fortune-game .empty{flex:1;min-height:0;padding:12px;justify-content:center}
-.fortune-game .fortune-loading .fortune-cookie{height:min(160px,28svh)}
+.fortune-game .fortune-loading .fortune-cookie{width:min(300px,75%);height:min(230px,35svh)}
 @media(max-width:400px){.fortune-game .fortune-slip{padding:19px 24px;min-height:116px}.fortune-game .fortune-actions button{font-size:11px;padding:8px 9px}.fortune-game .fortune-saved{font-size:11px}}
-@media(max-height:500px){.fortune-game .fortune-crack{display:grid;grid-template-columns:35% minmax(0,1fr);align-items:center;gap:10px;margin-top:4px}.fortune-game .cookie-crack-stage{position:relative;height:100%;--cookie-width:min(160px,26svh);--cookie-split:clamp(25px,5vw,45px)}.fortune-game .cookie-half{top:10%}.fortune-game .cookie-crumb{top:45%;--crumb-size:4px!important}.fortune-game .fortune-slip{min-height:90px;padding:14px 25px}.fortune-game .fortune-slip>p{font-size:14px;margin-bottom:5px}.fortune-game .fortune-signature{font-size:10px}.fortune-game .fortune-saved{margin-top:4px;font-size:11px}.fortune-game .fortune-actions{margin-top:4px}.fortune-game .fortune-actions button{min-height:32px;padding:6px 10px;font-size:11px}.fortune-game .fortune-loading{gap:3px;padding:3px}.fortune-game .fortune-loading p{margin:3px;font-size:12px}.fortune-game .fortune-loading .fortune-cookie{height:90px}}
+@media(max-height:500px){.fortune-game .fortune-crack{display:grid;grid-template-columns:35% minmax(0,1fr);align-items:center;gap:10px;margin-top:4px}.fortune-game .cookie-crack-stage{position:relative;height:100%;--cookie-width:min(190px,35svh);--cookie-split:clamp(22px,4vw,36px)}.fortune-game .cookie-half{top:10%}.fortune-game .cookie-crumb{top:45%;--crumb-size:4px!important}.fortune-game .fortune-slip{min-height:90px;padding:14px 25px}.fortune-game .fortune-slip>p{font-size:14px;margin-bottom:5px}.fortune-game .fortune-signature{font-size:10px}.fortune-game .fortune-saved{margin-top:4px;font-size:11px}.fortune-game .fortune-actions{margin-top:4px}.fortune-game .fortune-actions button{min-height:32px;padding:6px 10px;font-size:11px}.fortune-game .fortune-loading{gap:3px;padding:3px}.fortune-game .fortune-loading p{margin:3px;font-size:12px}.fortune-game .fortune-loading .fortune-cookie{height:120px}}
