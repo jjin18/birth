@@ -24,8 +24,11 @@ Railway service setup:
 4. Generate a Railway public domain. Railway's `PORT` and `RAILWAY_PUBLIC_DOMAIN`
    are used automatically. The health check is `/healthz`.
 5. After a healthy deployment, register `happybirthdayunc.com` and `www.happybirthdayunc.com`
-   on that service and copy Railway's exact DNS targets into GoDaddy. Do not
-   guess DNS values or switch away from the current host before verification.
+   on that service. DNS is managed on Cloudflare's Free plan; registration stays
+   at GoDaddy. Use Railway's exact CNAME targets with DNS-only routing (Cloudflare
+   flattens the apex CNAME). Also copy the ownership TXT records shown in Railway's
+   **Show DNS records** dialog; the API's initial response may omit these. Verify
+   valid HTTPS and the fortune API on both hostnames before treating cutover as done.
 
 Local validation: `npm run build`, `npm run test:railway`, then `npm start`.
 The default local address is `http://127.0.0.1:3023`; notes live in ignored
