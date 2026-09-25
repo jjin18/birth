@@ -1,5 +1,6 @@
 'use client';
-import {Suspense} from 'react';
+import {Suspense,useState} from 'react';
+import RenderBudget from './RenderBudget';
 import DateWallPhotos from './DateWallPhotos';
 import { Canvas, type ThreeEvent } from '@react-three/fiber';
 import { RoundedBox, ContactShadows } from '@react-three/drei';
@@ -16,12 +17,11 @@ import { ImportedBed } from './ImportedFurniture';
 import CameraRig from './CameraRig';
 import InteriorEnvelope from './InteriorEnvelope';
 import { windowDimensions } from '@/lib/room-dimensions';
-import { EffectComposer,N8AO,ToneMapping,Vignette } from '@react-three/postprocessing';
-import { ToneMappingMode } from 'postprocessing';
+import RoomEffects from './RoomEffects';
 import { type Focus } from '@/lib/cities';
 import { floorPlankColors,floorBaseColor } from '@/lib/room-finishes';
 type Vec=[number,number,number];
-type Props={interior:boolean;city:number;focus:Focus;reset:number;onInteract:(f:Focus)=>void;onReady:()=>void;lampOn:boolean;onLampToggle:()=>void;dogReaction:number;onDogClick:()=>void;fortuneCount:number;skyMode:SkyMode;onSkyUnavailable:(unavailable:boolean)=>void;onViewChange:(away:boolean)=>void};
+type Props={interior:boolean;city:number;focus:Focus;reset:number;onInteract:(f:Focus)=>void;onReady:()=>void;lampOn:boolean;onLampToggle:()=>void;dogReaction:number;onDogClick:()=>void;fortuneCount:number;skyMode:SkyMode;onSkyUnavailable:(unavailable:boolean)=>void;onViewChange:(away:boolean)=>void;occluded:boolean;ready:boolean};
 const palette={wood:'#9a6b45',woodDark:'#503c2e',cream:'#ddd0b7',gold:'#c59e63',wall:'#7d7d76',black:'#242929'};
 const woodColors=new Set(['#9a6b45','#503c2e','#a77b52','#93704f','#a07d58','#ab815a','#9e7550','#ad865d','#684d36','#493e32']);
 const fabricColors=new Set(['#a89c82','#958e7e','#a39273','#9b8a6a','#a59577','#798071','#c3b497']);
@@ -32,4 +32,10 @@ function Room({onInteract,lampOn,onLampToggle,dogReaction,onDogClick,fortuneCoun
   <ImportedBed click={()=>onInteract('bed')}/><Workstation onLaptop={()=>onInteract('laptop')} onChair={()=>onInteract('chair')}/><MemoryWall click={()=>onInteract('wall')}/><FortuneTable count={fortuneCount} onFortune={()=>onInteract('fortune')} onGloves={()=>onInteract('gloves')}/>
   <Lamp on={lampOn} toggle={onLampToggle}/><Dog reaction={dogReaction} click={onDogClick}/>
  </group>}
-export default function Scene(props:Props){return <Canvas camera={{position:[4.4,2.35,5.4],fov:59,near:.08,far:100}} shadows={{type:THREE.PCFShadowMap}} dpr={[1,1.6]} gl={{antialias:true,alpha:true,powerPreference:'high-performance'}} fallback={<WebGLFallback/>}><SceneReady onReady={props.onReady}/><Lighting lampOn={props.lampOn} skyMode={props.skyMode}/><CameraRig focus={props.focus} reset={props.reset} interior={props.interior} onViewChange={props.onViewChange}/><RoomMaterials><Room {...props}/></RoomMaterials><Backdrop interior={props.interior} city={props.city} mode={props.skyMode} onUnavailable={props.onSkyUnavailable}/><ContactShadows position={[0,-.54,0]} opacity={.36} scale={25} blur={2.5} far={5} resolution={256} frames={1}/><EffectComposer multisampling={0}><N8AO aoRadius={.35} distanceFalloff={1.1} intensity={1.4} quality="low" halfRes/><ToneMapping mode={ToneMappingMode.ACES_FILMIC}/><Vignette offset={.3} darkness={.22}/></EffectComposer></Canvas>;}
+export default function Scene(props:Props){
+ const [quality,setQuality]=useState(0);
+ const activity=[props.interior,props.city,props.focus,props.reset,props.lampOn,props.dogReaction,props.skyMode,props.ready].join(':');
+ return <Canvas frameloop="demand" camera={{position:[4.4,2.35,5.4],fov:59,near:.08,far:100}} shadows={{type:THREE.PCFShadowMap}} dpr={[1,quality===0?1.6:quality===1?1.2:1]} gl={{antialias:true,alpha:true,powerPreference:'high-performance'}} fallback={<WebGLFallback/>}>
+  <RenderBudget activity={activity} occluded={props.occluded} onQuality={setQuality}/><SceneReady onReady={props.onReady}/><Lighting lampOn={props.lampOn} skyMode={props.skyMode} shadowSize={quality===0?2048:1024}/><CameraRig focus={props.focus} reset={props.reset} interior={props.interior} onViewChange={props.onViewChange}/><RoomMaterials><Room {...props}/></RoomMaterials><Backdrop interior={props.interior} city={props.city} mode={props.skyMode} onUnavailable={props.onSkyUnavailable}/><ContactShadows position={[0,-.54,0]} opacity={.36} scale={25} blur={2.5} far={5} resolution={256} frames={1}/><RoomEffects quality={quality}/>
+ </Canvas>;
+}

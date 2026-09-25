@@ -1,4 +1,5 @@
 'use client';
+import { assetUrl } from '@/lib/asset-url';
 import { createContext,useContext,useEffect,useMemo,useState } from 'react';
 import * as THREE from 'three';
 import {tintFloorShader,floorProgramKey} from '@/lib/room-finishes';
@@ -7,7 +8,7 @@ const Materials=createContext<Maps>({wood:null,fabric:null});
 export function RoomMaterials({children}:{children:React.ReactNode}){
  const [maps,setMaps]=useState<Maps>({wood:null,fabric:null});
  useEffect(()=>{let active=true;const loaded:THREE.Texture[]=[];const loader=new THREE.TextureLoader();
-  for(const [kind,path,repeats] of [['wood','/textures/wood-oak.jpg',1],['fabric','/textures/fabric-linen.jpg',5]] as const){loader.load(path,texture=>{if(!active){texture.dispose();return}texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=texture.wrapT=THREE.MirroredRepeatWrapping;texture.repeat.set(repeats,repeats);texture.anisotropy=4;loaded.push(texture);setMaps(old=>({...old,[kind]:texture}))})}
+  for(const [kind,path,repeats] of [['wood','/textures/wood-oak.jpg',1],['fabric','/textures/fabric-linen.jpg',5]] as const){loader.load(assetUrl(path),texture=>{if(!active){texture.dispose();return}texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=texture.wrapT=THREE.MirroredRepeatWrapping;texture.repeat.set(repeats,repeats);texture.anisotropy=4;loaded.push(texture);setMaps(old=>({...old,[kind]:texture}))})}
   return()=>{active=false;loaded.forEach(texture=>texture.dispose())};
  },[]);
  return <Materials.Provider value={maps}>{children}</Materials.Provider>;

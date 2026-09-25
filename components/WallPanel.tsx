@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useRef,useState,type FormEvent} from 'react';
-import {ArrowLeft,ChevronLeft,ChevronRight,LockKeyhole,Plus,Pencil,NotebookPen} from 'lucide-react';
+import {ArrowLeft,ChevronLeft,ChevronRight,Plus,Pencil,NotebookPen} from 'lucide-react';
 import Modal from './Modal';
 import {groupDates,datePhotos,dateLabel,type DatePhoto} from '@/lib/date-wall';
 
@@ -15,26 +15,26 @@ const jsonBody=(body:unknown)=>({headers:{'Content-Type':'application/json'},bod
 
 export default function WallPanel({close}:{close:()=>void}){
  const [entries,setEntries]=useState(datePhotos),[selected,setSelected]=useState<string|null>(null);
- const [canEdit,setCanEdit]=useState(false),[editingEnabled,setEditingEnabled]=useState(false),[loaded,setLoaded]=useState(false);
- const [unlock,setUnlock]=useState(false),[passcode,setPasscode]=useState(''),[draft,setDraft]=useState<Draft|null>(null);
+ const [loaded,setLoaded]=useState(false);
+ const [draft,setDraft]=useState<Draft|null>(null);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('');
  const uploadController=useRef<AbortController|null>(null);
  const selectedIndex=entries.findIndex(entry=>entry.id===selected),photo=entries[selectedIndex];
- const apply=(data:WallResponse)=>{setEntries(data.entries);setCanEdit(data.canEdit);setEditingEnabled(data.editingEnabled);setLoaded(true)};
+ const apply=(data:WallResponse)=>{setEntries(data.entries);setLoaded(true)};
  useEffect(()=>{
   const controller=new AbortController();
   request('/api/wall',{signal:controller.signal}).then(apply).catch(e=>{if(!controller.signal.aborted)setError(e.message)});
   return()=>{controller.abort();uploadController.current?.abort()};
  },[]);
  useEffect(()=>{
-  if(!photo||draft||unlock)return;
+  if(!photo||draft)return;
   const navigate=(event:KeyboardEvent)=>{
    if(event.target instanceof HTMLElement&&(event.target.matches('input,textarea,select')||event.target.isContentEditable))return;
    if(event.key==='ArrowLeft'){event.preventDefault();setSelected(entries[Math.max(0,selectedIndex-1)].id)}
    if(event.key==='ArrowRight'){event.preventDefault();setSelected(entries[Math.min(entries.length-1,selectedIndex+1)].id)}
   };
   document.addEventListener('keydown',navigate);return()=>document.removeEventListener('keydown',navigate);
- },[photo,draft,unlock,entries,selectedIndex]);
+ },[photo,draft,entries,selectedIndex]);
  const begin=(entry?:DatePhoto)=>{setError('');setMessage('');setDraft(entry?{id:entry.id,title:entry.title,note:entry.note,date:entry.date??'',version:entry.version,thumbnail:entry.thumbnail}:{id:crypto.randomUUID(),title:'',note:'',date:''})};
  const change=(key:'title'|'note'|'date',value:string)=>setDraft(current=>current?{...current,[key]:value}:current);
  const upload=async(file?:File)=>{
@@ -56,23 +56,10 @@ export default function WallPanel({close}:{close:()=>void}){
    apply(data);setSelected(draft.id);setDraft(null);setMessage('');
   }catch(e){setError((e as Error).message)}finally{setBusy(false)}
  };
- const signIn=async(event:FormEvent)=>{
-  event.preventDefault();setBusy(true);setError('');
-  try{await request('/api/wall/session',{method:'POST',...jsonBody({passcode})});setCanEdit(true);setUnlock(false);setPasscode('');setMessage('')}catch(e){setError((e as Error).message)}finally{setBusy(false)}
- };
- const lock=async()=>{
-  setBusy(true);setError('');try{await request('/api/wall/session',{method:'DELETE'});setCanEdit(false);setMessage('')}catch(e){setError((e as Error).message)}finally{setBusy(false)}
- };
- const headerActions=!unlock&&!draft&&editingEnabled?<div className="date-wall-header-actions">
-  {canEdit?<><button type="button" aria-label="Add photo or note" title="Add photo or note" onClick={()=>begin()}><Plus size={14}/></button><button type="button" aria-label="Lock editing" title="Lock editing" onClick={lock} disabled={busy}><LockKeyhole size={13}/></button></>:<button type="button" aria-label="Edit wall" title="Edit wall" onClick={()=>{setUnlock(true);setError('');setMessage('')}}><Pencil size={13}/></button>}
- </div>:null;
+ const headerActions=!draft?<div className="date-wall-header-actions"><button type="button" aria-label="Add photo or note" title="Add photo or note" onClick={()=>begin()}><Plus size={14}/></button></div>:null;
  return <Modal title="to be continued..." eyebrow="" close={close} wide className="date-wall" headerActions={headerActions}>
   {error&&<p className="error wall-feedback" role="alert">{error}{!loaded&&<button className="text-button" onClick={()=>{setError('');request('/api/wall').then(apply).catch(e=>setError(e.message))}}>Try again</button>}</p>}
-  {unlock?<form className="wall-unlock" onSubmit={signIn}>
-   <p>Add a photo, write a memory, or edit a date with your shared passcode.</p>
-   <label>Shared passcode<input type="password" autoComplete="current-password" value={passcode} maxLength={128} onChange={e=>setPasscode(e.target.value)} required autoFocus/></label>
-   <div className="wall-form-actions"><button type="button" className="secondary-button" disabled={busy} onClick={()=>{setUnlock(false);setPasscode('');setError('')}}>Cancel</button><button className="gold-button" disabled={busy}>{busy?'Unlocking…':'Unlock editing'}</button></div>
-  </form>:draft?<form className="wall-editor" onSubmit={save}>
+  {draft?<form className="wall-editor" onSubmit={save}>
    <div className="wall-editor-fields">
     <h3>{draft.version?'Edit this memory':'A new memory'}</h3>
     {!draft.version&&<label className="wall-photo-input">Photo (optional)<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={e=>{void upload(e.target.files?.[0]);e.target.value=''}}/><span>JPEG, PNG or WebP · up to 12 MB. Capture date is filled automatically when included.</span></label>}
@@ -86,7 +73,7 @@ export default function WallPanel({close}:{close:()=>void}){
    <div className="wall-form-actions"><button type="button" className="secondary-button" disabled={busy} onClick={()=>{setDraft(null);setError('');setMessage('')}}>Cancel</button><button className="gold-button" disabled={busy}>{busy?'Preparing…':'Save memory'}</button></div>
   </form>:<>
    {photo?<article className="date-detail">
-    <div className="date-detail-controls"><button className="text-button" onClick={()=>setSelected(null)}><ArrowLeft size={16}/>All dates</button><div>{canEdit&&<button className="text-button" onClick={()=>begin(photo)}><Pencil size={14}/>Edit</button>}<button className="icon-button" aria-label="Previous photo" disabled={selectedIndex===0} onClick={()=>setSelected(entries[selectedIndex-1].id)}><ChevronLeft size={18}/></button><button className="icon-button" aria-label="Next photo" disabled={selectedIndex===entries.length-1} onClick={()=>setSelected(entries[selectedIndex+1].id)}><ChevronRight size={18}/></button></div></div>
+    <div className="date-detail-controls"><button className="text-button" onClick={()=>setSelected(null)}><ArrowLeft size={16}/>All dates</button><div><button className="text-button" onClick={()=>begin(photo)}><Pencil size={14}/>Edit</button><button className="icon-button" aria-label="Previous photo" disabled={selectedIndex===0} onClick={()=>setSelected(entries[selectedIndex-1].id)}><ChevronLeft size={18}/></button><button className="icon-button" aria-label="Next photo" disabled={selectedIndex===entries.length-1} onClick={()=>setSelected(entries[selectedIndex+1].id)}><ChevronRight size={18}/></button></div></div>
     {photo.src&&<div className="date-detail-image"><img key={photo.id} src={photo.src} width={photo.width} height={photo.height} alt={photo.alt||photo.title} decoding="async"/></div>}
     <div className={`date-detail-caption ${!photo.src?'date-text-only':''}`} aria-live="polite"><h3>{photo.title}</h3><time dateTime={photo.date??undefined}>{dateLabel(photo.date)}</time>{photo.note&&<p>{photo.note}</p>}</div>
    </article>:<div className="date-wall-content">{groupDates(entries).map(group=><section className="date-group" key={group.date??'undated'} aria-label={dateLabel(group.date)}>

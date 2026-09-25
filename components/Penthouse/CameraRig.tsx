@@ -1,11 +1,12 @@
 'use client';
-import { useEffect,useMemo,useRef } from 'react';
+import { useEffect,useLayoutEffect,useMemo,useRef,useState } from 'react';
 import { useFrame,useThree } from '@react-three/fiber';
-import { OrbitControls,PerspectiveCamera,OrthographicCamera } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitType } from 'three-stdlib';
 import type { Focus } from '@/lib/cities';
-import { containRoomCamera,roomOpening,roomHomeView,roomViewIsAway } from '@/lib/room-camera';
+import { containRoomCamera,roomHomeView,roomViewIsAway } from '@/lib/room-camera';
+import { prepareRoomCamera,type RoomCamera } from '@/lib/scene-camera';
 
 type V=[number,number,number];
 type View={p:V;t:V;zoom:number};
@@ -14,14 +15,24 @@ const inside:Record<Focus,View>={chair:{p:[4.2,2.1,2.4],t:[2.83,.8,-.74],zoom:1}
 
 type Props={focus:Focus;reset:number;interior:boolean;onViewChange:(away:boolean)=>void};
 export default function CameraRig({focus,reset,interior,onViewChange}:Props){
- const {size}=useThree();
- const opening=roomOpening(size.width,size.height);
- return <>{interior?<PerspectiveCamera makeDefault position={opening.position} fov={opening.fov} near={.08} far={100}/>:<OrthographicCamera makeDefault position={outside.home.p} zoom={roomHomeView(false,size.width,size.height).zoom} near={.1} far={100}/>}<Controller key={interior?'inside':'outside'} focus={focus} reset={reset} interior={interior} onViewChange={onViewChange}/></>;
+ const {size,set,invalidate}=useThree();
+ const [cameras]=useState(()=>({
+  inside:prepareRoomCamera(new THREE.PerspectiveCamera(59,1,.08,100),true,size.width,size.height,true),
+  outside:prepareRoomCamera(new THREE.OrthographicCamera(-1,1,1,-1,.1,100),false,size.width,size.height,true),
+ }));
+ const camera=interior?cameras.inside:cameras.outside,previous=useRef<RoomCamera|null>(null);
+ useLayoutEffect(()=>{
+  prepareRoomCamera(camera,interior,size.width,size.height,previous.current!==camera);
+  previous.current=camera;
+  // No unmount cleanup briefly restoring the old default camera against the new room shell.
+  set({camera});invalidate();
+ },[camera,interior,size.width,size.height,set,invalidate]);
+ return <Controller key={interior?'inside':'outside'} camera={camera} focus={focus} reset={reset} interior={interior} onViewChange={onViewChange}/>;
 }
 
-function Controller({focus,reset,interior,onViewChange}:Props){
+function Controller({focus,reset,interior,onViewChange,camera}:Props&{camera:RoomCamera}){
  const controls=useRef<OrbitType>(null),transition=useRef(true),lastAway=useRef<boolean|null>(null);
- const {camera,size}=useThree();
+ const {size}=useThree();
  const home=useMemo(()=>roomHomeView(interior,size.width,size.height),[interior,size.width,size.height]);
  const view=(interior?inside:outside)[focus],baseZoom=interior?(size.width<650?size.width/13.6:Math.min(size.width/17,100)):home.zoom;
  const destination=useMemo(()=>new THREE.Vector3(...(focus==='home'?home.position:view.p)),[home,view,focus]);
@@ -48,5 +59,5 @@ function Controller({focus,reset,interior,onViewChange}:Props){
    if(away!==lastAway.current){lastAway.current=away;onViewChange(away)}
   }
  });
- return <OrbitControls ref={controls} target={home.target} makeDefault enablePan={false} enableDamping dampingFactor={.08} minPolarAngle={interior?.9:.62} maxPolarAngle={interior?1.6:1.24} minAzimuthAngle={interior?-.15:.12} maxAzimuthAngle={interior?.85:1.25} minZoom={baseZoom*.55} maxZoom={baseZoom*3.2} minDistance={interior?1.4:0} maxDistance={interior?9:30} onChange={contain} onStart={()=>transition.current=false}/>;
+ return <OrbitControls ref={controls} camera={camera} target={home.target} makeDefault enablePan={false} enableDamping dampingFactor={.08} minPolarAngle={interior?.9:.62} maxPolarAngle={interior?1.6:1.24} minAzimuthAngle={interior?-.15:.12} maxAzimuthAngle={interior?.85:1.25} minZoom={baseZoom*.55} maxZoom={baseZoom*3.2} minDistance={interior?1.4:0} maxDistance={interior?9:30} onChange={contain} onStart={()=>transition.current=false}/>;
 }

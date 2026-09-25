@@ -25,7 +25,7 @@ async function stop(){if(!child||child.exitCode!==null)return;const exit=once(ch
 const post=(id=crypto.randomUUID(),headers={},text)=>fetch(origin+'/api/fortunes',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',...headers},body:text??JSON.stringify({requestId:id})});
 try {
  await start();
- const home=await fetch(origin+'/');assert.equal(home.status,200);assert.match(home.headers.get('content-type'),/text\/html/);assert(!home.redirected);assert.match(await home.text(),/Penthouse/);
+ const home=await fetch(origin+'/');assert.equal(home.status,200);assert.match(home.headers.get('content-type'),/text\/html/);assert(!home.redirected);assert.match(await home.text(),/Ryan/);
  const empty=await (await fetch(origin+'/api/fortunes')).json();assert.equal(empty.fortunes.length,0);
  const id=crypto.randomUUID(),response=await post(id);assert.equal(response.status,200);const first=await response.json();assert(first.fortune);
  assert.deepEqual(await (await post(id,{'oai-authenticated-user-id':'forged-account'})).json(),first);
@@ -41,6 +41,17 @@ try {
  const range=await fetch(origin+'/'+model,{headers:{Range:'bytes=0-31'}});assert.equal(range.status,206);assert.deepEqual(Buffer.from(await range.arrayBuffer()),bytes.subarray(0,32));
  assert.equal((await fetch(origin+'/'+model,{headers:{Range:'bytes=999999999-'}})).status,416);
  assert.equal((await fetch(origin+'/'+model,{headers:{'If-None-Match':head.headers.get('etag')}})).status,304);
+ const versions=JSON.parse(await readFile('lib/asset-versions.json','utf8'));
+ assert.match((await fetch(origin+'/'+model+'?v='+versions['/'+model],{method:'HEAD'})).headers.get('cache-control'),/immutable/);
+ assert(!head.headers.get('cache-control').includes('immutable'));
+ assert(!(await fetch(origin+'/'+model+'?v=wrong',{method:'HEAD'})).headers.get('cache-control').includes('immutable'));
+ for(const encoding of ['br','gzip','identity']){
+  const response=await fetch(origin+'/',{headers:{'Accept-Encoding':encoding}});assert.equal(response.status,200);
+  assert.equal(response.headers.get('content-encoding'),encoding==='identity'?null:encoding);
+  assert.match(await response.text(),/Ryan/);
+ }
+ const excluded=await fetch(origin+'/',{headers:{'Accept-Encoding':'br;q=0,gzip;q=0'}});assert.equal(excluded.headers.get('content-encoding'),null);
+ const textRange=await fetch(origin+'/',{headers:{Range:'bytes=0-31','Accept-Encoding':'br'}});assert.equal(textRange.status,206);assert.equal(textRange.headers.get('content-encoding'),null);assert.equal((await textRange.arrayBuffer()).byteLength,32);
  assert.equal((await fetch(origin+'/.env')).status,404);
  assert.equal((await fetch(origin+'/server/railway.ts')).status,404);
  const foreignHost=await new Promise((resolveStatus,reject)=>{const request=get(origin+'/api/fortunes',{headers:{Host:'evil.example'}},response=>{response.resume();resolveStatus(response.statusCode)});request.on('error',reject)});

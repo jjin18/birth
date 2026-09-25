@@ -2,6 +2,7 @@
 import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
 import { optimizeModelTextures } from '@/lib/model-textures';
+import { assetUrl } from '@/lib/asset-url';
 
 const configured = new WeakSet<GLTFLoader>();
 function configure(loader: GLTFLoader) {
@@ -14,11 +15,11 @@ function configure(loader: GLTFLoader) {
 }
 
 export function useRoomModel(url: string) {
-  return useGLTF(url, '/draco/', true, configure);
+  return useGLTF(assetUrl(url), '/draco/', true, configure);
 }
 
 export function preloadRoomModel(url: string) {
   // Use the same extension for preloads: an unoptimized cached GLTF would
   // otherwise bypass the hook's loader configuration on first mount.
-  useGLTF.preload(url, '/draco/', true, configure);
+  useGLTF.preload(assetUrl(url), '/draco/', true, configure);
 }

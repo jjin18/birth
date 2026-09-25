@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { build } from 'esbuild';
-import { OrthographicCamera,Vector3 } from 'three';
+import { OrthographicCamera,PerspectiveCamera,Vector3 } from 'three';
 
 const bundle=await build({stdin:{contents:`
 export {roomHomeView,roomViewIsAway,containRoomCamera,cameraBounds} from './lib/room-camera';
+export {prepareRoomCamera} from './lib/scene-camera';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import RoomNavigation,{RoomNavigationContext} from './components/RoomNavigation';
@@ -13,7 +14,18 @@ export function renderStandalone(){return renderToStaticMarkup(<RoomNavigation/>
 `,resolveDir:process.cwd(),loader:'tsx'},bundle:true,write:false,format:'esm',platform:'node',jsx:'automatic',packages:'external'});
 // Resolve external React imports against this repository, not a data: URL.
 const executable=bundle.outputFiles[0].text.replace(/from "([^\"]+)"/g,(_,name)=>`from ${JSON.stringify(import.meta.resolve(name))}`);
-const {roomHomeView,roomViewIsAway,containRoomCamera,cameraBounds,renderNavigation,renderStandalone}=await import('data:text/javascript;base64,'+Buffer.from(executable).toString('base64'));
+const {roomHomeView,roomViewIsAway,containRoomCamera,cameraBounds,renderNavigation,renderStandalone,prepareRoomCamera}=await import('data:text/javascript;base64,'+Buffer.from(executable).toString('base64'));
+for(const interior of [false,true,false,true])for(const [width,height] of [[1280,720],[390,667],[844,390]]){
+ const camera=interior?new PerspectiveCamera(59,1,.08,100):new OrthographicCamera(-1,1,1,-1,.1,100);
+ prepareRoomCamera(camera,interior,width,height,true);
+ const home=roomHomeView(interior,width,height),direction=new Vector3();
+ camera.getWorldDirection(direction);
+ assert(direction.distanceTo(new Vector3(...home.target).sub(camera.position).normalize())<1e-10,'camera faces the room before its first frame');
+ assert(camera.projectionMatrix.elements.every(Number.isFinite),'projection is ready before view switch');
+ camera.position.x+=.1;
+ prepareRoomCamera(camera,interior,width+10,height,false);
+ assert.equal(camera.position.x,home.position[0]+.1,'resize does not teleport the camera');
+}
 const point=([x,y,z])=>({x,y,z});
 for(const interior of [true,false])for(const [width,height] of [[1280,850],[390,844]]){
  const home=roomHomeView(interior,width,height),position=point(home.position),target=point(home.target);
@@ -38,10 +50,18 @@ for(const interior of [true,false]){
  assert.equal((focused.match(/<button/g)||[]).length,2);
 }
 assert.equal(renderStandalone(),'','isolated arcade has no room controls');
+const navigationSource=await readFile('components/RoomNavigation.tsx','utf8');
+assert(navigationSource.includes('<KeysIcon/>')&&!navigationSource.includes('ScanEye'),'both view buttons use the set-of-keys icon');
+const rig=await readFile('components/Penthouse/CameraRig.tsx','utf8');
+assert(rig.includes('useLayoutEffect')&&rig.includes('set({camera});invalidate()')&&!rig.includes('<PerspectiveCamera'),'prepared cameras switch without a temporary default-camera restore');
+const effects=await readFile('components/Penthouse/RoomEffects.tsx','utf8');
+assert(effects.includes('camera={initialCamera.current}')&&effects.includes('setMainCamera(state.camera)'),'view changes reuse composer buffers and update the camera before drawing');
+const budget=await readFile('components/Penthouse/RenderBudget.tsx','utf8');
+assert(budget.includes('if (get().frameloop !== loop) setFrameloop(loop)'),'animation clock is not reset on every scheduled frame');
 const experience=await readFile('components/Experience.tsx','utf8');
 assert(experience.includes('[interior,setInterior]=useState(false)'),'first entrance is outside');
 assert(experience.includes("const welcome=!interior&&focus==='home'"),'welcome copy stays out of the interior and focused views');
-for(const text of ['Happy Birthday Ryan','You told me your dream was a high rise in your favorite cities. I made you a little glimpse of that future as a reminder that the keys to your goals are closer than you think <3','I coded some mini games, click on the objects!'])assert(experience.includes(text));
+for(const text of ['Happy Birthday Ryan','You told me your dream was a high rise in each of these cities. I made you a little glimpse of that future as a reminder that the keys to your goals are closer than you think <3','I coded some mini games, click on the objects!'])assert(experience.includes(text));
 assert(!experience.includes('Happy 22nd B-day Ryan'),'entrance uses the simplified birthday heading');
 assert(!experience.includes('inert=')&&!experience.includes('RoomLoader'),'room environment and navigation are visible immediately without a loading cover');
 assert(experience.includes('aria-busy={!roomReady}'),'loading progress remains available to assistive technology');
@@ -56,6 +76,9 @@ for(const [width,height] of [[1280,350],[390,270],[844,160]]){
  }
 }
 const entranceStyles=await readFile('app/interior.css','utf8');
+assert(entranceStyles.includes('.experience[data-interior=false]>.scene-layer')&&!entranceStyles.includes('.experience[data-welcome=true]'),'object focus does not resize the outside canvas');
+assert(experience.includes('<header className="birthday-heading" aria-hidden={!welcome}>')&&experience.includes('<footer className="birthday-message" aria-hidden={!welcome}>'),'hidden welcome text reserves the same grid space while zooming');
+assert(entranceStyles.includes('.experience[data-welcome=false]>.birthday-message{visibility:hidden}'),'welcome text is hidden without layout reflow');
 assert(!/room-loader|key-turn/.test(entranceStyles),'black loading cover and unused animation styles are removed');
 assert(entranceStyles.includes('padding-bottom:clamp(12px,2svh,20px)')&&entranceStyles.includes('.birthday-games{margin-top:16px;'),'mini-games caption has breathing room above and below');
 assert(entranceStyles.includes('.birthday-message{padding-bottom:10px}'),'short screens retain a gap before the city clocks');

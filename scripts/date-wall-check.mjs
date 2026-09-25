@@ -22,7 +22,8 @@ const component=await readFile('components/WallPanel.tsx','utf8');assert(!/supab
 assert(component.includes('loading="lazy"')&&component.includes('photo.thumbnail')&&component.includes('src={photo.src}'));
 assert(component.includes('title="to be continued..."')&&component.includes('headerActions={headerActions}'));
 assert(!/Our date wall|Saved to your date wall|date-wall-toolbar/.test(component));
-for(const label of ['Add photo or note','Lock editing','Edit wall'])assert(component.includes(`aria-label="${label}"`),'small header icons retain accessible labels');
+for(const label of ['Add photo or note'])assert(component.includes(`aria-label="${label}"`),'small header icons retain accessible labels');
+assert(!/Lock editing|Shared passcode|wall-unlock|signIn/.test(component),'public editing needs no unlock UI');
 const css=await readFile('app/panels.css','utf8');
 const thumbnailRule=css.match(/\.date-photo img\{([^}]+)\}/)?.[1];assert(thumbnailRule?.includes('height:auto')&&thumbnailRule.includes('object-fit:contain')&&!thumbnailRule.includes('aspect-ratio'),'gallery photos retain their full aspect ratio');
 assert(css.match(/\.date-detail-image img\{([^}]+)\}/)?.[1].includes('object-fit:contain'),'detail photos are uncropped');

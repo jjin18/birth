@@ -1,6 +1,6 @@
 import type {IncomingMessage,ServerResponse} from 'node:http';
 import type {DatabaseSync} from 'node:sqlite';
-import {createHash,createHmac,randomUUID,timingSafeEqual} from 'node:crypto';
+import {randomUUID} from 'node:crypto';
 import {mkdir,writeFile,unlink,stat} from 'node:fs/promises';
 import {createReadStream} from 'node:fs';
 import {join} from 'node:path';
@@ -10,7 +10,6 @@ import {photoDate,validDate} from './photo-date';
 
 const MiB=1024*1024,MAX_INPUT=12*MiB,MAX_STORAGE=100*MiB,MAX_ENTRIES=300;
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-const SESSION_AGE=12*60*60*1000;
 class WallError extends Error{constructor(public status:number,message:string){super(message)}}
 function json(res:ServerResponse,status:number,value:unknown,headers:Record<string,string>={}){
  res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers});res.end(JSON.stringify(value));
@@ -27,18 +26,10 @@ async function readJson(req:IncomingMessage,limit=8192){
  try{value=JSON.parse(raw.toString())}catch{throw new WallError(400,'The message could not be read. Please try again.')}
  if(!value||typeof value!=='object'||Array.isArray(value))throw new WallError(400,'Invalid message.');return value;
 }
-function safeEqual(a:string,b:string){return timingSafeEqual(createHash('sha256').update(a).digest(),createHash('sha256').update(b).digest())}
 type Entry={id:string;title:string;note:string;alt:string;date:string|null;src:string|null;thumbnail:string|null;width:number;height:number;version:number;image_id:string|null};
 type Upload={id:string;date:string|null;width:number;height:number;bytes:number;created:number};
 export function createWall(db:DatabaseSync,dataDir:string){
- const directory=join(dataDir,'wall-images'),secret=process.env.WALL_EDIT_PASSCODE||'';
- const sessionSecret=process.env.WALL_SESSION_SECRET||'';
- if(sessionSecret&&sessionSecret.length<32)throw Error('WALL_SESSION_SECRET must contain at least 32 characters.');
- if(secret&&secret.length<16&&!sessionSecret)throw Error('Short wall passcodes require a separate strong WALL_SESSION_SECRET.');
- if(secret.length>128)throw Error('WALL_EDIT_PASSCODE must contain at most 128 characters.');
- // Never let an easy-to-remember passcode become a forgeable session-signing key.
- // Including the passcode also invalidates existing sessions when it changes.
- const signingKey=createHmac('sha256',sessionSecret||secret).update(secret).digest();
+ const directory=join(dataDir,'wall-images');
  db.exec(`CREATE TABLE IF NOT EXISTS wall_entries (id TEXT PRIMARY KEY,title TEXT NOT NULL,note TEXT NOT NULL DEFAULT '',alt TEXT NOT NULL DEFAULT '',date TEXT,src TEXT,thumbnail TEXT,width INTEGER NOT NULL DEFAULT 0,height INTEGER NOT NULL DEFAULT 0,version INTEGER NOT NULL DEFAULT 1,image_id TEXT UNIQUE,bytes INTEGER NOT NULL DEFAULT 0,created INTEGER NOT NULL);
  CREATE TABLE IF NOT EXISTS wall_uploads(id TEXT PRIMARY KEY,date TEXT,width INTEGER NOT NULL,height INTEGER NOT NULL,bytes INTEGER NOT NULL,created INTEGER NOT NULL);`);
  const seed=db.prepare('INSERT OR IGNORE INTO wall_entries(id,title,alt,date,src,thumbnail,width,height,created) VALUES (?,?,?,?,?,?,?,?,?)');
@@ -51,44 +42,26 @@ export function createWall(db:DatabaseSync,dataDir:string){
   const expired=db.prepare('SELECT id FROM wall_uploads WHERE created < ?').all(Date.now()-24*60*60*1000) as {id:string}[];
   for(const item of expired){await removeFiles(item.id);db.prepare('DELETE FROM wall_uploads WHERE id=?').run(item.id)}
  };
- const sign=(value:string)=>createHmac('sha256',signingKey).update(value).digest('base64url');
- const authenticated=(req:IncomingMessage)=>{
-  if(!secret)return false;
-  const token=req.headers.cookie?.split(';').map(s=>s.trim()).find(s=>s.startsWith('wall_edit='))?.slice(10)||'';
-  const [issued,signature]=token.split('.'),time=Number(issued);
-  return /^\d+$/.test(issued||'')&&time<=Date.now()&&Date.now()-time<SESSION_AGE&&Boolean(signature)&&safeEqual(signature,sign(issued));
- };
- let activeUpload=false,window=Date.now(),reads=0,writes=0,authWindow=Date.now(),failures=0;
- const editHeaders=(token:string,secure:boolean,maxAge=SESSION_AGE/1000)=>({'Set-Cookie':`wall_edit=${token}; HttpOnly; SameSite=Strict; Path=/api/wall; Max-Age=${maxAge}${secure?'; Secure':''}`});
+ let activeUpload=false,window=Date.now(),reads=0,writes=0;
  return async function wall(req:IncomingMessage,res:ServerResponse,url:URL){
   try{
-   const path=url.pathname,method=req.method||'GET',canEdit=authenticated(req);
+   const path=url.pathname,method=req.method||'GET';
    if(path.startsWith('/api/wall/images/')){
     if(method!=='GET'&&method!=='HEAD')throw new WallError(405,'Method not allowed.');
     const name=path.slice('/api/wall/images/'.length),id=name.replace(/(?:-thumb)?\.webp$/,'');
     if(!uuid.test(id)||!new RegExp('^'+id+'(?:-thumb)?\\.webp$').test(name))throw new WallError(404,'Photo not found.');
     const published=db.prepare('SELECT 1 FROM wall_entries WHERE image_id=?').get(id);
-    if(!published&&!(canEdit&&db.prepare('SELECT 1 FROM wall_uploads WHERE id=?').get(id)))throw new WallError(404,'Photo not found.');
+    if(!published&&!(db.prepare('SELECT 1 FROM wall_uploads WHERE id=?').get(id)))throw new WallError(404,'Photo not found.');
     const file=join(directory,name);let info;try{info=await stat(file)}catch{throw new WallError(404,'Photo not found.')}
     res.writeHead(200,{'Content-Type':'image/webp','Content-Length':info.size,'X-Content-Type-Options':'nosniff','Cache-Control':published?'public, max-age=31536000, immutable':'private, no-store'});
     if(method==='HEAD')res.end();else await pipeline(createReadStream(file),res);return;
    }
    if(Date.now()-window>=60000){window=Date.now();reads=0;writes=0}
    if(method==='GET'?++reads>120:++writes>30)throw new WallError(429,'Please wait a minute and try again.');
-   if(path==='/api/wall'&&method==='GET')return json(res,200,{entries:list(),canEdit,editingEnabled:Boolean(secret)});
+   if(path==='/api/wall'&&method==='GET')return json(res,200,{entries:list(),canEdit:true,editingEnabled:true});
    if(!['POST','PATCH','DELETE'].includes(method))throw new WallError(405,'Method not allowed.');
-   // Cookie authentication alone is not enough: require an exact same-origin write.
+   // Public editing is intentional; keep exact same-origin writes and bounded uploads.
    if(req.headers.origin!==url.origin||req.headers['sec-fetch-site']==='cross-site')throw new WallError(403,'Open the date wall on this website to make changes.');
-   if(path==='/api/wall/session'&&method==='POST'){
-    if(!secret)throw new WallError(503,'Editing has not been set up yet.');
-    if(Date.now()-authWindow>=15*60000){authWindow=Date.now();failures=0}
-    if(failures>=8)throw new WallError(429,'Too many attempts. Please wait 15 minutes.');
-    const value=await readJson(req,512);
-    if(typeof value.passcode!=='string'||!safeEqual(value.passcode,secret)){failures++;throw new WallError(401,'That passcode did not match.')}
-    const issued=String(Date.now());return json(res,200,{canEdit:true},editHeaders(issued+'.'+sign(issued),url.protocol==='https:'));
-   }
-   if(path==='/api/wall/session'&&method==='DELETE')return json(res,200,{canEdit:false},editHeaders('',url.protocol==='https:',0));
-   if(!canEdit)throw new WallError(401,'Unlock editing with your shared passcode first.');
    if(path==='/api/wall/upload'&&method==='POST'){
     if(activeUpload)throw new WallError(429,'Another photo is being prepared. Please try again in a moment.');
     if(!['image/jpeg','image/png','image/webp'].includes(req.headers['content-type']||''))throw new WallError(415,'Choose a JPEG, PNG or WebP photo. Export HEIC photos as JPEG first.');

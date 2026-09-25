@@ -53,6 +53,9 @@ const cookieCss=await readFile('app/fortunes.css','utf8');assert(!cookieCss.incl
 assert(cookieCss.includes(".panel.fortune-game>.panel-inner>.panel-head .eyebrow{font:500 14px/1.4 'DM Sans',Arial,sans-serif;color:var(--gold);text-transform:none;letter-spacing:.03em;margin:0}"),'fortune title matches other beige headers, including small screens');
 assert(cookieCss.includes('[data-cookie-phase=revealed]) .cookie-half{opacity:1}'),'broken cookie remains visible after the reveal, including reduced motion');
 const crack=await readFile('components/FortuneCrack.tsx','utf8');
+assert(cookieCss.includes('.fortune-crack:is([data-cookie-phase=cracked],[data-cookie-phase=revealed]) .cookie-unfolding-paper{opacity:1}'),'note and broken cookie appear on the same phase, including reduced motion');
+assert(!cookieCss.match(/@keyframes fortune-unfold\{[^\n]*opacity:0/),'note has no hidden lead-in after the crack');
+assert(crack.includes("aria-hidden={phase==='loading'||phase==='intact'}"),'note is not announced before the cookie cracks');
 assert(crack.includes('if(!imageReady)return;')&&crack.includes('onLoad={()=>setImageReady(true)}'),'animation waits for the original image before its two-second shake');
 assert(crack.includes('onError={()=>{setImageFailed(true);setImageReady(true)}}'),'a failed image gets a lightweight visible fallback');
 assert(crack.includes("setPhase('revealed');onRevealed()"),'buttons and cookie visibility share one reveal clock');

@@ -37,6 +37,6 @@ export default function FortuneCrack({note,onRevealed}:{note:SavedFortune;onReve
    <div className="cookie-half cookie-half-right" aria-hidden="true">{imageFailed?fallback:<img src="/textures/fortune-cookie.png" alt="" width={800} height={696}/>}</div>
    {!imageFailed&&<div className="cookie-crumbs" aria-hidden="true">{crumbs.map(([x,y,spin,size],i)=><span key={i} className="cookie-crumb" style={{'--crumb-x':x+'px','--crumb-y':y+'px','--crumb-spin':spin+'deg','--crumb-size':size+'px','--crumb-delay':i*18+'ms'} as CSSProperties}><img src="/textures/fortune-cookie.png" alt=""/></span>)}</div>}
   </div>
-  <div className="cookie-unfolding-paper"><FortuneSlip note={note}/></div>
+  <div className="cookie-unfolding-paper" aria-hidden={phase==='loading'||phase==='intact'}><FortuneSlip note={note}/></div>
  </div>;
 }

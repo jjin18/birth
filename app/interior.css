@@ -1,15 +1,17 @@
 .view-controls{position:absolute;z-index:6;left:50%;top:max(22px,env(safe-area-inset-top));transform:translateX(-50%);display:flex;align-items:center;white-space:nowrap}
 .view-controls .zoom-out{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%)}
-.experience[data-welcome=true]{min-height:0;display:grid;grid-template-areas:"birthday" "view" "scene" "message" "cities";grid-template-rows:auto 44px minmax(0,1fr) auto auto;row-gap:clamp(8px,1.5svh,14px);padding:max(24px,env(safe-area-inset-top)) 0 max(20px,env(safe-area-inset-bottom))}
+.experience[data-welcome=false]>.birthday-heading,.experience[data-welcome=false]>.birthday-message{visibility:hidden}
+.panel:focus{outline:none}
+.experience[data-interior=false]{min-height:0;display:grid;grid-template-areas:"birthday" "view" "scene" "message" "cities";grid-template-rows:auto 44px minmax(0,1fr) auto auto;row-gap:clamp(8px,1.5svh,14px);padding:max(24px,env(safe-area-inset-top)) 0 max(20px,env(safe-area-inset-bottom))}
 .birthday-heading{grid-area:birthday;text-align:center;padding:0 18px;pointer-events:none}
 .birthday-heading h1{margin:0;font:400 clamp(24px,3vw,36px)/1.15 'Italiana',Georgia,serif;letter-spacing:.005em;text-wrap:balance}
-.experience[data-welcome=true]>.view-controls{grid-area:view;position:relative;left:auto;top:auto;transform:none;justify-self:center;align-self:start}
-.experience[data-welcome=true]>.scene-layer{grid-area:scene;position:relative;inset:auto;min-width:0;min-height:0}
+.experience[data-interior=false]>.view-controls{grid-area:view;position:relative;left:auto;top:auto;transform:none;justify-self:center;align-self:start}
+.experience[data-interior=false]>.scene-layer{grid-area:scene;position:relative;inset:auto;min-width:0;min-height:0}
 .birthday-message{grid-area:message;justify-self:center;width:calc(100% - 48px);max-width:560px;padding-bottom:clamp(12px,2svh,20px);text-align:center;pointer-events:none;text-wrap:balance}
 .birthday-message p{margin:0;font-size:clamp(11px,1vw,12px);line-height:1.65;color:#d9d8d3}
 .birthday-message .birthday-games{margin-top:16px;font-size:10px;line-height:1.5;color:#a8aeb3}
-.experience[data-welcome=true]>.room-city-selector{grid-area:cities;position:relative;left:auto;bottom:auto;transform:none;justify-self:center}
-@media(max-height:500px){.experience[data-welcome=true]{grid-template-rows:auto 34px minmax(0,1fr) auto auto;row-gap:5px;padding:max(10px,env(safe-area-inset-top)) 0 max(10px,env(safe-area-inset-bottom))}.birthday-heading h1{font-size:22px}.experience[data-welcome=true]>.view-controls .view-toggle{min-height:34px;padding:6px 11px;font-size:11px}.experience[data-welcome=true]>.view-controls .zoom-out{width:34px;height:34px;min-height:34px}.birthday-message{padding-bottom:10px}.birthday-message p{font-size:11px;line-height:1.4}.birthday-message .birthday-games{margin-top:8px;font-size:10px}.experience[data-welcome=true]>.room-city-selector button{padding:5px 12px}}
+.experience[data-interior=false]>.room-city-selector{grid-area:cities;position:relative;left:auto;bottom:auto;transform:none;justify-self:center}
+@media(max-height:500px){.experience[data-interior=false]{grid-template-rows:auto 34px minmax(0,1fr) auto auto;row-gap:5px;padding:max(10px,env(safe-area-inset-top)) 0 max(10px,env(safe-area-inset-bottom))}.birthday-heading h1{font-size:22px}.experience[data-interior=false]>.view-controls .view-toggle{min-height:34px;padding:6px 11px;font-size:11px}.experience[data-interior=false]>.view-controls .zoom-out{width:34px;height:34px;min-height:34px}.birthday-message{padding-bottom:10px}.birthday-message p{font-size:11px;line-height:1.4}.birthday-message .birthday-games{margin-top:8px;font-size:10px}.experience[data-interior=false]>.room-city-selector button{padding:5px 12px}}
 .view-toggle,.zoom-out{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;font-size:13px;color:#ead9bc;background:#17232cf2;border:1px solid #bba37e70;border-radius:24px;backdrop-filter:blur(10px)}
 .view-toggle:hover,.zoom-out:hover{background:#29383f;border-color:#dbb984}
 .zoom-out{width:44px;height:44px;padding:0;border-radius:50%}

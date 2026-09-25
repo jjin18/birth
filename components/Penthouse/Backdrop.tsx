@@ -6,6 +6,7 @@ import { cities,type City } from '@/lib/cities';
 import { skyAtmosphere,skylinePath,type SkyMode } from '@/lib/daylight';
 import { windowDimensions } from '@/lib/room-dimensions';
 import { skylineCrop } from '@/lib/skyline-framing';
+import { assetUrl } from '@/lib/asset-url';
 
 /** Keep the last valid texture until its replacement is decoded. One reusable
  * loader and explicit disposal avoid a blank window or a suspended whole room.
@@ -15,7 +16,7 @@ export default function Backdrop({interior,city,mode,onUnavailable}:{interior:bo
  const texture=loaded?.texture;
  const current=useRef<THREE.Texture|null>(null),light=useRef<THREE.RectAreaLight>(null);
  const target=skyAtmosphere[mode],targetColor=useMemo(()=>new THREE.Color(target.color),[target.color]);
- const path=skylinePath(cities[city],mode);
+ const path=assetUrl(skylinePath(cities[city],mode));
  const window=windowDimensions(interior);
  useEffect(()=>{
   let active=true;const loader=new THREE.TextureLoader();

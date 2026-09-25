@@ -3,7 +3,8 @@ import { createReadStream, mkdirSync, statSync } from 'node:fs';
 import { resolve, join, sep, extname } from 'node:path';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { pipeline } from 'node:stream/promises';
-import { createGzip } from 'node:zlib';
+import assetVersions from '../lib/asset-versions.json';
+import { acceptedEncodings } from './static-encoding';
 import worker from '../worker/index';
 import { fortunes } from '../lib/fortunes';
 import { initializeFortuneStorage,hasFortuneReset,resetFortunesOnce } from './fortune-storage';
@@ -91,7 +92,9 @@ async function staticFile(req:IncomingMessage,res:ServerResponse,url:URL){
  let stat;try{stat=statSync(file);if(!stat.isFile())throw Error('Not a file')}catch{return json(res,404,{error:'Not found.'})}
  const type=mime[extname(file)]||'application/octet-stream';
  const etag=`W/"${stat.size.toString(16)}-${Math.trunc(stat.mtimeMs).toString(16)}"`;
- const headers:Record<string,string|number>={...commonHeaders,'Content-Type':type,ETag:etag,'Accept-Ranges':'bytes','Cache-Control':path.startsWith('/_next/static/')?'public, max-age=31536000, immutable':'public, max-age=0, must-revalidate',Vary:'Accept-Encoding'};
+ const version=(assetVersions as Record<string,string>)[path];
+ const immutable=path.startsWith('/_next/static/')||Boolean(version&&url.searchParams.get('v')===version);
+ const headers:Record<string,string|number>={...commonHeaders,'Content-Type':type,ETag:etag,'Accept-Ranges':'bytes','Cache-Control':immutable?'public, max-age=31536000, immutable':'public, max-age=0, must-revalidate',Vary:'Accept-Encoding'};
  if(req.headers['if-none-match']===etag){res.writeHead(304,headers);res.end();return}
  let start=0,end=stat.size-1,status=200;
  if(req.headers.range&&!req.headers['if-range']){
@@ -102,13 +105,17 @@ async function staticFile(req:IncomingMessage,res:ServerResponse,url:URL){
   if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start>end||start>=stat.size)return json(res,416,{error:'Invalid range.'},{'Content-Range':`bytes */${stat.size}`});
   status=206;headers['Content-Range']=`bytes ${start}-${end}/${stat.size}`;
  }
- const gzip=status===200&&/\bgzip\b(?!\s*;\s*q=0(?:[.,\s]|$))/.test(req.headers['accept-encoding']||'')&&/^(text\/|application\/json)/.test(type);
- if(gzip)headers['Content-Encoding']='gzip';else headers['Content-Length']=stat.size===0?0:end-start+1;
+ let encodedFile:string|undefined;
+ if(status===200&&!req.headers.range)for(const encoding of acceptedEncodings(req.headers['accept-encoding']||'')){
+  const candidate=file+(encoding==='br'?'.br':'.gz');
+  try{const compressed=statSync(candidate);if(compressed.isFile()){encodedFile=candidate;headers['Content-Encoding']=encoding;headers['Content-Length']=compressed.size;break}}catch{}
+ }
+ if(!encodedFile)headers['Content-Length']=stat.size===0?0:end-start+1;
  res.writeHead(status,headers);
  if(req.method==='HEAD'||stat.size===0){res.end();return}
  // Stream geometry/images off disk instead of buffering the whole room in RAM.
- const stream=createReadStream(file,{start,end});
- if(gzip)await pipeline(stream,createGzip(),res);else await pipeline(stream,res);
+ const stream=encodedFile?createReadStream(encodedFile):createReadStream(file,{start,end});
+ await pipeline(stream,res);
 }
 const server=createServer(async(req,res)=>{
  try {

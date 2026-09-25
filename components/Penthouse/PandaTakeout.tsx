@@ -1,4 +1,5 @@
 'use client';
+import { assetUrl } from '@/lib/asset-url';
 import { useEffect,useMemo,useState } from 'react';
 import * as THREE from 'three';
 type V=[number,number,number];
@@ -16,7 +17,7 @@ export default function PandaTakeout({click,position}:{click:()=>void;position:V
  const [textures,setTextures]=useState<{logo:THREE.Texture|null;food:THREE.Texture|null}>({logo:null,food:null});
  const geometry=useMemo(()=>({outer:cartonGeometry(),inner:cartonGeometry(.003)}),[]);
  const flap=useMemo(()=>{const shape=new THREE.Shape();shape.moveTo(-.23,0);shape.lineTo(.23,0);shape.lineTo(.205,.135);shape.lineTo(.155,.175);shape.lineTo(-.19,.168);shape.closePath();return new THREE.ShapeGeometry(shape)},[]);
- useEffect(()=>{let active=true;const loaded:THREE.Texture[]=[];new THREE.TextureLoader().load('/textures/panda-box-reference.png',image=>{if(!active){image.dispose();return}image.colorSpace=THREE.SRGBColorSpace;image.anisotropy=4;const logo=image.clone(),food=image.clone();logo.repeat.set(108/679,108/450);logo.offset.set(308/679,(450-355)/450);food.repeat.set(102/679,96/450);food.offset.set(280/679,(450-177)/450);logo.needsUpdate=food.needsUpdate=true;loaded.push(image,logo,food);setTextures({logo,food})});return()=>{active=false;loaded.forEach(t=>t.dispose())}},[]);
+ useEffect(()=>{let active=true;const loaded:THREE.Texture[]=[];new THREE.TextureLoader().load(assetUrl('/textures/panda-box-reference.png'),image=>{if(!active){image.dispose();return}image.colorSpace=THREE.SRGBColorSpace;image.anisotropy=4;const logo=image.clone(),food=image.clone();logo.repeat.set(108/679,108/450);logo.offset.set(308/679,(450-355)/450);food.repeat.set(102/679,96/450);food.offset.set(280/679,(450-177)/450);logo.needsUpdate=food.needsUpdate=true;loaded.push(image,logo,food);setTextures({logo,food})});return()=>{active=false;loaded.forEach(t=>t.dispose())}},[]);
  useEffect(()=>()=>{geometry.outer.dispose();geometry.inner.dispose();flap.dispose()},[geometry,flap]);
  return <group name="panda-express" position={position} rotation={[0,-.24,0]} onClick={e=>{e.stopPropagation();click()}}>
   <mesh geometry={geometry.outer} castShadow receiveShadow><meshPhysicalMaterial color="#c51c27" roughness={.47} clearcoat={.18} side={THREE.DoubleSide}/></mesh>
