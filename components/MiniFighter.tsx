@@ -1,9 +1,106 @@
 'use client';
-import { useEffect,useRef,useState } from 'react';
-type Fighter={x:number;y:number;vy:number;hp:number;attack:number;cooldown:number;facing:number};
-export default function MiniFighter(){const canvas=useRef<HTMLCanvasElement>(null),keys=useRef(new Set<string>()),state=useRef<{p:Fighter;e:Fighter;time:number}|null>(null),[character,setCharacter]=useState('Jia'),[playing,setPlaying]=useState(false),[result,setResult]=useState('');
- function start(){state.current={p:{x:180,y:0,vy:0,hp:100,attack:0,cooldown:0,facing:1},e:{x:580,y:0,vy:0,hp:100,attack:0,cooldown:0,facing:-1},time:60};setResult('');setPlaying(true);keys.current.clear()}
- useEffect(()=>{const down=(e:KeyboardEvent)=>{if(['ArrowLeft','ArrowRight','ArrowUp',' ','a','d','w','j'].includes(e.key)){e.preventDefault();keys.current.add(e.key)}};const up=(e:KeyboardEvent)=>keys.current.delete(e.key);const blur=()=>keys.current.clear();if(playing){addEventListener('keydown',down);addEventListener('keyup',up);addEventListener('blur',blur)}return()=>{removeEventListener('keydown',down);removeEventListener('keyup',up);removeEventListener('blur',blur)}},[playing]);
- useEffect(()=>{if(!playing)return;let id=0,last=0,aiClock=0;function frame(now:number){const dt=last?Math.min((now-last)/1000,.04):0;last=now;const s=state.current!,ctx=canvas.current!.getContext('2d')!;s.time-=dt;const p=s.p,e=s.e,held=keys.current;p.facing=p.x<e.x?1:-1;e.facing=-p.facing;if(held.has('ArrowLeft')||held.has('a'))p.x-=210*dt;if(held.has('ArrowRight')||held.has('d'))p.x+=210*dt;if((held.has('ArrowUp')||held.has('w'))&&p.y===0)p.vy=430;if((held.has(' ')||held.has('j'))&&p.cooldown<=0){p.attack=.2;p.cooldown=.45;if(Math.abs(p.x-e.x)<85&&Math.abs(p.y-e.y)<65)e.hp-=10}aiClock+=dt;if(Math.abs(p.x-e.x)>65)e.x+=e.facing*140*dt;if(aiClock>1.05){aiClock=0;if(Math.abs(p.x-e.x)<90&&Math.abs(p.y-e.y)<65){e.attack=.2;p.hp-=8}if(p.y>20&&e.y===0)e.vy=390}for(const f of [p,e]){f.x=Math.max(40,Math.min(760,f.x));f.y=Math.max(0,f.y+f.vy*dt);f.vy-=980*dt;if(f.y===0)f.vy=0;f.attack=Math.max(0,f.attack-dt);f.cooldown-=dt}ctx.fillStyle='#192630';ctx.fillRect(0,0,800,350);ctx.strokeStyle='#ffffff09';for(let x=0;x<800;x+=40){ctx.beginPath();ctx.moveTo(x,90);ctx.lineTo(x,300);ctx.stroke()}ctx.fillStyle='#283a42';ctx.fillRect(0,294,800,56);ctx.fillStyle='#cca878';ctx.fillRect(0,294,800,2);function person(f:Fighter,color:string,label:string){const y=294-f.y;ctx.fillStyle='#0004';ctx.beginPath();ctx.ellipse(f.x,299,32,6,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=12;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(f.x-10,y-3);ctx.lineTo(f.x-9,y-28);ctx.lineTo(f.x,y-55);ctx.lineTo(f.x+12,y-28);ctx.lineTo(f.x+14,y-3);ctx.stroke();ctx.fillStyle=color;ctx.fillRect(f.x-17,y-79,34,40);ctx.fillStyle='#ddbd96';ctx.beginPath();ctx.arc(f.x,y-94,18,0,Math.PI*2);ctx.fill();ctx.fillStyle='#363439';ctx.beginPath();ctx.arc(f.x,y-100,18,Math.PI,Math.PI*2);ctx.fill();ctx.strokeStyle=color;ctx.beginPath();ctx.moveTo(f.x,y-69);ctx.lineTo(f.x+f.facing*(f.attack>0?65:29),y-(f.attack>0?65:54));ctx.stroke();ctx.fillStyle='#f0dcba';ctx.font='12px Arial';ctx.textAlign='center';ctx.fillText(label,f.x,y-124)}person(p,'#c9a06e',character);person(e,'#85a19a',character==='Jia'?'Ryan':'Jia');ctx.fillStyle='#34434a';ctx.fillRect(25,28,280,10);ctx.fillRect(495,28,280,10);ctx.fillStyle='#c9a06e';ctx.fillRect(25,28,280*Math.max(p.hp,0)/100,10);ctx.fillStyle='#85a19a';ctx.fillRect(495,28,280*Math.max(e.hp,0)/100,10);ctx.fillStyle='#eee0c8';ctx.font='24px Georgia';ctx.textAlign='center';ctx.fillText(String(Math.max(0,Math.ceil(s.time))),400,43);if(p.hp<=0||e.hp<=0||s.time<=0){const who=p.hp===e.hp?'A diplomatic draw.':p.hp>e.hp?`${character} wins. Absolutely devastating.`:`${character==='Jia'?'Ryan':'Jia'} wins. We don’t have to talk about it.`;setResult(who);setPlaying(false);return}id=requestAnimationFrame(frame)}id=requestAnimationFrame(frame);return()=>cancelAnimationFrame(id)},[playing,character]);
- return <section className="fighter"><p className="panel-description">A friendly dispute. Very tiny fists.</p><div className="type-selector">{['Jia','Ryan'].map(c=><button disabled={playing} aria-pressed={character===c} key={c} onClick={()=>setCharacter(c)}>Play as {c}</button>)}</div><div className="fighter-arena"><canvas ref={canvas} width={800} height={350} aria-label="Mini fighter arena"/>{!playing&&<div className="fighter-overlay"><p>{result||'Choose your fighter.'}</p><button className="gold-button" onClick={start}>{result?'Rematch':'Let’s settle this'}</button></div>}</div><div className="touch-controls">{[['ArrowLeft','←'],['ArrowRight','→'],['ArrowUp','Jump'],[' ','Attack']].map(([k,label])=><button key={k} onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);keys.current.add(k)}} onPointerUp={()=>keys.current.delete(k)} onPointerCancel={()=>keys.current.delete(k)}>{label}</button>)}</div><p className="control-help">← → Move · ↑ Jump · Space Attack</p></section>
+import { useEffect, useRef, useState } from 'react';
+import { ARENA, CONTROLS, createMatch, poseFor, stepMatch, type Input, type Match } from '@/lib/fighter-game';
+import { loadSprites, paintMatch, type Sprites } from '@/lib/fighter-sprites';
+
+const gameCodes = new Set<string>(CONTROLS.flatMap(c => [c.left, c.right, c.jump, c.punch]));
+export default function MiniFighter() {
+  const canvas = useRef<HTMLCanvasElement>(null), arena = useRef<HTMLDivElement>(null);
+  const keys = useRef(new Set<string>()), presses = useRef(new Set<string>());
+  const pointers = useRef(new Map<number, string>()), sprites = useRef<Sprites | null>(null);
+  const match = useRef<Match>(createMatch()), paused = useRef(false);
+  const [view, setView] = useState({ phase: 'lobby', time: 60, hp: [100, 100], result: '', paused: false });
+  const [assetState, setAssetState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [attempt, setAttempt] = useState(0);
+  function clearInput() { keys.current.clear(); presses.current.clear(); pointers.current.clear(); }
+  function publish() {
+    const s = match.current;
+    const next = { phase: s.phase, time: Math.ceil(s.time), hp: s.fighters.map(f => f.hp), result: s.result, paused: paused.current };
+    setView(previous => previous.phase === next.phase && previous.time === next.time && previous.hp[0] === next.hp[0] && previous.hp[1] === next.hp[1] && previous.result === next.result && previous.paused === next.paused ? previous : next);
+  }
+  function start() {
+    if (assetState !== 'ready') return;
+    clearInput(); paused.current = false; match.current = createMatch('ready'); publish(); arena.current?.focus();
+  }
+  function resume() { clearInput(); paused.current = false; publish(); arena.current?.focus(); }
+
+  useEffect(() => {
+    let cancelled = false;
+    setAssetState('loading');
+    loadSprites().then(result => { if (!cancelled) { sprites.current = result; setAssetState('ready'); } }).catch(() => { if (!cancelled) setAssetState('error'); });
+    return () => { cancelled = true; sprites.current = null; };
+  }, [attempt]);
+
+  useEffect(() => {
+    const down = (event: KeyboardEvent) => {
+      if (!gameCodes.has(event.code) || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (!['ready', 'fight'].includes(match.current.phase) || paused.current) return;
+      event.preventDefault();
+      if (!keys.current.has(event.code)) presses.current.add(event.code);
+      keys.current.add(event.code);
+    };
+    const up = (event: KeyboardEvent) => { if (gameCodes.has(event.code)) { keys.current.delete(event.code); event.preventDefault(); } };
+    const pause = () => { clearInput(); if (['ready', 'fight'].includes(match.current.phase)) { paused.current = true; publish(); } };
+    const visibility = () => { if (document.hidden) pause(); };
+    window.addEventListener('keydown', down); window.addEventListener('keyup', up); window.addEventListener('blur', pause);
+    document.addEventListener('visibilitychange', visibility);
+    return () => {
+      clearInput(); window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); window.removeEventListener('blur', pause);
+      document.removeEventListener('visibilitychange', visibility);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (assetState !== 'ready') return;
+    let frame = 0, last = 0, lastPublish = 0;
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tick = (now: number) => {
+      const s = match.current, dt = last ? Math.min((now - last) / 1000, .04) : 0; last = now;
+      if (!paused.current) {
+        const held = new Set([...keys.current, ...pointers.current.values()]);
+        const inputs = CONTROLS.map(c => ({ left: held.has(c.left), right: held.has(c.right), jump: presses.current.has(c.jump), punch: held.has(c.punch) || presses.current.has(c.punch) })) as [Input, Input];
+        stepMatch(s, inputs, dt);
+      }
+      presses.current.clear();
+      const ctx = canvas.current?.getContext('2d');
+      if (ctx && sprites.current) paintMatch(ctx, s, sprites.current, now, reducedMotion || paused.current);
+      if (arena.current) {
+        arena.current.dataset.phase = s.phase;
+        arena.current.dataset.poses = s.fighters.map(f => poseFor(f, s.phase)).join(' ');
+      }
+      if (now - lastPublish > 100 || s.phase !== view.phase) { publish(); lastPublish = now; }
+      // Static screens and paused games do not need a continuous render loop.
+      if (!paused.current && ['ready', 'fight'].includes(s.phase)) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [assetState, view.phase, view.paused]);
+
+  return <section className="fighter" aria-label="Two-player boxing">
+    <div className="fighter-hud">
+      <div><span>Jia <small>W A S D</small></span><meter aria-label="Jia health" min={0} max={100} value={view.hp[0]}/></div>
+      <span className="fighter-timer" aria-label={`${view.time} seconds remaining`}>{view.time}</span>
+      <div><span>Ryan <small>↑ ← ↓ →</small></span><meter aria-label="Ryan health" min={0} max={100} value={view.hp[1]}/></div>
+    </div>
+    <div className="fighter-arena" ref={arena} tabIndex={0} aria-label="Boxing arena. Jia uses A D to move, W to jump, S to punch. Ryan uses arrow keys to move and jump, down to punch.">
+      <canvas ref={canvas} width={ARENA.width} height={ARENA.height} role="img" aria-label="Jia and Ryan boxing on a grey stage"/>
+      {assetState === 'loading' && <div className="fighter-message" role="status">Loading fighters…</div>}
+      {assetState === 'error' && <div className="fighter-message" role="alert"><p>Couldn’t load the fighters.</p><button className="fighter-button" onClick={() => setAttempt(n => n + 1)}>Try again</button></div>}
+      {assetState === 'ready' && view.phase === 'ready' && <div className="fighter-ready" role="status">Ready</div>}
+      {view.paused && <div className="fighter-message"><p>Paused</p><button className="fighter-button" onClick={resume}>Resume</button></div>}
+    </div>
+    <div className="fighter-match-bar">
+      <span role="status" aria-live="polite">{view.result || (view.phase === 'lobby' ? 'Two players · One keyboard' : ' ')}</span>
+      {(view.phase === 'lobby' || view.phase === 'finished') && <button className="fighter-button" disabled={assetState !== 'ready'} onClick={start}>{view.phase === 'finished' ? 'Rematch' : 'Start fight'}</button>}
+    </div>
+    <div className="fighter-controls">
+      {CONTROLS.map(control => <div className="fighter-player-controls" key={control.name} role="group" aria-label={`${control.name} controls`}>
+        <span>{control.name}</span>
+        {(['left', 'right', 'jump', 'punch'] as const).map((action, i) => <button key={action} disabled={assetState !== 'ready' || !['ready', 'fight'].includes(view.phase) || view.paused} aria-label={`${control.name} ${action}`}
+          onPointerDown={event => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); pointers.current.set(event.pointerId, control[action]); presses.current.add(control[action]); }}
+          onPointerUp={event => pointers.current.delete(event.pointerId)} onPointerCancel={event => pointers.current.delete(event.pointerId)} onLostPointerCapture={event => pointers.current.delete(event.pointerId)}
+        ><kbd>{control.labels[i]}</kbd><small>{action === 'left' ? 'Left' : action === 'right' ? 'Right' : action === 'jump' ? 'Jump' : 'Punch'}</small></button>)}
+      </div>)}
+    </div>
+  </section>;
 }

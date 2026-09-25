@@ -15,6 +15,7 @@
     "textures/panda-box-reference.png",
     "textures/wood-oak.jpg"
   ],
+  "arcade": ["arcade/jia-poses.webp", "arcade/ryan-poses.webp"],
   "memoryWallImages": ["cities/paris.jpg"],
   "runtimeSupport": [
     "draco/draco_decoder.js",

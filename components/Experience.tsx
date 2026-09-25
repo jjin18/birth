@@ -6,9 +6,10 @@ import { cities, type Focus } from '@/lib/cities';
 import { playBark } from '@/lib/dog-audio';
 import { getFortunes } from '@/lib/fortune-api';
 import WallPanel from './WallPanel';
-import Arcade from './Arcade';
 import FortunePanel from './FortunePanel';
 import { getDaylight } from '@/lib/daylight';
+
+const Arcade = dynamic(() => import('./Arcade'), { ssr: false });
 
 const Scene = dynamic(()=>import('./Penthouse/Scene'), {ssr:false,loading:()=> <div className="loading" role="status" aria-label="Loading the room"><span className="loading-ring"/></div>});
 export default function Experience(){

@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { Miniflare,convertV4MiniflareOptions } from 'miniflare';
-import { transform } from 'esbuild';
+import { transform, build } from 'esbuild';
 
 const source=await readFile('lib/fortunes.ts','utf8');
 const {code}=await transform(source,{loader:'ts',format:'esm'});
 const {fortunes}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 assert.equal(fortunes.length,200);
 assert.equal(new Set(fortunes.map(f=>f.trim().toLowerCase())).size,200);
-const mf=new Miniflare(convertV4MiniflareOptions({modules:true,scriptPath:'dist/server/index.js',compatibilityDate:'2026-09-01',d1Databases:['DB'],bindings:{LOCAL_PREVIEW:'1'}}));
+// Compile only this test's legacy runtime; Railway builds no longer emit it.
+const worker=await build({entryPoints:['worker/index.ts'],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022'});
+const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:worker.outputFiles[0].text,compatibilityDate:'2026-09-01',d1Databases:['DB'],bindings:{LOCAL_PREVIEW:'1'}}));
 try {
  const db=await mf.getD1Database('DB');
  const sql=await readFile('drizzle/0000_modern_grey_gargoyle.sql','utf8');
