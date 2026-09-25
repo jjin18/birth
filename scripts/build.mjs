@@ -2,7 +2,9 @@ import { spawnSync } from 'node:child_process';
 import { mkdir,cp,readFile,rm } from 'node:fs/promises';
 import { resolve,join,sep } from 'node:path';
 import { build } from 'esbuild';
+import { checkAssets } from './asset-check.mjs';
 const root=process.cwd(),dist=resolve(root,'dist');
+await checkAssets();
 const result=spawnSync(process.execPath,['node_modules/next/dist/bin/next','build'],{stdio:'inherit',env:process.env});
 if(result.status!==0)process.exit(result.status||1);
 for(const directory of ['client','server','.openai']){const target=resolve(dist,directory);if(!target.startsWith(dist+sep))throw Error('Invalid build directory');await rm(target,{recursive:true,force:true});await mkdir(target,{recursive:true})}

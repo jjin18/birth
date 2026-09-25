@@ -1,0 +1,28 @@
+{
+  "models": [
+    "models/dog-on-bed.glb",
+    "models/girard-flower-table.glb",
+    "models/herman-miller-aeron.glb",
+    "models/herman-miller-motia-desk.glb",
+    "models/uploaded-bed-v2.glb",
+    "models/uploaded-floor-lamp.glb",
+    "models/uploaded-sofa-v2.glb"
+  ],
+  "textures": [
+    "textures/fabric-linen.jpg",
+    "textures/fortune-cookie.png",
+    "textures/fortune-paper.png",
+    "textures/imac-reference.png",
+    "textures/panda-box-reference.png",
+    "textures/wood-oak.jpg"
+  ],
+  "memoryWallImages": ["cities/paris.jpg"],
+  "runtimeSupport": [
+    "draco/draco_decoder.js",
+    "draco/draco_decoder.wasm",
+    "draco/draco_wasm_wrapper.js",
+    "draco/LICENSE",
+    "draco/README.md",
+    "favicon.svg"
+  ]
+}
