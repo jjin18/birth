@@ -5,8 +5,8 @@ type Opening = { fortune?: SavedFortune; exhausted?: boolean; total: number };
 const unavailable = 'The paper clip could not be reached. Please try again; this opening will not use a second fortune.';
 const signIn = 'The paper clip is unavailable on this address. Please reopen the apartment and try again.';
 
-class FortuneRequestError extends Error {
-  constructor(message: string, readonly retryable = false) { super(message); }
+export class FortuneRequestError extends Error {
+  constructor(message: string, readonly retryable = false,readonly retryAfter=0) { super(message); }
 }
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -31,6 +31,10 @@ async function readResult<T>(response: Response, valid: (data: unknown) => data 
   // object. Never leak JSON parser errors or interpret it as an empty archive.
   if (response.status === 401 || response.redirected) throw new FortuneRequestError(signIn);
   if (response.status === 403) throw new FortuneRequestError('Please reopen the apartment and try again.');
+  if(response.status===429){
+    const wait=Number(response.headers.get('Retry-After'));
+    throw new FortuneRequestError('The cookie needs a short break. This retry will keep the same fortune.',false,Number.isFinite(wait)&&wait>0?Math.min(120,Math.ceil(wait)):60);
+  }
   const retryable = response.ok || response.status === 408 || response.status === 429 || response.status >= 500;
   const text = await response.text();
   const contentType = response.headers.get('content-type') || '';

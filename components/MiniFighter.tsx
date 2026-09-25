@@ -4,11 +4,12 @@ import { ARENA, CONTROLS, createMatch, poseFor, stepMatch, type Input, type Matc
 import { loadSprites, paintMatch, type Sprites } from '@/lib/fighter-sprites';
 
 const gameCodes = new Set<string>(CONTROLS.flatMap(c => [c.left, c.right, c.jump, c.punch]));
-export default function MiniFighter() {
+export default function MiniFighter({onFinish,onStart}:{onFinish?:(result:string)=>void;onStart?:()=>void}) {
   const canvas = useRef<HTMLCanvasElement>(null), arena = useRef<HTMLDivElement>(null);
   const keys = useRef(new Set<string>()), presses = useRef(new Set<string>());
   const pointers = useRef(new Map<number, string>()), sprites = useRef<Sprites | null>(null);
   const match = useRef<Match>(createMatch()), paused = useRef(false);
+  const recorded=useRef<Match|null>(null);
   const [view, setView] = useState({ phase: 'lobby', time: 60, hp: [100, 100], result: '', paused: false });
   const [assetState, setAssetState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [attempt, setAttempt] = useState(0);
@@ -20,7 +21,7 @@ export default function MiniFighter() {
   }
   function start() {
     if (assetState !== 'ready') return;
-    clearInput(); paused.current = false; match.current = createMatch('ready'); publish(); arena.current?.focus();
+    clearInput(); paused.current = false; match.current = createMatch('ready'); onStart?.(); publish(); arena.current?.focus();
   }
   function resume() { clearInput(); paused.current = false; publish(); arena.current?.focus(); }
 
@@ -62,6 +63,7 @@ export default function MiniFighter() {
         stepMatch(s, inputs, dt);
       }
       presses.current.clear();
+      if(s.phase==='finished'&&recorded.current!==s){recorded.current=s;onFinish?.(s.result)}
       const ctx = canvas.current?.getContext('2d');
       if (ctx && sprites.current) paintMatch(ctx, s, sprites.current, now, reducedMotion || paused.current);
       if (arena.current) {
@@ -74,13 +76,13 @@ export default function MiniFighter() {
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [assetState, view.phase, view.paused]);
+  }, [assetState, view.phase, view.paused,onFinish]);
 
-  return <section className="fighter" aria-label="Two-player boxing">
+  return <section className={`fighter ${view.phase==='fight'&&view.time<=10?'fighter-final-seconds':''}`} aria-label="Two-player boxing">
     <div className="fighter-hud">
-      <div><span>Jia <small>W A S D</small></span><meter aria-label="Jia health" min={0} max={100} value={view.hp[0]}/></div>
+      <div><span><span>Jia {view.result==='Jia wins'&&<span aria-label="Winner">👑</span>}</span><small>W A S D</small></span><meter aria-label="Jia health" min={0} max={100} value={view.hp[0]}/></div>
       <span className="fighter-timer" aria-label={`${view.time} seconds remaining`}>{view.time}</span>
-      <div><span>Ryan <small>↑ ← ↓ →</small></span><meter aria-label="Ryan health" min={0} max={100} value={view.hp[1]}/></div>
+      <div><span><span>Ryan {view.result==='Ryan wins'&&<span aria-label="Winner">👑</span>}</span><small>↑ ← ↓ →</small></span><meter aria-label="Ryan health" min={0} max={100} value={view.hp[1]}/></div>
     </div>
     <div className="fighter-arena" ref={arena} tabIndex={0} aria-label="Boxing arena. Jia uses A D to move, W to jump, S to punch. Ryan uses arrow keys to move and jump, down to punch.">
       <canvas ref={canvas} width={ARENA.width} height={ARENA.height} role="img" aria-label="Jia and Ryan boxing on a grey stage"/>
@@ -90,7 +92,7 @@ export default function MiniFighter() {
       {view.paused && <div className="fighter-message"><p>Paused</p><button className="fighter-button" onClick={resume}>Resume</button></div>}
     </div>
     <div className="fighter-match-bar">
-      <span role="status" aria-live="polite">{view.result || (view.phase === 'lobby' ? 'Two players · One keyboard' : ' ')}</span>
+      {view.result&&<span role="status" aria-live="polite">{view.result}</span>}
       {(view.phase === 'lobby' || view.phase === 'finished') && <button className="fighter-button" disabled={assetState !== 'ready'} onClick={start}>{view.phase === 'finished' ? 'Rematch' : 'Start fight'}</button>}
     </div>
     <div className="fighter-controls">

@@ -16,6 +16,7 @@ export default function Experience(){
  const [city,setCity]=useState(0),[focus,setFocus]=useState<Focus>('home'),[reset,setReset]=useState(0),[tip,setTip]=useState(''),[panel,setPanel]=useState<Focus>('home');
  const [lampOn,setLampOn]=useState(true),[dogReaction,setDogReaction]=useState(0),[fortuneCount,setFortuneCount]=useState(0),[fortuneRequestId,setFortuneRequestId]=useState('');
  const [interior,setInterior]=useState(true),[cameraAway,setCameraAway]=useState(false);
+ const [musicOpened,setMusicOpened]=useState(false);
  const [now,setNow]=useState<Date|null>(null),[skyUnavailable,setSkyUnavailable]=useState(false);
  const daylight=useMemo(()=>now?getDaylight(cities[city],now):null,[city,now]);
  const skyMode=daylight?.mode??'dark';
@@ -23,7 +24,7 @@ export default function Experience(){
  const onReady=useCallback(()=>{},[]);
  const toggleLamp=useCallback(()=>setLampOn(value=>!value),[]);
  const onDogClick=useCallback(()=>setDogReaction(value=>value+1),[]);
- const interact=useCallback((next:Focus)=>{if(next==='fortune')setFortuneRequestId(crypto.randomUUID());setFocus(next)},[]);
+ const interact=useCallback((next:Focus)=>{if(next==='fortune')setFortuneRequestId(crypto.randomUUID());if(next==='laptop')setMusicOpened(true);setFocus(next)},[]);
  useEffect(()=>{const refresh=()=>{void getFortunes().then(data=>setFortuneCount(data.fortunes.length)).catch(()=>{})};refresh();window.addEventListener('focus',refresh);return()=>window.removeEventListener('focus',refresh)},[]);
  useEffect(()=>{const tick=()=>setNow(new Date());tick();const timer=setInterval(tick,30000);const refresh=()=>{if(document.visibilityState==='visible')tick()};document.addEventListener('visibilitychange',refresh);window.addEventListener('focus',tick);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',refresh);window.removeEventListener('focus',tick)}},[]);
  useEffect(()=>{const timers:ReturnType<typeof setTimeout>[]=[];setPanel('home');setTip('');
@@ -41,7 +42,7 @@ export default function Experience(){
   {tip&&<div className="moment moment-emoji" role="status">{tip}</div>}
   {panel==='wall'&&<WallPanel close={home}/>}
   {panel==='gloves'&&<Arcade close={home}/>}
-  {panel==='laptop'&&<MusicPanel close={home}/>}
-  {(panel==='fortune'||panel==='paperclip')&&<FortunePanel mode={panel} requestId={fortuneRequestId} close={home} onCollection={setFortuneCount} onOpenClip={()=>interact('paperclip')} onAnother={()=>interact('fortune')}/>}
+  {musicOpened&&<MusicPanel open={panel==='laptop'} close={home}/>}
+  {(panel==='fortune'||panel==='paperclip')&&<FortunePanel key={panel+'-'+fortuneRequestId} mode={panel} requestId={fortuneRequestId} close={home} onCollection={setFortuneCount} onOpenClip={()=>interact('paperclip')} onAnother={()=>interact('fortune')}/>}
  </main></RoomNavigationContext.Provider>;
 }

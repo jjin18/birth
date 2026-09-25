@@ -9,15 +9,24 @@ import {keyboardColors,keyboardKeyColor} from '@/lib/room-finishes';
 type V=[number,number,number];
 function Part({p,s,c,kind='paint',r=.018,rotation}:{p:V;s:V;c:string;kind?:SurfaceKind;r?:number;rotation?:V}){return <RoundedBox position={p} args={s} radius={r} smoothness={4} rotation={rotation} castShadow receiveShadow><Surface color={c} kind={kind}/></RoundedBox>}
 function Bar({from,to,r=.025,c='#34383a'}:{from:V;to:V;r?:number;c?:string}){const start=new THREE.Vector3(...from),end=new THREE.Vector3(...to),direction=end.clone().sub(start),q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction.clone().normalize());return <mesh position={start.add(end).multiplyScalar(.5)} quaternion={q} castShadow><cylinderGeometry args={[r,r,direction.length(),16]}/><Surface color={c} kind="metal"/></mesh>}
-function Screen({laptop=false}:{laptop?:boolean}){
- const map=useMemo(()=>{const canvas=document.createElement('canvas');canvas.width=768;canvas.height=432;const ctx=canvas.getContext('2d')!;
+function Screen({laptop=false,music=false}:{laptop?:boolean;music?:boolean}){
+ const map=useMemo(()=>{const canvas=document.createElement('canvas');canvas.width=music?256:768;canvas.height=music?144:432;const ctx=canvas.getContext('2d')!;
+  if(music){
+   ctx.fillStyle='#101817';ctx.fillRect(0,0,256,144);ctx.fillStyle='#222f2a';ctx.fillRect(12,30,66,66);
+   ctx.fillStyle='#b9cabc';ctx.font='40px Georgia';ctx.fillText('♫',26,77);ctx.fillStyle='#eef1e9';ctx.font='bold 12px Arial';ctx.fillText('Music for work',90,43);
+   ctx.fillStyle='#9eaca5';ctx.font='9px Arial';ctx.fillText('Take a little break',90,58);ctx.fillStyle='#a9c4ae';
+   for(let i=0;i<14;i++)ctx.fillRect(91+i*10,93-[8,18,12,25,19,29,14][i%7],5,[8,18,12,25,19,29,14][i%7]);
+   ctx.fillStyle='#405148';ctx.fillRect(14,115,228,3);ctx.fillStyle='#b6cdb8';ctx.fillRect(14,115,88,3);
+   ctx.fillStyle='#c6d8cb';ctx.beginPath();ctx.moveTo(124,124);ctx.lineTo(124,136);ctx.lineTo(135,130);ctx.closePath();ctx.fill();
+   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.generateMipmaps=false;texture.minFilter=THREE.LinearFilter;return texture;
+  }
   const bg=ctx.createLinearGradient(0,0,768,432);bg.addColorStop(0,'#102434');bg.addColorStop(1,'#284847');ctx.fillStyle=bg;ctx.fillRect(0,0,768,432);
   ctx.fillStyle='#0c1724';ctx.fillRect(40,43,688,345);ctx.fillStyle='#263849';ctx.fillRect(40,43,688,35);['#cb7968','#d5bd7b','#83a98c'].forEach((c,i)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(58+i*17,60,5,0,Math.PI*2);ctx.fill()});
   ctx.fillStyle='#182939';ctx.fillRect(40,78,125,310);ctx.font='15px monospace';ctx.fillStyle='#b5c5cd';ctx.fillText(laptop?'OUR NEXT CHAPTER':'PENTHOUSE 22',197,123);
   for(let line=0;line<12;line++){ctx.fillStyle=['#81b4b9','#c6ad85','#78919d'][line%3];ctx.fillRect(197+(line%3)*20,150+line*15,80+(line*73)%300,4)}
   ctx.fillStyle='#cad9d2';ctx.fillRect(339,410,90,3);const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
- },[laptop]);useEffect(()=>()=>map.dispose(),[map]);
- return <mesh><planeGeometry args={laptop?[.65,.405]:[1.17,.66]}/><meshPhysicalMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={.28} roughness={.18} metalness={.06} clearcoat={.65}/></mesh>;
+ },[laptop,music]);useEffect(()=>()=>map.dispose(),[map]);
+ return <mesh><planeGeometry args={music?[1.014,.563]:laptop?[.65,.405]:[1.17,.66]}/>{music?<meshBasicMaterial map={map} toneMapped={false}/>:<meshPhysicalMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={.28} roughness={.18} metalness={.06} clearcoat={.65}/>}</mesh>;
 }
 function BlueIMac(){
  return <group name="blue-imac" position={[.76,1.11,-.35]}>
@@ -27,7 +36,7 @@ function BlueIMac(){
    <Part p={[0,0,0]} s={[1.09,.743,.039]} c="#477fa7" kind="metal" r={.018}/>
    <Part p={[0,.050,.023]} s={[1.064,.623,.008]} c="#edf2f5" r={.004}/>
    <Part p={[0,-.306,.024]} s={[1.064,.116,.008]} c="#93b4c9" kind="metal" r={.005}/>
-   <mesh name="blue-imac-screen" position={[0,.044,.03]}><planeGeometry args={[1.014,.563]}/><meshBasicMaterial color="#050607" toneMapped={false}/></mesh>
+   <group name="blue-imac-screen" position={[0,.044,.03]}><Screen music/></group>
    <mesh position={[0,.347,.031]}><sphereGeometry args={[.0045,10,8]}/><meshBasicMaterial color="#1d2935"/></mesh>
   </group>
  </group>;

@@ -44,6 +44,9 @@ try {
   responses(new Response('',{status:403}));
   await assert.rejects(openFortune(requestId), /reopen the apartment/); assert.equal(calls.length,1);
   responses(Response.json({error:'A unique opening ID is required.'},{status:400}));
+  responses(Response.json({error:'Slow down'},{status:429,headers:{'Retry-After':'28'}}));
+  await assert.rejects(openFortune(requestId),e=>e.retryAfter===28&&e.retryable===false);assert.equal(calls.length,1,'429 must respect Retry-After, not hammer the server');
+  responses(Response.json({error:'A unique opening ID is required.'},{status:400}));
   await assert.rejects(openFortune(''), /unique opening ID/); assert.equal(calls.length,1);
   for (const value of [{},null,{total},{fortune:{id:999,openedAt:note.openedAt},total},{fortune:note,exhausted:true,total}]) {
     responses(Response.json(value),Response.json(value),Response.json(value));

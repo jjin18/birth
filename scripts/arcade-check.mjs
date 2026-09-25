@@ -69,4 +69,10 @@ for(const file of ['jia-poses.webp','ryan-poses.webp']){
  const meta=await sharp(source).metadata(); assert(meta.hasAlpha); assert.equal(meta.width,1536);assert.equal(meta.height,1024);
 }
 assert(bytes<2*1024*1024,'arcade art budget: 2 MiB combined');
+const scoreBundle=await build({entryPoints:['lib/fighter-score.ts'],bundle:true,write:false,format:'esm',platform:'node'});
+const {parseScores,addWin,matchWinner}=await import('data:text/javascript;base64,'+Buffer.from(scoreBundle.outputFiles[0].text).toString('base64'));
+assert.deepEqual(parseScores(null),{Jia:0,Ryan:0});assert.deepEqual(parseScores('{broken'),{Jia:0,Ryan:0});assert.deepEqual(parseScores('{"Jia":-1,"Ryan":7}'),{Jia:0,Ryan:0});
+let scores=addWin(parseScores(null),matchWinner('Jia wins'));scores=addWin(scores,matchWinner('Ryan wins'));scores=addWin(scores,matchWinner('Draw'));assert.deepEqual(scores,{Jia:1,Ryan:1});assert.deepEqual(parseScores(JSON.stringify(scores)),scores);
+const fighterSource=await readFile('components/MiniFighter.tsx','utf8');assert(!fighterSource.includes('Two players · One keyboard'));assert(fighterSource.includes('recorded.current!==s'),'record each completed match once');assert(fighterSource.includes("view.phase==='fight'&&view.time<=10"));
+assert(!(await readFile('components/Arcade.tsx','utf8')).includes('Jia vs. Ryan'));assert((await readFile('app/arcade.css','utf8')).includes('.fighter-final-seconds .fighter-arena::after{opacity:1}'));
 console.log(`PASS: local-only two-player controls, all six poses, fair trades, collisions, bounds, knockouts, draw, timeout, rematch reset; two alpha atlases ${(bytes/1024).toFixed(0)} KiB.`);

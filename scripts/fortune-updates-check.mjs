@@ -42,5 +42,7 @@ try {
 }finally{db.close()}
 const timing=await build({entryPoints:['lib/cookie-motion.ts'],bundle:true,write:false,format:'esm',platform:'node'});
 const motion=await import('data:text/javascript;base64,'+Buffer.from(timing.outputFiles[0].text).toString('base64'));
-assert.equal(motion.COOKIE_HOLD_MS,1800);assert.equal(motion.COOKIE_CRACK_MS,motion.COOKIE_HOLD_MS+motion.COOKIE_SHAKE_MS);assert(motion.COOKIE_REVEAL_MS>motion.COOKIE_CRACK_MS+1250);
+assert.equal(motion.COOKIE_HOLD_MS,0);assert.equal(motion.COOKIE_SHAKE_MS,1500);assert.equal(motion.COOKIE_CRACK_MS,motion.COOKIE_HOLD_MS+motion.COOKIE_SHAKE_MS);assert(motion.COOKIE_REVEAL_MS>motion.COOKIE_CRACK_MS+1250);
+const panel=await readFile('components/FortunePanel.tsx','utf8');assert(!/AFTER DINNER|A little good fortune|A few good words|notes kept, across your devices/.test(panel));
+assert((await readFile('components/Experience.tsx','utf8')).includes("key={panel+'-'+fortuneRequestId}"),'each cookie starts a fresh closed-cookie animation');
 console.log('PASS: 100 active regular fortunes, nine exact jokes evenly spaced from opening two, unchanged historical notes, safe storage migration, hidden totals and longer cookie timing.');

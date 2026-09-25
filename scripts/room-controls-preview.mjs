@@ -3,7 +3,10 @@ import { total,genericFortuneIds,jokeFortuneIds } from './fortune-test-data.mjs'
 // with lightweight scenery and an in-memory API; never touches shared notes.
 import {build} from 'esbuild';
 import {createServer} from 'node:http';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdtemp} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {pathToFileURL} from 'node:url';
+import {DatabaseSync} from 'node:sqlite';
 import {resolve,sep} from 'node:path';
 const result=await build({stdin:{contents:`
 import React from 'react';import {createRoot} from 'react-dom/client';
@@ -25,8 +28,18 @@ export default function Fixture(props){const [away,setAway]=useState(false);cons
 }}]});
 const js=result.outputFiles.find(file=>file.path.endsWith('.js')).contents,css=result.outputFiles.find(file=>file.path.endsWith('.css')).contents;
 const root=resolve('public'),notes=[],requests=new Map();
+let wall;
+if(process.env.WALL_QA==='1'){
+ await build({entryPoints:['server/wall.ts'],outfile:'.local-data/wall-qa.mjs',bundle:true,platform:'node',format:'esm',external:['sharp']});
+ const data=await mkdtemp(resolve(tmpdir(),'birthday-wall-browser-'));
+ const {createWall}=await import(pathToFileURL(resolve('.local-data/wall-qa.mjs')).href);
+ process.env.WALL_EDIT_PASSCODE='local-browser-qa-only';
+ wall=createWall(new DatabaseSync(resolve(data,'test.sqlite')),data);
+ console.log('Disposable date-wall browser database: '+data);
+}
 createServer(async(req,res)=>{
  const path=new URL(req.url,'http://127.0.0.1').pathname;
+ if(wall&&(path==='/api/wall'||path.startsWith('/api/wall/')))return wall(req,res,new URL(req.url,'http://'+req.headers.host));
  if(path==='/responsive'){
   res.setHeader('Content-Type','text/html');
   res.end('<!doctype html><title>Responsive activity QA</title><body style="margin:0;background:#141b20;color:white;font:16px Arial">'+[['laptop',1280,720],['phone',390,667],['landscape',844,390]].map(([name,width,height])=>`<h2>${name} ${width} × ${height}</h2><iframe id="${name}" title="${name} activity test" src="/" width="${width}" height="${height}" style="display:block;border:0"></iframe>`).join(''));

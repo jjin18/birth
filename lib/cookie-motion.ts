@@ -1,4 +1,4 @@
-export const COOKIE_HOLD_MS=1800;
-export const COOKIE_SHAKE_MS=420;
+export const COOKIE_HOLD_MS=0;
+export const COOKIE_SHAKE_MS=1500;
 export const COOKIE_CRACK_MS=COOKIE_HOLD_MS+COOKIE_SHAKE_MS;
-export const COOKIE_REVEAL_MS=3700;
+export const COOKIE_REVEAL_MS=COOKIE_CRACK_MS+1400;

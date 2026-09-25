@@ -7,6 +7,7 @@ import { createGzip } from 'node:zlib';
 import worker from '../worker/index';
 import { fortunes } from '../lib/fortunes';
 import { initializeFortuneStorage,hasFortuneReset,resetFortunesOnce } from './fortune-storage';
+import {createWall} from './wall';
 
 const root=resolve('dist/client');
 const onRailway=Boolean(process.env.RAILWAY_ENVIRONMENT_ID);
@@ -16,6 +17,7 @@ const dataDir=resolve(process.env.RAILWAY_VOLUME_MOUNT_PATH||process.env.DATA_DI
 mkdirSync(dataDir,{recursive:true});
 const db=new DatabaseSync(join(dataDir,'fortunes.sqlite'),{timeout:5000});
 initializeFortuneStorage(db);
+const wall=createWall(db,dataDir);
 // Import only note IDs and opening dates, never old account identifiers.
 // Repeated deployments are safe: existing notes are never replaced or reset.
 if(process.env.FORTUNES_IMPORT_JSON&&!hasFortuneReset(db)){
@@ -72,10 +74,11 @@ function body(req:IncomingMessage):Promise<Buffer>{
 // A bounded shared-room limiter avoids unbounded identity/IP storage. It is
 // deliberately global: this is one small birthday room, not a multi-user API.
 let windowStart=Date.now(),reads=0,writes=0;
-function rateLimit(method:string){
+function rateLimit(method:string,existingOpening=false){
  if(Date.now()-windowStart>=60000){windowStart=Date.now();reads=0;writes=0}
- if(method==='POST')return ++writes>12;
- return ++reads>300;
+ if(++reads>300)return true;
+ if(method==='POST'&&!existingOpening)return ++writes>12;
+ return false;
 }
 const mime:Record<string,string>={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.txt':'text/plain; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.ico':'image/x-icon','.glb':'model/gltf-binary','.wasm':'application/wasm','.woff':'font/woff','.woff2':'font/woff2','.mp3':'audio/mpeg','.wav':'audio/wav'};
 async function staticFile(req:IncomingMessage,res:ServerResponse,url:URL){
@@ -115,9 +118,9 @@ const server=createServer(async(req,res)=>{
    db.prepare('SELECT 1').get();return json(res,200,{ok:true});
   }
   if(!allowedHosts.has(host))return json(res,421,{error:'Unknown hostname.'});
+  if(url.pathname==='/api/wall'||url.pathname.startsWith('/api/wall/'))return await wall(req,res,url);
   if(url.pathname.replace(/\/$/,'')!=='/api/fortunes')return await staticFile(req,res,url);
   if(req.method!=='GET'&&req.method!=='POST')return json(res,405,{error:'Method not allowed.'},{Allow:'GET, POST'});
-  if(rateLimit(req.method))return json(res,429,{error:'Please give the cookie a moment and try again.'},{'Retry-After':String(Math.max(1,Math.ceil((60000-Date.now()+windowStart)/1000)))});
   if(Number(req.headers['content-length']||0)>512)return json(res,413,{error:'Request too large.'});
   const headers=new Headers();
   for(const name of ['content-type','content-length','origin','sec-fetch-site']){
@@ -125,6 +128,9 @@ const server=createServer(async(req,res)=>{
   }
   let payload:Buffer|undefined;
   try {if(req.method==='POST')payload=await body(req)}catch{return json(res,413,{error:'Request too large.'})}
+  let existingOpening=false;
+  if(payload){try{const value=JSON.parse(payload.toString('utf8'));existingOpening=typeof value?.requestId==='string'&&Boolean(db.prepare('SELECT 1 FROM opened_fortunes WHERE request_id=? AND opened_by=?').get(value.requestId,'public-room'))}catch{}}
+  if(rateLimit(req.method,existingOpening))return json(res,429,{error:'The cookie needs a short break.'},{'Retry-After':String(Math.max(1,Math.ceil((60000-Date.now()+windowStart)/1000)))});
   // Never forward client-supplied OpenAI identity headers on public hosting.
   const request=new Request(url,{method:req.method,headers,body:payload?.toString('utf8')});
   const response=await worker.fetch(request,{DB,PUBLIC_ACCESS:'shared',ASSETS:{fetch:async()=>new Response('Not found',{status:404})}});

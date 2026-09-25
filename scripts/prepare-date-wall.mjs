@@ -9,7 +9,6 @@ const photos=[
  ['image18.jpeg','sushi','Sushi night','Two platters of colorful sushi rolls.'],
  ['image3 (1).jpeg','seafood','Seafood date','Crab, bread and a seafood picnic.'],
  ['image7 (1).jpeg','night-walk','A night out','An illuminated rotunda reflected in the water at night.'],
- ['image29.jpeg','dinner-close','Dinner, a little closer','A close-up of seared slices at dinner.'],
  ['image13.jpeg','matcha','Matcha together','An iced matcha drink on a cafe table.'],
  ['image31.jpeg','us','Just us','The two of us taking a selfie together.'],
  ['image11 (1).jpeg','burger','Burger stop','A burger and sides in a basket.'],
@@ -55,7 +54,7 @@ for(const [file,id,title,alt] of photos){
  console.log(JSON.stringify({file,date:taken?.slice(0,10)||null,width:image.info.width,height:image.info.height,webBytes:image.data.length,thumbnailBytes:small?0:thumb.data.length}));
 }
 records.sort((a,b)=>(a.taken??'9999').localeCompare(b.taken??'9999'));
-assert.equal(records.filter(p=>p.date).length,9,'Expected nine original capture dates; inspect changes before importing');
+assert.equal(records.filter(p=>p.date).length,8,'Expected eight original capture dates; inspect changes before importing');
 if(write){
  const featured=['matcha','us','dinner','night-walk','sushi'];
  const tiles=await Promise.all(featured.map(async(id,index)=>({input:await sharp(join(output,id+'.webp')).resize(128,128,{fit:'cover'}).toBuffer(),left:index%3*128,top:Math.floor(index/3)*128})));

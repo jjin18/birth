@@ -20,6 +20,7 @@ export default function FortuneCrack({note}:{note:SavedFortune}){
  },[note.id]);
  return <div className="fortune-reveal fortune-crack" style={{'--cookie-hold':COOKIE_HOLD_MS+'ms','--cookie-shake':COOKIE_SHAKE_MS+'ms','--cookie-crack-delay':COOKIE_CRACK_MS+'ms','--cookie-paper-delay':(COOKIE_CRACK_MS+150)+'ms'} as CSSProperties}>
   <div className="cookie-crack-stage">
+   <img className="cookie-whole" src="/textures/fortune-cookie.png" alt="Unbroken fortune cookie" width={800} height={696}/>
    <div className="cookie-half cookie-half-left"><img src="/textures/fortune-cookie.png" alt="Golden baked fortune cookie" width={800} height={696}/></div>
    <div className="cookie-half cookie-half-right" aria-hidden="true"><img src="/textures/fortune-cookie.png" alt="" width={800} height={696}/></div>
    <div className="cookie-crumbs" aria-hidden="true">{crumbs.map(([x,y,spin,size],i)=><span key={i} className="cookie-crumb" style={{'--crumb-x':x+'px','--crumb-y':y+'px','--crumb-spin':spin+'deg','--crumb-size':size+'px','--crumb-delay':(COOKIE_CRACK_MS+i*18)+'ms'} as CSSProperties}><img src="/textures/fortune-cookie.png" alt=""/></span>)}</div>

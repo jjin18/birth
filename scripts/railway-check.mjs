@@ -45,8 +45,10 @@ try {
  assert.equal((await fetch(origin+'/server/railway.ts')).status,404);
  const foreignHost=await new Promise((resolveStatus,reject)=>{const request=get(origin+'/api/fortunes',{headers:{Host:'evil.example'}},response=>{response.resume();resolveStatus(response.statusCode)});request.on('error',reject)});
  assert.equal(foreignHost,421);
- let limited;for(let i=0;i<13;i++){limited=await post(id);if(limited.status===429)break;await limited.text()}
+ for(let i=0;i<15;i++){const replay=await post(id);assert.equal(replay.status,200);assert.deepEqual(await replay.json(),first)}
+ let limited;for(let i=0;i<13;i++){limited=await post();if(limited.status===429)break;await limited.text()}
  assert.equal(limited.status,429);assert(limited.headers.get('retry-after'));
+ assert.deepEqual(await (await post(id)).json(),first,'retries of a saved cookie bypass the new-opening limit');
  const before=await (await fetch(origin+'/api/fortunes')).json();await stop();
  assert((await stat(join(temp,'fortunes.sqlite'))).size<1024*1024);
  await start();assert.deepEqual(await (await fetch(origin+'/api/fortunes')).json(),before);

@@ -17,6 +17,6 @@ if(target==='sites'){
  const config=JSON.parse(await readFile('dist/.openai/hosting.json','utf8'));
  if(config.static||config.d1!=='DB')throw Error('Shared fortunes require the DB Worker binding.');
 }else{
- await build({entryPoints:['server/railway.ts'],outfile:'dist/railway/server.mjs',bundle:true,format:'esm',platform:'node',target:'node24',minify:true});
+ await build({entryPoints:['server/railway.ts'],outfile:'dist/railway/server.mjs',bundle:true,format:'esm',platform:'node',target:'node24',minify:true,external:['sharp']});
 }
 console.log(`${target} runtime and audited static assets built.`);
