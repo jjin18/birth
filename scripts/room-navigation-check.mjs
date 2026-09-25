@@ -45,7 +45,8 @@ assert(experience.includes('formatCityTime(c,now)'),'city clocks share the dayli
 assert(experience.includes('aria-label={c.name}'),'clock updates preserve accessible toggle names');
 assert(experience.includes("panel==='laptop'&&<MusicPanel"),'music player mounts only when the laptop opens');
 const music=await readFile('components/MusicPanel.tsx','utf8');
-assert(music.includes('Wow working in your virtual life too.')&&music.includes('Play some music to relax.'));
+assert(music.includes("Here's some music to help you with work."));
+assert(!music.includes('Wow working')&&!music.includes('Play some music to relax.'));
 assert(music.includes('open.spotify.com/embed/playlist/15lForQ8Rv1kFBmiqlOJKO'));
 assert(!music.includes('autoplay=1'),'playback starts with user interaction');
 assert(!/dog-audio|playBark|dogStatus|Woof!|AudioContext/.test(experience),'dog clicks are silent and have no bark status/timers');
@@ -56,6 +57,8 @@ assert(!table.includes('onPaperclip'),'obsolete separate note click callback rem
 assert(table.includes('position={[-.45, .003, .12]}'),'note sits immediately in front of box');
 const workstation=await readFile('components/Penthouse/Workstation.tsx','utf8');
 assert(workstation.includes('onLaptop()'),'laptop click opens the music panel');
+assert(workstation.includes('<group name="music-desk" onClick='),'the desk and its accessories share the in-page player');
+assert.equal((workstation.match(/onLaptop\(\)/g)||[]).length,1,'one bubbling handler prevents duplicate music openings');
 assert(!workstation.includes('imac-reference.png'),'retired iMac wallpaper is never loaded');
 assert(workstation.includes('<meshBasicMaterial color="#050607" toneMapped={false}/>'),'iMac screen is unlit black without reflection/glare');
 console.log('PASS: camera reset detection on desktop/mobile inside/outside, containment, icon-only accessible navigation and emoji-only bed message.');

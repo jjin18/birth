@@ -1,0 +1,122 @@
+[
+  {
+    "id": "flame",
+    "title": "A little extra heat",
+    "alt": "A cheesy skillet being finished with a cooking torch.",
+    "date": "2026-05-30",
+    "src": "/memories/flame.webp",
+    "thumbnail": "/memories/flame-thumb.webp",
+    "width": 1200,
+    "height": 1600
+  },
+  {
+    "id": "matcha",
+    "title": "Matcha together",
+    "alt": "An iced matcha drink on a cafe table.",
+    "date": "2026-05-30",
+    "src": "/memories/matcha.webp",
+    "thumbnail": "/memories/matcha-thumb.webp",
+    "width": 1200,
+    "height": 1600
+  },
+  {
+    "id": "us",
+    "title": "Just us",
+    "alt": "The two of us taking a selfie together.",
+    "date": "2026-08-29",
+    "src": "/memories/us.webp",
+    "thumbnail": "/memories/us-thumb.webp",
+    "width": 1200,
+    "height": 1600
+  },
+  {
+    "id": "dinner-crispy",
+    "title": "Something crispy",
+    "alt": "A plate of crispy bites with a shredded topping.",
+    "date": "2026-09-11",
+    "src": "/memories/dinner-crispy.webp",
+    "thumbnail": "/memories/dinner-crispy-thumb.webp",
+    "width": 1200,
+    "height": 1600
+  },
+  {
+    "id": "dinner-flowers",
+    "title": "Almost too pretty to eat",
+    "alt": "A colorful dish with herbs and edible flowers.",
+    "date": "2026-09-11",
+    "src": "/memories/dinner-flowers.webp",
+    "thumbnail": "/memories/dinner-flowers-thumb.webp",
+    "width": 1200,
+    "height": 1600
+  },
+  {
+    "id": "dinner",
+    "title": "Dinner together",
+    "alt": "A shared dinner plate with seared slices and dipping sauce.",
+    "date": "2026-09-11",
+    "src": "/memories/dinner.webp",
+    "thumbnail": "/memories/dinner-thumb.webp",
+    "width": 1200,
+    "height": 1600
+  },
+  {
+    "id": "dinner-close",
+    "title": "Dinner, a little closer",
+    "alt": "A close-up of seared slices at dinner.",
+    "date": "2026-09-11",
+    "src": "/memories/dinner-close.webp",
+    "thumbnail": "/memories/dinner-close-thumb.webp",
+    "width": 1200,
+    "height": 1600
+  },
+  {
+    "id": "night-walk",
+    "title": "A night out",
+    "alt": "An illuminated rotunda reflected in the water at night.",
+    "date": "2026-09-15",
+    "src": "/memories/night-walk.webp",
+    "thumbnail": "/memories/night-walk-thumb.webp",
+    "width": 1200,
+    "height": 1600
+  },
+  {
+    "id": "sushi",
+    "title": "Sushi night",
+    "alt": "Two platters of colorful sushi rolls.",
+    "date": "2026-09-19",
+    "src": "/memories/sushi.webp",
+    "thumbnail": "/memories/sushi-thumb.webp",
+    "width": 1200,
+    "height": 1600
+  },
+  {
+    "id": "curry",
+    "title": "Curry date",
+    "alt": "Curry, rice and naan on the table.",
+    "date": null,
+    "src": "/memories/curry.webp",
+    "thumbnail": "/memories/curry.webp",
+    "width": 240,
+    "height": 320
+  },
+  {
+    "id": "seafood",
+    "title": "Seafood date",
+    "alt": "Crab, bread and a seafood picnic.",
+    "date": null,
+    "src": "/memories/seafood.webp",
+    "thumbnail": "/memories/seafood.webp",
+    "width": 240,
+    "height": 320
+  },
+  {
+    "id": "burger",
+    "title": "Burger stop",
+    "alt": "A burger and sides in a basket.",
+    "date": null,
+    "src": "/memories/burger.webp",
+    "thumbnail": "/memories/burger.webp",
+    "width": 240,
+    "height": 320
+  }
+]

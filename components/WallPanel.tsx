@@ -1,15 +1,32 @@
 'use client';
-import { useEffect,useState } from 'react';
-import { Plus,ArrowLeft,Pin,ImagePlus } from 'lucide-react';
+import {useEffect,useState} from 'react';
+import {ArrowLeft,ChevronLeft,ChevronRight} from 'lucide-react';
 import Modal from './Modal';
-import SharedAccess from './SharedAccess';
-import { supabase,uploadImage,imageUrl } from '@/lib/supabase';
-type Item={id:string;type:string;title:string;body:string;image_url?:string;category?:string;created_at?:string;created_by?:string};
-const sample:Item[]=[{id:'one',type:'future',title:'One day.',body:'A high-rise in every major city. A little white dog. You and me.',image_url:'/cities/tokyo.jpg'},{id:'two',type:'for_when',title:'For when you’re tired',body:'You’ve worked enough. Go to sleep. The world will still be here tomorrow.'},{id:'three',type:'date',title:'No plans. Just us.',body:'Pick a city. Find a tiny restaurant. Order too much food.'},{id:'four',type:'note',title:'The house rules',body:'1. There is always room for you.\n2. The dog pays no rent.\n3. Panda Express counts as dinner.'},{id:'five',type:'future',title:'The view can change.',body:'The best part stays the same.',image_url:'/cities/paris.jpg'}];
-const types=[['photo','Photo'],['note','Note'],['memory','Memory'],['future','Future'],['date','Date'],['for_when','For when…']];
-export default function WallPanel({close,admin=false}:{close:()=>void;admin?:boolean}){const [items,setItems]=useState<Item[]>(supabase?[]:sample),[adding,setAdding]=useState(false),[selected,setSelected]=useState<Item|null>(null),[type,setType]=useState('note'),[title,setTitle]=useState(''),[body,setBody]=useState(''),[file,setFile]=useState<File|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[signed,setSigned]=useState(false);
- async function load(){if(!supabase)return;const {data,error}=await supabase.from('wall_items').select('*').order('created_at',{ascending:false});if(error){setError(error.message);return}try{setItems(await Promise.all((data||[]).map(async x=>({...x,image_url:x.image_url?await imageUrl(x.image_url):undefined}))))}catch(e){setError((e as Error).message)}}
- useEffect(()=>{load();if(!supabase)return;const channel=supabase.channel('wall-updates').on('postgres_changes',{event:'*',schema:'public',table:'wall_items'},load).subscribe();return()=>{supabase!.removeChannel(channel)}},[signed]);
- async function save(e:React.FormEvent){e.preventDefault();if(!supabase){setError('Connect the private shared wall to save this pin. Your text will stay here while you keep this panel open.');return}setBusy(true);setError('');try{const {data:{user}}=await supabase.auth.getUser();if(!user)throw Error('Sign in with your invited email first.');if(type==='photo'&&!file)throw Error('Choose a photograph for this pin.');const path=file?await uploadImage(file,'memory'):null;const {error}=await supabase.from('wall_items').insert({type,title,body,image_url:path,created_by:user.id});if(error)throw error;await load();setAdding(false);setTitle('');setBody('');setFile(null)}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
- return <Modal title={adding?'Pin a little something.':selected?selected.title:'Our wall.'} eyebrow={admin?'PENTHOUSE 22 · PRIVATE STUDIO':'A FEW THINGS WORTH KEEPING'} close={close} wide><SharedAccess onAuth={setSigned}/>{error&&<p className="error" role="alert">{error}</p>}{adding?<form className="pin-form" onSubmit={save}><button type="button" className="text-button" onClick={()=>setAdding(false)}><ArrowLeft size={15}/>Back to our wall</button><div className="type-selector">{types.map(([v,n])=><button type="button" aria-pressed={type===v} key={v} onClick={()=>setType(v)}>{n}</button>)}</div><label>A little title<input required maxLength={100} value={title} onChange={e=>setTitle(e.target.value)} placeholder="For when you miss me…"/></label><label>Your words<textarea required={type!=='photo'} rows={4} maxLength={2000} value={body} onChange={e=>setBody(e.target.value)} placeholder="A thought, a plan, a very important inside joke."/></label><label className="upload"><ImagePlus size={20}/>{file?file.name:'Add a photo (optional for notes)'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{const f=e.target.files?.[0];if(f&&f.size>6*1024*1024){setError('Choose a photo smaller than 6 MB.');return}setError('');setFile(f||null)}}/></label><button className="gold-button" disabled={busy}>{busy?'Pinning…':'Pin to our wall'}</button></form>:selected?<article className="pin-detail"><button className="text-button" onClick={()=>setSelected(null)}><ArrowLeft size={15}/>Back to our wall</button>{selected.image_url&&<img alt={selected.title} src={selected.image_url}/>}<p>{selected.body}</p><span className="pin-type">{selected.type.replace('_',' ')}</span></article>:<><div className="wall-toolbar"><p>{supabase?'Little pieces of our life, still being written.':'A few starter notes. Make this wall yours.'}</p><button className="gold-button" onClick={()=>setAdding(true)}><Plus size={16}/>Pin something</button></div><div className="memory-grid">{items.map((item,i)=><button className={`memory-card memory-${i%3}`} key={item.id} onClick={()=>setSelected(item)} style={{rotate:`${[-2,1.6,-1,2,-1.5][i%5]}deg`}}><Pin className="pin-icon" size={12}/>{item.image_url&&<img src={item.image_url} alt={item.title}/>}<span className="pin-type">{item.type.replace('_',' ')}</span><h3>{item.title}</h3><p>{item.body}</p></button>)}{items.length===0&&<p className="empty">A blank wall. A lot of possibilities. Pin the first memory.</p>}</div></>}</Modal>
+import {dateGroups,datePhotos,dateLabel} from '@/lib/date-wall';
+
+export default function WallPanel({close}:{close:()=>void}){
+ const [selected,setSelected]=useState<number|null>(null);
+ const photo=selected===null?null:datePhotos[selected];
+ useEffect(()=>{
+  if(selected===null)return;
+  const navigate=(event:KeyboardEvent)=>{
+   if(event.key==='ArrowLeft'){event.preventDefault();setSelected(value=>Math.max(0,(value??0)-1))}
+   if(event.key==='ArrowRight'){event.preventDefault();setSelected(value=>Math.min(datePhotos.length-1,(value??0)+1))}
+  };
+  document.addEventListener('keydown',navigate);return()=>document.removeEventListener('keydown',navigate);
+ },[selected]);
+ return <Modal title="Our date wall." eyebrow="" close={close} wide className="date-wall">
+  {photo?<article className="date-detail">
+   <div className="date-detail-controls"><button className="text-button" onClick={()=>setSelected(null)}><ArrowLeft size={16}/>All dates</button><div><button className="icon-button" aria-label="Previous photo" disabled={selected===0} onClick={()=>setSelected(value=>Math.max(0,(value??0)-1))}><ChevronLeft size={18}/></button><button className="icon-button" aria-label="Next photo" disabled={selected===datePhotos.length-1} onClick={()=>setSelected(value=>Math.min(datePhotos.length-1,(value??0)+1))}><ChevronRight size={18}/></button></div></div>
+   <div className="date-detail-image"><img key={photo.id} src={photo.src} width={photo.width} height={photo.height} alt={photo.alt} decoding="async"/></div>
+   <div className="date-detail-caption" aria-live="polite"><h3>{photo.title}</h3><time dateTime={photo.date??undefined}>{dateLabel(photo.date)}</time></div>
+  </article>:<div className="date-wall-content">{dateGroups.map(group=><section className="date-group" key={group.date??'undated'} aria-label={dateLabel(group.date)}>
+   <h3><time dateTime={group.date??undefined}>{dateLabel(group.date)}</time></h3>
+   {!group.date&&<p className="undated-note">No capture date was included in these files.</p>}
+   <div className="date-photo-grid">{group.photos.map(photo=><button className="date-photo" key={photo.id} aria-label={`View ${photo.title}, ${dateLabel(photo.date)}`} onClick={()=>setSelected(datePhotos.findIndex(item=>item.id===photo.id))}>
+    <img src={photo.thumbnail} width={photo.width} height={photo.height} alt={photo.alt} loading="lazy" decoding="async"/>
+    <span>{photo.title}</span>
+   </button>)}</div>
+  </section>)}</div>}
+ </Modal>;
 }

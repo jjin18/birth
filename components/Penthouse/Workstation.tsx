@@ -33,6 +33,7 @@ function BlueIMac(){
  </group>;
 }
 export default function Workstation({onLaptop}:{onLaptop:()=>void}){const [deskSurface,setDeskSurface]=useState(1.2646);return <group name="detailed-workstation" position={[3.15,0,-1.88]}>
+ <group name="music-desk" onClick={event=>{event.stopPropagation();onLaptop()}}>
  <ImportedDesk onSurface={setDeskSurface}/>
  <group name="desktop-accessories" position={[0,deskSurface-1.0975,0]}>
  <Part p={[.02,1.107,.16]} s={[1.26,.012,.59]} c="#141a20" kind="leather" r={.005}/>
@@ -41,7 +42,7 @@ export default function Workstation({onLaptop}:{onLaptop:()=>void}){const [deskS
   <group position={[0,.66,-.04]} rotation={[-.04,0,0]}><Part p={[0,0,0]} s={[1.26,.75,.043]} c="#292e2f" kind="metal" r={.018}/><group position={[0,.015,.024]}><Screen/></group><mesh position={[.53,-.345,.027]}><sphereGeometry args={[.008,12,8]}/><meshBasicMaterial color="#b9dacf"/></mesh></group>
  </group>
  <BlueIMac/>
- <group name="laptop" position={[.91,1.12,.32]} rotation={[0,-.19,0]} onClick={event=>{event.stopPropagation();onLaptop()}}>
+ <group name="laptop" position={[.91,1.12,.32]} rotation={[0,-.19,0]}>
   <Part p={[0,0,0]} s={[.72,.032,.5]} c="#b6b9b8" kind="metal" r={.014}/>
   <Part p={[0,.021,-.047]} s={[.64,.007,.24]} c="#2f3637" r={.003}/>
   {Array.from({length:4},(_,row)=>Array.from({length:11},(_,col)=><Part key={row+'-'+col} p={[-.276+col*.055,.027,-.135+row*.051]} s={[.043,.006,.036]} c="#687173" r={.002}/>))}
@@ -56,6 +57,7 @@ export default function Workstation({onLaptop}:{onLaptop:()=>void}){const [deskS
  </group>
  <mesh position={[.24,1.15,.34]} scale={[.061,.036,.102]} castShadow><sphereGeometry args={[1,24,16]}/><Surface color="#d3d4ca"/></mesh>
  <Bar from={[-.64,1.21,-.45]} to={[-.64,.93,-.52]} r={.008} c="#242929"/>
+ </group>
  </group>
  <AeronChair/>
 </group>}

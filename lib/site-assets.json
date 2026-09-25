@@ -14,8 +14,34 @@
     "textures/panda-box-reference.png",
     "textures/wood-oak.jpg"
   ],
-  "arcade": ["arcade/jia-poses.webp", "arcade/ryan-poses.webp"],
-  "memoryWallImages": ["cities/paris.jpg"],
+  "arcade": [
+    "arcade/jia-poses.webp",
+    "arcade/ryan-poses.webp"
+  ],
+  "memoryWallImages": [
+    "memories/flame.webp",
+    "memories/flame-thumb.webp",
+    "memories/matcha.webp",
+    "memories/matcha-thumb.webp",
+    "memories/us.webp",
+    "memories/us-thumb.webp",
+    "memories/dinner-crispy.webp",
+    "memories/dinner-crispy-thumb.webp",
+    "memories/dinner-flowers.webp",
+    "memories/dinner-flowers-thumb.webp",
+    "memories/dinner.webp",
+    "memories/dinner-thumb.webp",
+    "memories/dinner-close.webp",
+    "memories/dinner-close-thumb.webp",
+    "memories/night-walk.webp",
+    "memories/night-walk-thumb.webp",
+    "memories/sushi.webp",
+    "memories/sushi-thumb.webp",
+    "memories/curry.webp",
+    "memories/seafood.webp",
+    "memories/burger.webp",
+    "memories/wall-atlas.webp"
+  ],
   "runtimeSupport": [
     "draco/draco_decoder.js",
     "draco/draco_decoder.wasm",

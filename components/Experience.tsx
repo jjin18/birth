@@ -3,13 +3,13 @@ import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cities, formatCityTime, type Focus } from '@/lib/cities';
 import { getFortunes } from '@/lib/fortune-api';
-import WallPanel from './WallPanel';
 import FortunePanel from './FortunePanel';
 import RoomNavigation, { RoomNavigationContext } from './RoomNavigation';
 import { getDaylight } from '@/lib/daylight';
 
 const Arcade = dynamic(() => import('./Arcade'), { ssr: false });
 const MusicPanel = dynamic(() => import('./MusicPanel'), { ssr: false });
+const WallPanel = dynamic(() => import('./WallPanel'), { ssr: false });
 
 const Scene = dynamic(()=>import('./Penthouse/Scene'), {ssr:false,loading:()=> <div className="loading" role="status" aria-label="Loading the room"><span className="loading-ring"/></div>});
 export default function Experience(){

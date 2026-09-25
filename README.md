@@ -44,9 +44,10 @@ a darker grey-washed oak finish throughout, sharing the original grain/bump text
 with no extra downloaded images. `node scripts/room-finishes-check.mjs` checks it.
 The bed headboard is black using a positional tint in the existing material;
 the bedding, packed 2K textures, geometry and vertex attributes stay unchanged.
-The laptop opens a lazy-loaded Spotify playlist with the user's message. Playback
+The desk and its laptop/accessories open a lazy-loaded Spotify playlist with the user's message. Playback
 starts from Spotify's Play button; closing the modal unloads the player. Spotify
 controls playback availability. No player iframe is present on the initial room.
+The music popup reads: "Here's some music to help you with work."
 City toggles run left to right: San Francisco, New York, Taipei, Tokyo. Each shows
 its local 24-hour clock above the name, using IANA time zones and daylight saving
 rules. The clocks share the existing daylight timer; no extra requests or assets.
@@ -127,7 +128,7 @@ Open http://127.0.0.1:3023 for the full preview. `npm run dev` on port 3022 is f
 - Panda Express and the note directly in front of it open the same fortune popup. The active pool contains 100 regular fortunes and nine inside jokes. Each draw is immediately saved to the shared paper clip. The collection is available on any device signed into this private Site.
 - D1 transactions and unique IDs prevent repeats, including simultaneous draws. A request UUID makes retries idempotent. After the active pool is exhausted, the collection remains available without recycling notes.
 - Clickable 3D paper clip and keyboard-accessible shortcuts, native dialogs, responsive controls, orbit, zoom and camera reset.
-- Tokyo, New York, Taipei and San Francisco skyline backdrops. The existing Paris photograph in the sample memory wall is not a selectable skyline.
+- San Francisco, New York, Taipei and Tokyo skyline backdrops. Paris is not shipped as a skyline or wall sample.
 - Local Mini Fighter with character choice, movement, jumping, attacks, opponent AI, health, timer, touch controls and rematch.
 
 ## Storage and access
@@ -138,7 +139,26 @@ Open http://127.0.0.1:3023 for the full preview. `npm run dev` on port 3022 is f
 
 ## Deferred by request
 
-The memory wall remains a clearly labeled preview with a pin composer; shared photo/note saving is not live. SMS and two-person access setup remain deferred. The bed only shows a visual Easter egg and sends no message. Draw Something and Our Art have been removed entirely. No Supabase project or credentials are required for the shared fortunes.
+The date wall is a curated static gallery, not an upload service. Shared photo/note editing, SMS and two-person access setup remain deferred. The bed only shows a visual Easter egg and sends no message. Draw Something and Our Art have been removed entirely. No Supabase project or credentials are required for the shared fortunes or date wall.
+
+## Our date wall
+
+The 12 user-approved photos replace the starter notes and sample Paris image.
+Nine contain EXIF DateTimeOriginal: May 30, August 29, September 11, September 15,
+and September 19, 2026. They are grouped oldest first and ordered by capture time
+within each day. The curry, seafood and burger exports contain no capture date;
+they remain explicitly Undated, never dated from their download timestamps.
+Only day-level labels are published; GPS, device IDs and other metadata are stripped.
+
+`scripts/prepare-date-wall.mjs --write` reads the named local originals, applies
+EXIF orientation and creates 1600px-max WebP detail views plus 480px-max thumbnails.
+The three small source photos are not enlarged or duplicated as thumbnails.
+The originals stay untouched in Downloads and are not uploaded. The gallery module
+loads only on opening the wall, thumbnails are lazy, and only the selected full-size
+photo is mounted. Closing the wall unmounts the gallery. No database is added.
+The 3D pins share one 384×256 atlas with no mipmaps (0.375 MiB RGBA texture budget).
+The starter image was retired to ignored local backup storage and Git history.
+Run `node scripts/date-wall-check.mjs` for metadata, dates and the 3 MB asset cap.
 
 ## Validation
 
@@ -164,7 +184,7 @@ Skyline images are original AI-generated architectural concept illustrations, no
 
 ## Asset budget and hosting portability
 
-Every build runs `scripts/asset-check.mjs`. Only the six current furniture/dog GLBs, six used textures, twelve automatic city views, two arcade atlases, one existing memory-wall image, favicon, and required Draco runtime/license files may be in `public/`. The allowlist is `lib/site-assets.json`; unexpected files, missing assets, unused embedded model buffers, or removed showroom geometry fail the build. All sofa files, previous bed files (including the 4K version) and unused Paris day/sunset backgrounds are no longer shipped. Public assets total 45,748,154 bytes (43.63 MiB), of which 35,692,092 bytes are GLBs. The arcade's two lossless WebP atlases total 1,384,098 bytes and load only when opening the arcade, not with the initial room.
+Every build runs `scripts/asset-check.mjs`. Only the six current furniture/dog GLBs, five used textures, twelve automatic city views, two arcade atlases, the curated date-wall WebPs, favicon, and required Draco runtime/license files may be in `public/`. The allowlist is `lib/site-assets.json`; unexpected files, missing assets, unused embedded model buffers, or removed showroom geometry fail the build. All sofa files, previous bed files (including the 4K version) and unused Paris backgrounds/sample photo are no longer shipped. Public assets total 47,523,642 bytes (45.32 MiB), of which 35,692,092 bytes are GLBs. Date-wall assets total 2,514,618 bytes (2.40 MiB); only the 18,792-byte board atlas loads with the room. The arcade atlases load only when opening the arcade.
 
 ## Same-screen arcade
 

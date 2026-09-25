@@ -11,11 +11,26 @@
 .panel-head .icon-button{flex-shrink:0}
 .panel.music-panel{height:min(550px,var(--panel-available-height));overflow:hidden}
 .music-panel>.panel-inner{height:100%;display:flex;flex-direction:column;padding:clamp(12px,2.5svh,24px)}
-.music-panel .panel-head{flex-shrink:0;gap:12px}
+.music-panel .panel-head{flex-shrink:0;gap:12px;margin-bottom:12px}
 .music-panel .panel-head h2{font-size:clamp(20px,3.7svh,30px);line-height:1.15}
 .music-panel .eyebrow:empty{display:none}
-.music-panel .panel-description{margin:8px 0 12px;line-height:1.4;flex-shrink:0}
 .music-panel iframe{display:block;flex:1;min-height:152px;max-height:352px;border:0;border-radius:12px;width:100%}
 .music-link{flex-shrink:0;margin-top:10px;color:#d6b889;font-size:12px;text-align:center}
-@media(max-height:500px){.music-panel>.panel-inner{padding:10px 14px}.music-panel .panel-head h2{font-size:20px}.music-panel .panel-description{font-size:12px;margin:5px 0 8px}.music-panel .icon-button{width:32px;height:32px}.music-link{margin-top:6px}}
+.panel.date-wall{height:min(760px,var(--panel-available-height));overflow:hidden}
+.date-wall>.panel-inner{height:100%;display:flex;flex-direction:column;padding:clamp(14px,2.6svh,28px)}
+.date-wall .panel-head{flex-shrink:0;margin-bottom:18px}.date-wall .eyebrow:empty{display:none}
+.date-wall .panel-head h2{font-size:clamp(24px,4svh,36px)}
+.date-wall-content{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:0 6px 14px}
+.date-group+ .date-group{margin-top:28px}.date-group>h3{font-size:12px;letter-spacing:.06em;font-weight:500;color:var(--gold);border-bottom:1px solid var(--line);padding-bottom:12px;margin:0 0 14px}
+.date-photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
+.date-photo{border:0;border-radius:3px;background:#eee9df;color:#353939;text-align:left;padding:8px 8px 13px;box-shadow:0 4px 12px #0002;transition:transform .15s}
+.date-photo:hover{transform:translateY(-3px)}.date-photo img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;background:#c3bcae}
+.date-photo span{display:block;font-size:12px;line-height:1.4;margin:10px 4px 0}.undated-note{font-size:12px;color:var(--dim);margin:0 0 14px}
+.date-detail{display:flex;flex-direction:column;flex:1;min-height:0}.date-detail-controls{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px;margin-bottom:12px}
+.date-detail-controls>div{display:flex;gap:8px}.date-detail-controls .text-button{padding:8px 0}
+.date-detail-image{display:flex;justify-content:center;flex:1;min-height:0;overflow:hidden}.date-detail-image img{object-fit:contain;max-width:100%;max-height:100%;width:auto;height:auto;border-radius:3px}
+.date-detail-caption{flex-shrink:0;text-align:center;margin-top:12px}.date-detail-caption h3{font-size:15px;font-weight:500;margin:0 0 5px}.date-detail-caption time{font-size:11px;color:var(--dim)}
+@media(max-width:650px){.date-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.date-photo{padding:6px 6px 11px}.date-photo span{font-size:11px}}
+@media(max-height:500px){.date-wall .panel-head{margin-bottom:8px}.date-detail-controls{margin-bottom:6px}.date-detail-caption{margin-top:6px}.date-detail-caption h3{font-size:12px}.date-detail-controls .icon-button{width:32px;height:32px}}
+@media(max-height:500px){.music-panel>.panel-inner{padding:10px 14px}.music-panel .panel-head{margin-bottom:8px}.music-panel .panel-head h2{font-size:20px}.music-panel .icon-button{width:32px;height:32px}.music-link{margin-top:6px}}
 @media(max-height:500px){.panel.arcade-panel>.panel-inner,.panel.fortune-game>.panel-inner{padding:9px 14px}.panel.arcade-panel .panel-head h2,.panel.fortune-game .panel-head h2{font-size:22px}.panel.arcade-panel .panel-head .eyebrow,.panel.fortune-game .panel-head .eyebrow{margin-bottom:2px;font-size:8px}.panel.arcade-panel .icon-button,.panel.fortune-game .icon-button{width:32px;height:32px}}
