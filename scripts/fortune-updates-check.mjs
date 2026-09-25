@@ -47,9 +47,10 @@ try {
 const timing=await build({entryPoints:['lib/cookie-motion.ts'],bundle:true,write:false,format:'esm',platform:'node'});
 const motion=await import('data:text/javascript;base64,'+Buffer.from(timing.outputFiles[0].text).toString('base64'));
 assert.equal(motion.COOKIE_HOLD_MS,0);assert.equal(motion.COOKIE_SHAKE_MS,2000);assert.equal(motion.COOKIE_CRACK_MS,2000);assert(motion.COOKIE_REVEAL_MS>motion.COOKIE_CRACK_MS+1250);
-const panel=await readFile('components/FortunePanel.tsx','utf8');assert(panel.includes('A LITTLE NOTE FOR YOU'));assert(!/PANDA EXPRESS|AFTER DINNER|A little good fortune|A few good words|notes kept, across your devices|Saved to your shared paper clip/.test(panel));
+const panel=await readFile('components/FortunePanel.tsx','utf8');assert(panel.includes('A little note for you'));assert(!/A LITTLE NOTE FOR YOU|PANDA EXPRESS|AFTER DINNER|A little good fortune|A few good words|notes kept, across your devices|Saved to your shared paper clip/.test(panel));
 assert(!panel.includes('reduced?0'),'reduced motion must not skip the intact-cookie delay');
 const cookieCss=await readFile('app/fortunes.css','utf8');assert(!cookieCss.includes('cookie-hide')&&!cookieCss.includes('cookie-reduced-show'),'visibility no longer relies on independently delayed CSS animations');
+assert(cookieCss.includes(".panel.fortune-game>.panel-inner>.panel-head .eyebrow{font:500 14px/1.4 'DM Sans',Arial,sans-serif;color:var(--gold);text-transform:none;letter-spacing:.03em;margin:0}"),'fortune title matches other beige headers, including small screens');
 assert(cookieCss.includes('[data-cookie-phase=revealed]) .cookie-half{opacity:1}'),'broken cookie remains visible after the reveal, including reduced motion');
 const crack=await readFile('components/FortuneCrack.tsx','utf8');
 assert(crack.includes('if(!imageReady)return;')&&crack.includes('onLoad={()=>setImageReady(true)}'),'animation waits for the original image before its two-second shake');
@@ -57,4 +58,4 @@ assert(crack.includes('onError={()=>{setImageFailed(true);setImageReady(true)}}'
 assert(crack.includes("setPhase('revealed');onRevealed()"),'buttons and cookie visibility share one reveal clock');
 assert(!panel.includes('COOKIE_REVEAL_MS'),'the panel no longer races the image with an independent timer');
 assert((await readFile('components/Experience.tsx','utf8')).includes("key={panel+'-'+fortuneRequestId}"),'each cookie starts a fresh closed-cookie animation');
-console.log('PASS: unchanged saved fortunes, uppercase heading, image-ready two-second shake, synchronized reveal and visible reduced-motion fallback.');
+console.log('PASS: unchanged saved fortunes, matching sentence-case heading, image-ready two-second shake, synchronized reveal and visible reduced-motion fallback.');

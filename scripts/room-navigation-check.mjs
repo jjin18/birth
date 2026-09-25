@@ -43,7 +43,8 @@ assert(experience.includes('[interior,setInterior]=useState(false)'),'first entr
 assert(experience.includes("const welcome=!interior&&focus==='home'"),'welcome copy stays out of the interior and focused views');
 for(const text of ['Happy Birthday Ryan','You told me your dream was a high rise in your favorite cities. I made you a little glimpse of that future as a reminder that the keys to your goals are closer than you think <3','I coded some mini games, click on the objects!'])assert(experience.includes(text));
 assert(!experience.includes('Happy 22nd B-day Ryan'),'entrance uses the simplified birthday heading');
-assert(experience.includes('inert={!roomReady}'),'covered room controls are not keyboard-focusable');
+assert(!experience.includes('inert=')&&!experience.includes('RoomLoader'),'room environment and navigation are visible immediately without a loading cover');
+assert(experience.includes('aria-busy={!roomReady}'),'loading progress remains available to assistive technology');
 for(const [width,height] of [[1280,350],[390,270],[844,160]]){
  const home=roomHomeView(false,width,height);
  assert(home.zoom<=height/10,'outside room fits below the birthday heading and above the copy');
@@ -54,16 +55,18 @@ for(const [width,height] of [[1280,350],[390,270],[844,160]]){
   assert(Math.abs(projected.x)<1&&Math.abs(projected.y)<1,'room geometry stays fully inside the entrance canvas');
  }
 }
-const loader=await readFile('components/RoomLoader.tsx','utf8');
-assert(!/KeyRound|room-loader-key|Getting your keys ready|<img|<canvas/.test(loader),'opening key is removed with no replacement asset');
 const entranceStyles=await readFile('app/interior.css','utf8');
-assert(!/room-loader-key|key-turn/.test(entranceStyles),'unused key animation is removed');
+assert(!/room-loader|key-turn/.test(entranceStyles),'black loading cover and unused animation styles are removed');
+assert(entranceStyles.includes('padding-bottom:clamp(12px,2svh,20px)')&&entranceStyles.includes('.birthday-games{margin-top:16px;'),'mini-games caption has breathing room above and below');
+assert(entranceStyles.includes('.birthday-message{padding-bottom:10px}'),'short screens retain a gap before the city clocks');
+assert(entranceStyles.includes('.view-controls .zoom-out{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%)}'),'reset sits to the right without shifting the centered view toggle');
+assert(!entranceStyles.includes('top:52px')&&!entranceStyles.includes('top:38px'),'old stacked-reset offsets are removed');
+assert(entranceStyles.includes('--panel-top:calc(86px + env(safe-area-inset-top))')&&entranceStyles.includes('--panel-top:calc(52px + env(safe-area-inset-top))'),'popups reclaim the old second navigation row');
 assert(entranceStyles.includes('clamp(24px,3vw,36px)')&&entranceStyles.includes('max-width:560px'),'entrance typography is smaller and the caption has a balanced line length');
 assert.deepEqual(roomHomeView(false,1280,720).target,roomHomeView(false,390,667).target,'outside room stays centered under the heading on every screen');
-assert(loader.includes('setDismissed(true)'),'loader is removed after the fade');
 const sceneReady=await readFile('components/Penthouse/SceneReady.tsx','utf8');
 assert(sceneReady.includes('useProgress')&&sceneReady.includes('frames.current>=3'),'reveal waits for asset loading and complete rendered frames');
-assert(!sceneReady.includes('useEffect'),'always-mounted canvas fallback cannot dismiss the loading cover');
+assert(!sceneReady.includes('useEffect'),'always-mounted canvas fallback cannot report false readiness');
 assert(!experience.includes('Thinking about you'));
 assert(experience.includes("setTip('Thank you for sleeping on the floor lol')"));
 assert(!experience.includes('😈')&&!experience.includes('moment-emoji'),'bed uses the new message instead of an emoji');

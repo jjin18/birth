@@ -1,7 +1,7 @@
 'use client';
 import { Component, type ReactNode } from 'react';
 
-/** A failed model or unavailable WebGL should show recovery, not an endless key. */
+/** Keep a visible recovery action if a scene asset fails to render. */
 export default class RoomSceneBoundary extends Component<{children:ReactNode;onReady:()=>void},{failed:boolean}> {
  state={failed:false};
  static getDerivedStateFromError(){return {failed:true}}

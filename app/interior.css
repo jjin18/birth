@@ -1,28 +1,25 @@
-.view-controls{position:absolute;z-index:6;left:50%;top:max(22px,env(safe-area-inset-top));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;white-space:nowrap}
+.view-controls{position:absolute;z-index:6;left:50%;top:max(22px,env(safe-area-inset-top));transform:translateX(-50%);display:flex;align-items:center;white-space:nowrap}
+.view-controls .zoom-out{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%)}
 .experience[data-welcome=true]{min-height:0;display:grid;grid-template-areas:"birthday" "view" "scene" "message" "cities";grid-template-rows:auto 44px minmax(0,1fr) auto auto;row-gap:clamp(8px,1.5svh,14px);padding:max(24px,env(safe-area-inset-top)) 0 max(20px,env(safe-area-inset-bottom))}
 .birthday-heading{grid-area:birthday;text-align:center;padding:0 18px;pointer-events:none}
 .birthday-heading h1{margin:0;font:400 clamp(24px,3vw,36px)/1.15 'Italiana',Georgia,serif;letter-spacing:.005em;text-wrap:balance}
 .experience[data-welcome=true]>.view-controls{grid-area:view;position:relative;left:auto;top:auto;transform:none;justify-self:center;align-self:start}
-.experience[data-welcome=true]>.view-controls .zoom-out{position:absolute;top:52px}
 .experience[data-welcome=true]>.scene-layer{grid-area:scene;position:relative;inset:auto;min-width:0;min-height:0}
-.birthday-message{grid-area:message;justify-self:center;width:calc(100% - 48px);max-width:560px;text-align:center;pointer-events:none;text-wrap:balance}
+.birthday-message{grid-area:message;justify-self:center;width:calc(100% - 48px);max-width:560px;padding-bottom:clamp(12px,2svh,20px);text-align:center;pointer-events:none;text-wrap:balance}
 .birthday-message p{margin:0;font-size:clamp(11px,1vw,12px);line-height:1.65;color:#d9d8d3}
-.birthday-message .birthday-games{margin-top:10px;font-size:10px;line-height:1.5;color:#a8aeb3}
+.birthday-message .birthday-games{margin-top:16px;font-size:10px;line-height:1.5;color:#a8aeb3}
 .experience[data-welcome=true]>.room-city-selector{grid-area:cities;position:relative;left:auto;bottom:auto;transform:none;justify-self:center}
-.room-loader{position:fixed;inset:0;z-index:100;background:#000;opacity:1;transition:opacity .9s ease;touch-action:none}
-.room-loader[data-ready=true]{opacity:0;pointer-events:none}
-@media(prefers-reduced-motion:reduce){.room-loader{transition:none}}
-@media(max-height:500px){.experience[data-welcome=true]{grid-template-rows:auto 34px minmax(0,1fr) auto auto;row-gap:5px;padding:max(10px,env(safe-area-inset-top)) 0 max(10px,env(safe-area-inset-bottom))}.birthday-heading h1{font-size:22px}.experience[data-welcome=true]>.view-controls .view-toggle{min-height:34px;padding:6px 11px;font-size:11px}.experience[data-welcome=true]>.view-controls .zoom-out{top:38px;width:34px;height:34px;min-height:34px}.birthday-message p{font-size:11px;line-height:1.4}.birthday-message .birthday-games{margin-top:4px;font-size:10px}.experience[data-welcome=true]>.room-city-selector button{padding:5px 12px}}
+@media(max-height:500px){.experience[data-welcome=true]{grid-template-rows:auto 34px minmax(0,1fr) auto auto;row-gap:5px;padding:max(10px,env(safe-area-inset-top)) 0 max(10px,env(safe-area-inset-bottom))}.birthday-heading h1{font-size:22px}.experience[data-welcome=true]>.view-controls .view-toggle{min-height:34px;padding:6px 11px;font-size:11px}.experience[data-welcome=true]>.view-controls .zoom-out{width:34px;height:34px;min-height:34px}.birthday-message{padding-bottom:10px}.birthday-message p{font-size:11px;line-height:1.4}.birthday-message .birthday-games{margin-top:8px;font-size:10px}.experience[data-welcome=true]>.room-city-selector button{padding:5px 12px}}
 .view-toggle,.zoom-out{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;font-size:13px;color:#ead9bc;background:#17232cf2;border:1px solid #bba37e70;border-radius:24px;backdrop-filter:blur(10px)}
 .view-toggle:hover,.zoom-out:hover{background:#29383f;border-color:#dbb984}
 .zoom-out{width:44px;height:44px;padding:0;border-radius:50%}
 .panel>.view-controls{position:fixed}
-.panel:has(>.view-controls){--panel-top:calc(130px + env(safe-area-inset-top));--panel-available-height:calc(100svh - var(--panel-top) - 14px - env(safe-area-inset-bottom));inset:var(--panel-top) 0 auto;margin:0 auto;max-height:var(--panel-available-height)}
+.panel:has(>.view-controls){--panel-top:calc(86px + env(safe-area-inset-top));--panel-available-height:calc(100svh - var(--panel-top) - 14px - env(safe-area-inset-bottom));inset:var(--panel-top) 0 auto;margin:0 auto;max-height:var(--panel-available-height)}
 .moment.moment-message{width:max-content;max-width:calc(100% - 40px);padding:16px 22px;font:clamp(18px,2.3vw,26px)/1.35 'Italiana',Georgia,serif;white-space:normal;text-align:center}
 .room-city-selector{position:absolute;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);backdrop-filter:blur(12px)}
 .room-city-selector button{display:flex;flex-direction:column;align-items:center;gap:4px;white-space:nowrap}
 .city-local-time{font-size:11px;line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:.04em;opacity:.8}
 .city-toggle-name{line-height:1.3}
 .experience .sky-caption{background:#15232dcc;padding:6px 9px;border-radius:4px;display:table;margin-left:auto}
-@media(max-width:650px){.view-controls{top:max(18px,env(safe-area-inset-top));gap:6px}.view-toggle{font-size:12px;padding:9px 12px}.room-city-selector{bottom:max(18px,env(safe-area-inset-bottom))}.experience .sky-caption{margin:0 auto 7px}}
-@media(max-height:500px){.panel>.view-controls{top:max(6px,env(safe-area-inset-top));gap:4px}.panel>.view-controls .view-toggle{min-height:34px;padding:6px 11px;font-size:11px}.panel>.view-controls .zoom-out{width:34px;height:34px;min-height:34px}.panel:has(>.view-controls){--panel-top:calc(86px + env(safe-area-inset-top));--panel-available-height:calc(100svh - var(--panel-top) - 8px - env(safe-area-inset-bottom))}}
+@media(max-width:650px){.view-controls{top:max(18px,env(safe-area-inset-top))}.view-toggle{font-size:12px;padding:9px 12px}.room-city-selector{bottom:max(18px,env(safe-area-inset-bottom))}.experience .sky-caption{margin:0 auto 7px}}
+@media(max-height:500px){.panel>.view-controls{top:max(6px,env(safe-area-inset-top))}.panel>.view-controls .view-toggle{min-height:34px;padding:6px 11px;font-size:11px}.panel>.view-controls .zoom-out{width:34px;height:34px;min-height:34px}.panel:has(>.view-controls){--panel-top:calc(52px + env(safe-area-inset-top));--panel-available-height:calc(100svh - var(--panel-top) - 8px - env(safe-area-inset-bottom))}}

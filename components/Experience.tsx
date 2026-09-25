@@ -6,7 +6,6 @@ import { getFortunes } from '@/lib/fortune-api';
 import FortunePanel from './FortunePanel';
 import RoomNavigation, { RoomNavigationContext } from './RoomNavigation';
 import { getDaylight } from '@/lib/daylight';
-import RoomLoader from './RoomLoader';
 import RoomSceneBoundary from './RoomSceneBoundary';
 
 const Arcade = dynamic(() => import('./Arcade'), { ssr: false });
@@ -39,17 +38,17 @@ export default function Experience(){
  },[focus]);
  function home(){setFocus('home');setPanel('home');setTip('');setReset(x=>x+1)}
  const welcome=!interior&&focus==='home';
- return <RoomNavigationContext.Provider value={{interior,canReset:focus!=='home'||cameraAway,reset:home,toggle:()=>{setInterior(value=>!value);home()}}}><main className="experience" inert={!roomReady} aria-busy={!roomReady} data-sky-mode={skyMode} data-sky-choice="auto" data-city={cities[city].id} data-interior={interior} data-welcome={welcome}>
+ return <RoomNavigationContext.Provider value={{interior,canReset:focus!=='home'||cameraAway,reset:home,toggle:()=>{setInterior(value=>!value);home()}}}><main className="experience" aria-busy={!roomReady} data-sky-mode={skyMode} data-sky-choice="auto" data-city={cities[city].id} data-interior={interior} data-welcome={welcome}>
   {welcome&&<header className="birthday-heading"><h1>Happy Birthday Ryan</h1></header>}
   <div className="scene-layer"><RoomSceneBoundary onReady={onReady}><Scene interior={interior} city={city} focus={focus} reset={reset} onInteract={interact} onReady={onReady} lampOn={lampOn} onLampToggle={toggleLamp} dogReaction={dogReaction} onDogClick={onDogClick} fortuneCount={fortuneCount} skyMode={skyMode} onSkyUnavailable={setSkyUnavailable} onViewChange={setCameraAway}/></RoomSceneBoundary></div>
   <RoomNavigation/>
   {welcome&&<footer className="birthday-message"><p>{'You told me your dream was a high rise in your favorite cities. I made you a little glimpse of that future as a reminder that the keys to your goals are closer than you think <3'}</p><p className="birthday-games">I coded some mini games, click on the objects!</p></footer>}
-  <nav className="city-selector room-city-selector" aria-label="Choose your city">{cities.map((c,i)=><button key={c.id} aria-label={c.name} aria-describedby={`city-time-${c.id}`} aria-pressed={city===i} onClick={()=>{setCity(i);home()}}><time id={`city-time-${c.id}`} className="city-local-time" dateTime={now?.toISOString()}>{formatCityTime(c,now)}</time><span className="city-toggle-name"><span className="city-dot"/>{c.name}</span></button>)}</nav>
+  <nav className="city-selector room-city-selector" aria-label="Choose your city">{cities.map((c,i)=><button key={c.id} aria-label={c.name} aria-describedby={`city-time-${c.id}`} aria-pressed={city===i} onClick={()=>setCity(i)}><time id={`city-time-${c.id}`} className="city-local-time" dateTime={now?.toISOString()}>{formatCityTime(c,now)}</time><span className="city-toggle-name"><span className="city-dot"/>{c.name}</span></button>)}</nav>
   {focus==='window'&&skyUnavailable&&<div className="sky-controls"><p className="sky-caption" role="status">Skyline unavailable — try another city.</p></div>}
   {tip&&<div className="moment moment-message" role="status">{tip}</div>}
   {panel==='wall'&&<WallPanel close={home}/>}
   {panel==='gloves'&&<Arcade close={home}/>}
   {musicOpened&&<MusicPanel open={panel==='laptop'} close={home}/>}
   {(panel==='fortune'||panel==='paperclip')&&<FortunePanel key={panel+'-'+fortuneRequestId} mode={panel} requestId={fortuneRequestId} close={home} onCollection={setFortuneCount} onOpenClip={()=>interact('paperclip')} onAnother={()=>interact('fortune')}/>}
- </main><RoomLoader ready={roomReady}/></RoomNavigationContext.Provider>;
+ </main></RoomNavigationContext.Provider>;
 }

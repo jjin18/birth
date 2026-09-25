@@ -5,6 +5,5 @@ export function windowDimensions(interior: boolean) {
  const height = top - bottom;
  // Match the 3:2 city images to the window without stretching buildings.
  const cropHeight = height * 1.5 / 10.02;
- const cropTop = interior ? .94 : .78;
- return { top, bottom, height, center: (top + bottom) / 2, cropHeight, cropBottom: cropTop - cropHeight };
+ return { top, bottom, height, center: (top + bottom) / 2, cropHeight };
 }
