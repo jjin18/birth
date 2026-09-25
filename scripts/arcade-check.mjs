@@ -56,6 +56,13 @@ const spriteBundle=await build({entryPoints:['lib/fighter-sprites.ts'],bundle:tr
 const {CHARACTER_SCALE,FRAMES}=await import('data:text/javascript;base64,'+Buffer.from(spriteBundle.outputFiles[0].text).toString('base64'));
 assert.equal(CHARACTER_SCALE.Jia,.85);assert.equal(CHARACTER_SCALE.Ryan,1);
 for(const pose of Object.keys(FRAMES.Jia))assert(FRAMES.Jia[pose].height*CHARACTER_SCALE.Jia<FRAMES.Ryan[pose].height*CHARACTER_SCALE.Ryan,`Jia is smaller in ${pose}`);
+for(const name of ['Jia','Ryan'])for(const frame of Object.values(FRAMES[name])){
+ const scale=frame.height/frame.rect[3]*CHARACTER_SCALE[name];
+ const top=(frame.rect[1]-frame.baseline)*scale;
+ const sole=(frame.baseline-frame.rect[1])*scale;
+ assert.equal(top+sole,0,'every pose pins its shoe baseline to the same floor, regardless of scale');
+ assert(frame.baseline>frame.rect[1]&&frame.baseline<=frame.rect[1]+frame.rect[3]);
+}
 let bytes=0;
 for(const file of ['jia-poses.webp','ryan-poses.webp']){
  const source=await readFile('public/arcade/'+file); bytes+=source.length;
