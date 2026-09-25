@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { build } from 'esbuild';
+import { OrthographicCamera,Vector3 } from 'three';
 
 const bundle=await build({stdin:{contents:`
 export {roomHomeView,roomViewIsAway,containRoomCamera,cameraBounds} from './lib/room-camera';
@@ -38,6 +39,26 @@ for(const interior of [true,false]){
 }
 assert.equal(renderStandalone(),'','isolated arcade has no room controls');
 const experience=await readFile('components/Experience.tsx','utf8');
+assert(experience.includes('[interior,setInterior]=useState(false)'),'first entrance is outside');
+assert(experience.includes("const welcome=!interior&&focus==='home'"),'welcome copy stays out of the interior and focused views');
+for(const text of ['Happy 22nd B-day Ryan','You told me your dream was a high rise in your favorite cities. I made you a little glimpse of that future as a reminder that the keys to your goals are closer than you think <3','I coded some games for when you want to relax from work'])assert(experience.includes(text));
+assert(experience.includes('inert={!roomReady}'),'covered room controls are not keyboard-focusable');
+for(const [width,height] of [[1280,350],[390,270],[844,160]]){
+ const home=roomHomeView(false,width,height);
+ assert(home.zoom<=height/10,'outside room fits below the birthday heading and above the copy');
+ const camera=new OrthographicCamera(-width/2,width/2,height/2,-height/2,.1,100);
+ camera.position.set(...home.position);camera.lookAt(...home.target);camera.zoom=home.zoom;camera.updateProjectionMatrix();camera.updateMatrixWorld();
+ for(const x of [-5.2,5.2])for(const y of [-.55,3.6])for(const z of [-3.7,3.6]){
+  const projected=new Vector3(x,y,z).project(camera);
+  assert(Math.abs(projected.x)<1&&Math.abs(projected.y)<1,'room geometry stays fully inside the entrance canvas');
+ }
+}
+const loader=await readFile('components/RoomLoader.tsx','utf8');
+assert(loader.includes('KeyRound')&&!/<img|<canvas/.test(loader),'key is an inline vector, not another texture');
+assert(loader.includes('setDismissed(true)'),'loader is removed after the fade');
+const sceneReady=await readFile('components/Penthouse/SceneReady.tsx','utf8');
+assert(sceneReady.includes('useProgress')&&sceneReady.includes('frames.current>=3'),'reveal waits for asset loading and complete rendered frames');
+assert(!sceneReady.includes('useEffect'),'always-mounted canvas fallback cannot dismiss the key');
 assert(!experience.includes('Thinking about you'));
 assert(experience.includes("setTip('😈')"));
 assert(!experience.includes('back-room'));

@@ -12,7 +12,7 @@ export function roomHomeView(interior:boolean,width:number,height:number) {
  return {
   position:interior ? roomOpening(width,height).position : [11,9,14] as Coordinates,
   target:(interior ? [-.45,1.25,-.7] : width<650 ? [-.2,.3,0] : [-2,.55,0]) as Coordinates,
-  zoom:interior ? 1 : width<650 ? width/13.6 : Math.min(width/17,100),
+  zoom:interior ? 1 : Math.max(1,Math.min(width<650?width/13.6:width/17,height/(width<650?11.5:10),100)),
  };
 }
 

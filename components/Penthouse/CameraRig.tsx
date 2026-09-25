@@ -23,7 +23,7 @@ function Controller({focus,reset,interior,onViewChange}:Props){
  const controls=useRef<OrbitType>(null),transition=useRef(true),lastAway=useRef<boolean|null>(null);
  const {camera,size}=useThree();
  const home=useMemo(()=>roomHomeView(interior,size.width,size.height),[interior,size.width,size.height]);
- const view=(interior?inside:outside)[focus],baseZoom=size.width<650?size.width/13.6:Math.min(size.width/17,100);
+ const view=(interior?inside:outside)[focus],baseZoom=interior?(size.width<650?size.width/13.6:Math.min(size.width/17,100)):home.zoom;
  const destination=useMemo(()=>new THREE.Vector3(...(focus==='home'?home.position:view.p)),[home,view,focus]);
  const target=useMemo(()=>new THREE.Vector3(...(focus==='home'?home.target:view.t)),[home,view,focus]);
  useEffect(()=>{transition.current=true},[camera,focus,reset,size.width,size.height]);

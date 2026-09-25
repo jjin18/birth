@@ -1,4 +1,20 @@
 .view-controls{position:absolute;z-index:6;left:50%;top:max(22px,env(safe-area-inset-top));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;white-space:nowrap}
+.experience[data-welcome=true]{min-height:0;display:grid;grid-template-areas:"birthday" "view" "scene" "message" "cities";grid-template-rows:auto 44px minmax(0,1fr) auto auto;row-gap:clamp(6px,1.2svh,12px);padding: max(16px,env(safe-area-inset-top)) 0 max(16px,env(safe-area-inset-bottom))}
+.birthday-heading{grid-area:birthday;text-align:center;padding:0 18px;pointer-events:none}
+.birthday-heading h1{margin:0;font:400 clamp(26px,4.4vw,54px)/1.12 'Italiana',Georgia,serif;letter-spacing:-.015em}
+.experience[data-welcome=true]>.view-controls{grid-area:view;position:relative;left:auto;top:auto;transform:none;justify-self:center;align-self:start}
+.experience[data-welcome=true]>.view-controls .zoom-out{position:absolute;top:52px}
+.experience[data-welcome=true]>.scene-layer{grid-area:scene;position:relative;inset:auto;min-width:0;min-height:0}
+.birthday-message{grid-area:message;justify-self:center;width:calc(100% - 40px);max-width:680px;text-align:center;pointer-events:none}
+.birthday-message p{margin:0;font-size:clamp(12px,1.2vw,15px);line-height:1.65;color:#d9d8d3}
+.birthday-message .birthday-games{margin-top:8px;font-size:clamp(10px,1vw,12px);line-height:1.5;color:#a8aeb3}
+.experience[data-welcome=true]>.room-city-selector{grid-area:cities;position:relative;left:auto;bottom:auto;transform:none;justify-self:center}
+.room-loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#000;color:#dbb984;opacity:1;transition:opacity .9s ease;touch-action:none}
+.room-loader[data-ready=true]{opacity:0;pointer-events:none}
+.room-loader-key{animation:key-turn 1.8s ease-in-out infinite;transform-origin:35% 35%}
+@keyframes key-turn{0%,100%{transform:translateY(3px) rotate(-18deg);opacity:.65}50%{transform:translateY(-3px) rotate(12deg);opacity:1}}
+@media(prefers-reduced-motion:reduce){.room-loader-key{animation:none}.room-loader{transition:none}}
+@media(max-height:500px){.experience[data-welcome=true]{grid-template-rows:auto 34px minmax(0,1fr) auto auto;row-gap:5px;padding:max(6px,env(safe-area-inset-top)) 0 max(6px,env(safe-area-inset-bottom))}.birthday-heading h1{font-size:26px}.experience[data-welcome=true]>.view-controls .view-toggle{min-height:34px;padding:6px 11px;font-size:11px}.experience[data-welcome=true]>.view-controls .zoom-out{top:38px;width:34px;height:34px;min-height:34px}.birthday-message p{font-size:11px;line-height:1.4}.birthday-message .birthday-games{margin-top:4px;font-size:10px}.experience[data-welcome=true]>.room-city-selector button{padding:5px 12px}}
 .view-toggle,.zoom-out{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;font-size:13px;color:#ead9bc;background:#17232cf2;border:1px solid #bba37e70;border-radius:24px;backdrop-filter:blur(10px)}
 .view-toggle:hover,.zoom-out:hover{background:#29383f;border-color:#dbb984}
 .zoom-out{width:44px;height:44px;padding:0;border-radius:50%}
