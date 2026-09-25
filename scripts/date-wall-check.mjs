@@ -20,6 +20,12 @@ const atlas=await sharp('public/memories/wall-atlas.webp').metadata();assert.equ
 const board=await readFile('components/Penthouse/DateWallPhotos.tsx','utf8');assert(board.includes('generateMipmaps=false'));assert(!board.includes('.clone()'),'five pins share one texture');
 const component=await readFile('components/WallPanel.tsx','utf8');assert(!/supabase|SharedAccess|sample:|Pin something/.test(component));
 assert(component.includes('loading="lazy"')&&component.includes('photo.thumbnail')&&component.includes('src={photo.src}'));
+assert(component.includes('title="to be continued..."')&&component.includes('headerActions={headerActions}'));
+assert(!/Our date wall|Saved to your date wall|date-wall-toolbar/.test(component));
+for(const label of ['Add photo or note','Lock editing','Edit wall'])assert(component.includes(`aria-label="${label}"`),'small header icons retain accessible labels');
+const css=await readFile('app/panels.css','utf8');
+const thumbnailRule=css.match(/\.date-photo img\{([^}]+)\}/)?.[1];assert(thumbnailRule?.includes('height:auto')&&thumbnailRule.includes('object-fit:contain')&&!thumbnailRule.includes('aspect-ratio'),'gallery photos retain their full aspect ratio');
+assert(css.match(/\.date-detail-image img\{([^}]+)\}/)?.[1].includes('object-fit:contain'),'detail photos are uncropped');
 const experience=await readFile('components/Experience.tsx','utf8');assert(experience.includes("const WallPanel = dynamic(() => import('./WallPanel')"));
 assert(!JSON.stringify(photos).match(/GPS|Make|Model|Serial|OffsetTime|taken|Downloads/));
 console.log(`PASS: 11 photos, duplicate removed, five confirmed date groups, three undated, sanitized metadata, lazy thumbnails/full-size viewer, ${bytes} bytes; one 384×256 board atlas (0.375 MiB RGBA).`);

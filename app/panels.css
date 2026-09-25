@@ -19,10 +19,10 @@
 .music-persistence-note{flex-shrink:0;margin:8px 0 0;text-align:center;font-size:11px;line-height:1.4;color:var(--dim)}
 .panel.date-wall{height:min(760px,var(--panel-available-height));overflow:hidden}
 .date-wall>.panel-inner{height:100%;display:flex;flex-direction:column;padding:clamp(14px,2.6svh,28px)}
-.date-wall .panel-head{flex-shrink:0;margin-bottom:18px}.date-wall .eyebrow:empty{display:none}
-.date-wall .panel-head h2{font-size:clamp(24px,4svh,36px)}
+.date-wall .panel-head{flex-shrink:0;gap:8px;margin-bottom:12px}.date-wall .eyebrow:empty{display:none}
+.date-wall .panel-head>div:first-child{min-width:0;flex:1}.date-wall .panel-head h2{font-size:clamp(19px,3.8vw,32px);white-space:nowrap}.date-wall .panel-head>.icon-button{width:32px;height:32px}
 .date-wall-content{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:0 6px 14px}
-.date-wall-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;flex-shrink:0;margin-bottom:12px}.date-wall-toolbar:empty{display:none}.date-wall-toolbar .text-button{padding:6px 0}
+.date-wall-header-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}.date-wall-header-actions button{display:grid;place-items:center;width:28px;height:28px;padding:0;border:1px solid transparent;border-radius:50%;background:none;color:var(--dim)}.date-wall-header-actions button:hover{color:var(--gold);background:#ffffff08}.date-wall-header-actions button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}.date-wall-header-actions button:disabled{opacity:.5;cursor:wait}
 .wall-hint{font-size:12px;line-height:1.5;color:var(--dim)}.wall-feedback{flex-shrink:0;max-height:100px;overflow:auto;margin:0 0 10px}
 .wall-editor{display:flex;flex-direction:column;flex:1;min-height:0}.wall-editor-fields{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 8px 12px}.wall-editor-fields h3{margin:0 0 12px;font-size:16px;font-weight:500}
 .wall-editor label,.wall-unlock label{display:block;font-size:13px;margin:14px 0}.wall-editor input[type=file]{display:block;width:100%;margin:10px 0;font-size:12px}.wall-photo-input span{display:block;font-size:11px;color:var(--dim);line-height:1.6}
@@ -32,11 +32,11 @@
 .date-group+ .date-group{margin-top:28px}.date-group>h3{font-size:12px;letter-spacing:.06em;font-weight:500;color:var(--gold);border-bottom:1px solid var(--line);padding-bottom:12px;margin:0 0 14px}
 .date-photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
 .date-photo{border:0;border-radius:3px;background:#eee9df;color:#353939;text-align:left;padding:8px 8px 13px;box-shadow:0 4px 12px #0002;transition:transform .15s}
-.date-photo:hover{transform:translateY(-3px)}.date-photo img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;background:#c3bcae}
+.date-photo:hover{transform:translateY(-3px)}.date-photo img{display:block;width:100%;height:auto;object-fit:contain;background:#c3bcae}
 .date-photo span{display:block;font-size:12px;line-height:1.4;margin:10px 4px 0}.undated-note{font-size:12px;color:var(--dim);margin:0 0 14px}
 .date-detail{display:flex;flex-direction:column;flex:1;min-height:0}.date-detail-controls{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px;margin-bottom:12px}
 .date-detail-controls>div{display:flex;gap:8px}.date-detail-controls .text-button{padding:8px 0}
-.date-detail-image{display:flex;justify-content:center;flex:1;min-height:0;overflow:hidden}.date-detail-image img{object-fit:contain;max-width:100%;max-height:100%;width:auto;height:auto;border-radius:3px}
+.date-detail-image{display:flex;justify-content:center;flex:1;min-height:0;overflow:hidden}.date-detail-image img{display:block;object-fit:contain;width:100%;height:100%;min-width:0;min-height:0;border-radius:3px}
 .date-detail-caption{flex-shrink:0;text-align:center;margin-top:12px}.date-detail-caption h3{font-size:15px;font-weight:500;margin:0 0 5px}.date-detail-caption time{font-size:11px;color:var(--dim)}
 @media(max-width:650px){.date-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.date-photo{padding:6px 6px 11px}.date-photo span{font-size:11px}}
 @media(max-height:500px){.date-wall .panel-head{margin-bottom:8px}.date-detail-controls{margin-bottom:6px}.date-detail-caption{margin-top:6px}.date-detail-caption h3{font-size:12px}.date-detail-controls .icon-button{width:32px;height:32px}}

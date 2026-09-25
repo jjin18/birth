@@ -46,7 +46,9 @@ try {
 }finally{db.close()}
 const timing=await build({entryPoints:['lib/cookie-motion.ts'],bundle:true,write:false,format:'esm',platform:'node'});
 const motion=await import('data:text/javascript;base64,'+Buffer.from(timing.outputFiles[0].text).toString('base64'));
-assert.equal(motion.COOKIE_HOLD_MS,0);assert.equal(motion.COOKIE_SHAKE_MS,3000);assert.equal(motion.COOKIE_CRACK_MS,3000);assert(motion.COOKIE_REVEAL_MS>motion.COOKIE_CRACK_MS+1250);
-const panel=await readFile('components/FortunePanel.tsx','utf8');assert(!/AFTER DINNER|A little good fortune|A few good words|notes kept, across your devices/.test(panel));
+assert.equal(motion.COOKIE_HOLD_MS,1000);assert.equal(motion.COOKIE_SHAKE_MS,5000);assert.equal(motion.COOKIE_CRACK_MS,6000);assert(motion.COOKIE_REVEAL_MS>motion.COOKIE_CRACK_MS+1250);
+const panel=await readFile('components/FortunePanel.tsx','utf8');assert(panel.includes('a little note for you'));assert(!/PANDA EXPRESS|AFTER DINNER|A little good fortune|A few good words|notes kept, across your devices|Saved to your shared paper clip/.test(panel));
+assert(!panel.includes('reduced?0'),'reduced motion must not skip the intact-cookie delay');
+const cookieCss=await readFile('app/fortunes.css','utf8');assert(!cookieCss.includes('.cookie-whole{display:none}'));assert(cookieCss.includes('cookie-reduced-show .01ms var(--cookie-crack-delay)'),'reduced-motion halves stay hidden until the same crack time');
 assert((await readFile('components/Experience.tsx','utf8')).includes("key={panel+'-'+fortuneRequestId}"),'each cookie starts a fresh closed-cookie animation');
-console.log('PASS: 95 generic + five personal fortunes, nine exact jokes evenly spaced from opening two, unchanged historical notes, safe storage migration, hidden totals and three-second intact-cookie shake.');
+console.log('PASS: 95 generic + five personal fortunes, nine exact jokes, unchanged saved notes, safe storage migration, minimal headings and six-second intact-cookie anticipation.');

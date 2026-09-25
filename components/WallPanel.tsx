@@ -53,17 +53,20 @@ export default function WallPanel({close}:{close:()=>void}){
   event.preventDefault();if(!draft||busy)return;setBusy(true);setError('');
   try{
    const data=await request(draft.version?'/api/wall/'+draft.id:'/api/wall',{method:draft.version?'PATCH':'POST',...jsonBody({...draft,date:draft.date||null})});
-   apply(data);setSelected(draft.id);setDraft(null);setMessage('Saved to your date wall.');
+   apply(data);setSelected(draft.id);setDraft(null);setMessage('');
   }catch(e){setError((e as Error).message)}finally{setBusy(false)}
  };
  const signIn=async(event:FormEvent)=>{
   event.preventDefault();setBusy(true);setError('');
-  try{await request('/api/wall/session',{method:'POST',...jsonBody({passcode})});setCanEdit(true);setUnlock(false);setPasscode('');setMessage('Editing unlocked for this browser.')}catch(e){setError((e as Error).message)}finally{setBusy(false)}
+  try{await request('/api/wall/session',{method:'POST',...jsonBody({passcode})});setCanEdit(true);setUnlock(false);setPasscode('');setMessage('')}catch(e){setError((e as Error).message)}finally{setBusy(false)}
  };
  const lock=async()=>{
-  setBusy(true);setError('');try{await request('/api/wall/session',{method:'DELETE'});setCanEdit(false);setMessage('Editing locked.')}catch(e){setError((e as Error).message)}finally{setBusy(false)}
+  setBusy(true);setError('');try{await request('/api/wall/session',{method:'DELETE'});setCanEdit(false);setMessage('')}catch(e){setError((e as Error).message)}finally{setBusy(false)}
  };
- return <Modal title="Our date wall." eyebrow="" close={close} wide className="date-wall">
+ const headerActions=!unlock&&!draft&&editingEnabled?<div className="date-wall-header-actions">
+  {canEdit?<><button type="button" aria-label="Add photo or note" title="Add photo or note" onClick={()=>begin()}><Plus size={14}/></button><button type="button" aria-label="Lock editing" title="Lock editing" onClick={lock} disabled={busy}><LockKeyhole size={13}/></button></>:<button type="button" aria-label="Edit wall" title="Edit wall" onClick={()=>{setUnlock(true);setError('');setMessage('')}}><Pencil size={13}/></button>}
+ </div>:null;
+ return <Modal title="to be continued..." eyebrow="" close={close} wide className="date-wall" headerActions={headerActions}>
   {error&&<p className="error wall-feedback" role="alert">{error}{!loaded&&<button className="text-button" onClick={()=>{setError('');request('/api/wall').then(apply).catch(e=>setError(e.message))}}>Try again</button>}</p>}
   {unlock?<form className="wall-unlock" onSubmit={signIn}>
    <p>Add a photo, write a memory, or edit a date with your shared passcode.</p>
@@ -82,10 +85,6 @@ export default function WallPanel({close}:{close:()=>void}){
    </div>
    <div className="wall-form-actions"><button type="button" className="secondary-button" disabled={busy} onClick={()=>{setDraft(null);setError('');setMessage('')}}>Cancel</button><button className="gold-button" disabled={busy}>{busy?'Preparing…':'Save memory'}</button></div>
   </form>:<>
-   <div className="date-wall-toolbar">
-    {canEdit?<><button className="gold-button" onClick={()=>begin()}><Plus size={15}/>Add photo or note</button><button className="text-button" onClick={lock} disabled={busy}><LockKeyhole size={14}/>Lock editing</button></>:editingEnabled&&<button className="text-button" onClick={()=>{setUnlock(true);setError('');setMessage('')}}><Pencil size={14}/>Edit wall</button>}
-    {message&&<span className="wall-hint" role="status">{message}</span>}
-   </div>
    {photo?<article className="date-detail">
     <div className="date-detail-controls"><button className="text-button" onClick={()=>setSelected(null)}><ArrowLeft size={16}/>All dates</button><div>{canEdit&&<button className="text-button" onClick={()=>begin(photo)}><Pencil size={14}/>Edit</button>}<button className="icon-button" aria-label="Previous photo" disabled={selectedIndex===0} onClick={()=>setSelected(entries[selectedIndex-1].id)}><ChevronLeft size={18}/></button><button className="icon-button" aria-label="Next photo" disabled={selectedIndex===entries.length-1} onClick={()=>setSelected(entries[selectedIndex+1].id)}><ChevronRight size={18}/></button></div></div>
     {photo.src&&<div className="date-detail-image"><img key={photo.id} src={photo.src} width={photo.width} height={photo.height} alt={photo.alt||photo.title} decoding="async"/></div>}

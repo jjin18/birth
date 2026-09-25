@@ -15,8 +15,9 @@ export default function FortuneCrack({note}:{note:SavedFortune}){
   let vibrated=false;
   const pulse=(pattern:number[])=>{if(document.visibilityState!=='visible')return;try{vibrated=navigator.vibrate(pattern)||vibrated}catch{/* Optional enhancement: unsupported devices stay silent. */}};
   const shake=setTimeout(()=>pulse([12,35,12]),COOKIE_HOLD_MS);
+  const anticipation=setTimeout(()=>pulse([12,50,16,45,20]),COOKIE_CRACK_MS-600);
   const crack=setTimeout(()=>pulse([28,35,18]),COOKIE_CRACK_MS);
-  return()=>{clearTimeout(shake);clearTimeout(crack);if(vibrated){try{navigator.vibrate(0)}catch{}}};
+  return()=>{clearTimeout(shake);clearTimeout(anticipation);clearTimeout(crack);if(vibrated){try{navigator.vibrate(0)}catch{}}};
  },[note.id]);
  return <div className="fortune-reveal fortune-crack" style={{'--cookie-hold':COOKIE_HOLD_MS+'ms','--cookie-shake':COOKIE_SHAKE_MS+'ms','--cookie-crack-delay':COOKIE_CRACK_MS+'ms','--cookie-paper-delay':(COOKIE_CRACK_MS+150)+'ms'} as CSSProperties}>
   <div className="cookie-crack-stage">
