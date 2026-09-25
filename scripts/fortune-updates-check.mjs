@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {readFile} from 'node:fs/promises';
+import {DatabaseSync} from 'node:sqlite';
+import {build} from 'esbuild';
+import {fortunes,genericFortuneIds,jokeFortuneIds,total,fortuneKindForOpening} from './fortune-test-data.mjs';
+assert.equal(genericFortuneIds.length,100);assert.equal(total,109);
+assert.deepEqual(jokeFortuneIds.map(id=>fortunes[id]),['johnisgay','so buns','just be a chiller','ur racist','ur my little cute chud','just take a walk in the tenderloin','combine the future of medicine and ai','ur the soma tweaker','stussy makes you a socal abb']);
+assert.equal(createHash('sha256').update(JSON.stringify(fortunes.slice(0,200))).digest('hex'),'85a0ef7a2a33458536698be4f622aaf3bf93653f5417d55cfc9dae9e3d29eb49','existing saved notes never change text');
+const jokePositions=Array.from({length:109},(_,i)=>i+1).filter(i=>fortuneKindForOpening(i)==='joke');
+assert.deepEqual(jokePositions,[2,14,26,38,50,62,74,86,98]);
+for(const file of ['components/FortuneSlip.tsx','components/FortunePanel.tsx'])assert(!/\b(200|209|109)\b/.test(await readFile(file,'utf8')),'no fixed totals in fortune or collection UI');
+const compiled=await build({entryPoints:['server/fortune-storage.ts'],bundle:true,write:false,format:'esm',platform:'node'});
+const {initializeFortuneStorage}=await import('data:text/javascript;base64,'+Buffer.from(compiled.outputFiles[0].text).toString('base64'));
+const db=new DatabaseSync(':memory:');
+try {
+ db.exec('CREATE TABLE opened_fortunes (id INTEGER PRIMARY KEY CHECK(id >= 0 AND id < 200),request_id TEXT NOT NULL UNIQUE,opened_by TEXT NOT NULL,opened_at TEXT NOT NULL)');
+ const insert=db.prepare('INSERT INTO opened_fortunes VALUES (?,?,?,?)');
+ for(const id of [0,1,105,199])insert.run(id,'request-'+id,'existing-user','2026-09-25T00:00:00.000Z');
+ const before=db.prepare('SELECT * FROM opened_fortunes ORDER BY id').all();
+ initializeFortuneStorage(db);initializeFortuneStorage(db);
+ assert.deepEqual(db.prepare('SELECT * FROM opened_fortunes ORDER BY id').all(),before,'migration is idempotent and preserves every field');
+ db.prepare('INSERT INTO opened_fortunes VALUES (?,?,?,?)').run(208,'new-request','room','2026-09-25T01:00:00.000Z');
+ assert.throws(()=>db.prepare('INSERT INTO opened_fortunes VALUES (?,?,?,?)').run(207,'new-request','room','now'),/UNIQUE/);
+ assert.throws(()=>db.prepare('INSERT INTO opened_fortunes VALUES (?,?,?,?)').run(-1,'invalid','room','now'),/CHECK/);
+}finally{db.close()}
+const timing=await build({entryPoints:['lib/cookie-motion.ts'],bundle:true,write:false,format:'esm',platform:'node'});
+const motion=await import('data:text/javascript;base64,'+Buffer.from(timing.outputFiles[0].text).toString('base64'));
+assert(motion.COOKIE_HOLD_MS>=1000);assert.equal(motion.COOKIE_CRACK_MS,motion.COOKIE_HOLD_MS+motion.COOKIE_SHAKE_MS);assert(motion.COOKIE_REVEAL_MS>motion.COOKIE_CRACK_MS+1250);
+console.log('PASS: 100 active regular fortunes, nine exact jokes evenly spaced from opening two, unchanged historical notes, safe storage migration, hidden totals and longer cookie timing.');

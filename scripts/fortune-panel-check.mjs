@@ -1,3 +1,4 @@
+import { total } from './fortune-test-data.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
@@ -30,11 +31,11 @@ try {
       if(route.request().method()==='POST') {
         posts.push(JSON.parse(route.request().postData()));
         if(scenario==='fail'||(scenario==='recover'&&posts.length===1))return route.fulfill({status:200,contentType:'application/json',body:''});
-        return route.fulfill({json:{fortune:note,total:200}});
+        return route.fulfill({json:{fortune:note,total}});
       }
       gets++;
       if(scenario==='archive-fail')return route.fulfill({status:200,contentType:'application/json',body:''});
-      return route.fulfill({json:{fortunes:[note],total:200}});
+      return route.fulfill({json:{fortunes:[note],total}});
     }
     const root=resolve('public'),file=resolve(root,'.'+decodeURIComponent(path));assert(file.startsWith(root+sep));
     return route.fulfill({body:readFileSync(file),contentType:'image/png'});

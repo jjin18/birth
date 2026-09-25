@@ -10,6 +10,6 @@ export default function FortuneSlip({note,clipped=false}:{note:SavedFortune;clip
    <span className="fortune-edge fortune-edge-right" aria-hidden="true"/>
    {clipped&&<Paperclip className="slip-clip" size={28} aria-hidden="true"/>}
   </div>
-  <div className="fortune-meta"><span className="fortune-number">FORTUNE {String(note.id+1).padStart(3,'0')} / 200</span>{clipped&&<time dateTime={note.openedAt}>{new Date(note.openedAt).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}</time>}</div>
+  {clipped&&<div className="fortune-meta"><time dateTime={note.openedAt}>{new Date(note.openedAt).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}</time></div>}
  </article>;
 }

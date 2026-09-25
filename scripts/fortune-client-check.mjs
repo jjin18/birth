@@ -1,10 +1,11 @@
+import { total } from './fortune-test-data.mjs';
 import assert from 'node:assert/strict';
 import { build } from 'esbuild';
 
 const bundle = await build({ entryPoints: ['lib/fortune-api.ts'], bundle: true, write: false, platform: 'node', format: 'esm' });
 const { getFortunes, openFortune } = await import('data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64'));
 const note = { id: 7, openedAt: '2026-09-25T00:00:00.000Z' };
-const opened = { fortune: note, total: 200 }, archive = { fortunes: [note], total: 200 };
+const opened = { fortune: note, total }, archive = { fortunes: [note], total };
 const realFetch = globalThis.fetch;
 const requestId = '12345678-1234-1234-1234-123456789abc';
 let calls;
@@ -19,7 +20,8 @@ function responses(...queue) {
 }
 function sameOpening() {
   assert(calls.every(call => call.url === '/api/fortunes' && call.method === 'POST' &&
-    call.body === JSON.stringify({requestId}) && call.credentials === 'same-origin' && call.cache === 'no-store'));
+    JSON.parse(call.body).requestId===requestId && ['generic','joke'].includes(JSON.parse(call.body).kind) && call.credentials === 'same-origin' && call.cache === 'no-store'));
+  assert(calls.every(call=>call.body===calls[0].body),'retries retain the same draw preference');
 }
 try {
   responses(new Response('', {status:200}), Response.json(opened));
@@ -43,13 +45,20 @@ try {
   await assert.rejects(openFortune(requestId), /reopen the apartment/); assert.equal(calls.length,1);
   responses(Response.json({error:'A unique opening ID is required.'},{status:400}));
   await assert.rejects(openFortune(''), /unique opening ID/); assert.equal(calls.length,1);
-  for (const value of [{},null,{total:200},{fortune:{id:999,openedAt:note.openedAt},total:200},{fortune:note,exhausted:true,total:200}]) {
+  for (const value of [{},null,{total},{fortune:{id:999,openedAt:note.openedAt},total},{fortune:note,exhausted:true,total}]) {
     responses(Response.json(value),Response.json(value),Response.json(value));
     await assert.rejects(openFortune(requestId), /try again/); assert.equal(calls.length,3);
   }
-  responses(Response.json({fortunes:[note,note],total:200}),Response.json(archive));
+  responses(Response.json({fortunes:[note,note],total}),Response.json(archive));
   assert.deepEqual(await getFortunes(),archive);
-  responses(Response.json({exhausted:true,total:200}));
-  assert.deepEqual(await openFortune(requestId),{exhausted:true,total:200});
-  console.log('PASS: empty/truncated/non-JSON responses, network/body interruptions, bounded retries, stable opening IDs, auth errors, payload validation and exhaustion.');
+  responses(Response.json({exhausted:true,total}));
+  assert.deepEqual(await openFortune(requestId),{exhausted:true,total});
+  const secondId='12345678-1234-1234-1234-123456789abd';
+  responses(Response.json({fortune:{...note,id:200},total}));
+  await Promise.all([openFortune(secondId),openFortune(secondId)]);
+  assert.equal(calls.length,1,'duplicate mounts share one in-flight request');
+  assert.equal(JSON.parse(calls[0].body).kind,'joke','second successful opening requests a joke despite earlier retries');
+  responses(Response.json(opened));await openFortune('12345678-1234-1234-1234-123456789abe');
+  assert.equal(JSON.parse(calls[0].body).kind,'generic','normal fortunes resume after the joke');
+  console.log('PASS: resilient JSON handling, bounded retries, stable IDs, auth/validation/exhaustion, duplicate-request coalescing and second-cookie joke timing.');
 } finally { globalThis.fetch = realFetch; }

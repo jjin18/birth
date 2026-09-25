@@ -31,13 +31,30 @@ Railway service setup:
    valid HTTPS and the fortune API on both hostnames before treating cutover as done.
 
 Local validation: `npm run build`, `npm run test:railway`, then `npm start`.
+
+Room controls: the bed shows only 😈. An icon-only camera reset appears directly
+below Step inside/outside whenever the view leaves its opening position, including
+manual zoom/orbit and while a modal is open.
+
+Fortunes: no numbering or total is displayed. A fresh page visit requests an inside
+joke for cookie two, then every twelfth opening; draws fall back to the other kind
+only when the requested kind is exhausted. Retries do not advance this rhythm.
+Retired regular fortunes stay in the read-only text catalog so old saved IDs never
+change meaning; they are excluded from new draws. The cookie holds for 1.1 seconds,
+shakes for 420 ms, then splits with twelve crumbs. Optional short vibration pulses
+work only on supporting devices. Reduced-motion mode skips shaking and vibration.
+
+Focused checks: `node scripts/room-navigation-check.mjs` and
+`node scripts/fortune-updates-check.mjs`. `node scripts/room-controls-preview.mjs`
+serves a loopback-only, lightweight UI harness on port 3106 with disposable in-memory
+notes; it never opens or changes real shared fortunes.
 The default local address is `http://127.0.0.1:3023`; notes live in ignored
 `.local-data/`. `DATA_DIR` overrides local storage. `PUBLIC_ORIGINS` is a
 comma-separated list of complete production origins; the two birthday-domain
 origins are included by default.
 
 This deployment is deliberately public: anyone with the URL can see the room
-and participate in the same 200-note fortune collection. The server does not
+and participate in the same shared fortune collection. The server does not
 trust OpenAI identity headers, exposes no user IDs, rejects cross-origin writes,
 limits request bodies, and allows at most 12 fortune POST requests per minute
 for the entire room. Existing saved notes in the old Sites D1 database must
@@ -74,8 +91,8 @@ Open http://127.0.0.1:3023 for the full preview. `npm run dev` on port 3022 is f
 - One floor lamp, on by default, smoothly toggling the room's illumination.
 - The supplied dog-and-bed model with gentle breathing and a bark reaction. Clicking plays a locally synthesized double bark.
 - Red 3D boxing gloves on the coffee table open Mini Fighter. The laptop no longer opens the arcade.
-- Panda Express opens one of 200 authored, unique fortunes. Each draw is immediately saved to the shared paper clip. The collection is available on any device signed into this private Site.
-- D1 transactions and unique IDs prevent repeats, including simultaneous draws. A request UUID makes retries idempotent. After all 200 are opened, the collection remains available without recycling notes.
+- Panda Express and the note directly in front of it open the same fortune popup. The active pool contains 100 regular fortunes and nine inside jokes. Each draw is immediately saved to the shared paper clip. The collection is available on any device signed into this private Site.
+- D1 transactions and unique IDs prevent repeats, including simultaneous draws. A request UUID makes retries idempotent. After the active pool is exhausted, the collection remains available without recycling notes.
 - Clickable 3D paper clip and keyboard-accessible shortcuts, native dialogs, responsive controls, orbit, zoom and camera reset.
 - Tokyo, New York, Taipei and San Francisco skyline backdrops. The existing Paris photograph in the sample memory wall is not a selectable skyline.
 - Local Mini Fighter with character choice, movement, jumping, attacks, opponent AI, health, timer, touch controls and rematch.
@@ -102,9 +119,9 @@ node scripts/room-check.mjs
 node scripts/smoke.mjs
 ```
 
-The isolated fortune test covers all 200 draws, concurrent requests, retries, exhaustion and access guards. Browser checks require Microsoft Edge and the full preview at port 3023; they exercise physical-object clicks, room brightness, bark audio, fighter, shared notes, reload persistence and mobile layout.
+The isolated fortune test covers every active draw, preserved retired notes, concurrent requests, retries, exhaustion and access guards. Browser checks require Microsoft Edge and the full preview at port 3023; they exercise physical-object clicks, room brightness, bark audio, fighter, shared notes, reload persistence and mobile layout.
 
-The fortune client validates status, content type, JSON shape and note IDs before using a response. Empty/truncated/non-JSON responses and transient network/server failures get at most two retries with the same request ID and a 12-second per-attempt timeout; sign-in and permission errors do not loop. A confirmed saved fortune remains visible if the subsequent archive refresh fails. The client and isolated modal tests exercise these failures without changing production notes. The production database and authentication guard are unchanged.
+The fortune client validates status, content type, JSON shape and note IDs before using a response. Empty/truncated/non-JSON responses and transient network/server failures get at most two retries with the same request ID and a 12-second per-attempt timeout; sign-in and permission errors do not loop. A confirmed saved fortune remains visible if the subsequent archive refresh fails. The client and isolated modal tests exercise these failures without changing production notes. The authentication guard is unchanged. Railway performs a transactional, idempotent migration of the old numeric-ID cap; all saved rows and request IDs are preserved.
 
 ## Assets and publication
 

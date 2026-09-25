@@ -104,7 +104,7 @@ try {
   await page.waitForFunction(() => window.roomTestScene.getObjectByName('room-lamp-light').intensity > 17);
   const bed = new THREE.Vector3(-3.2, .9, -1.15).project(camera);
   await page.mouse.click(box.x + (bed.x * .5 + .5) * box.width, box.y + (-bed.y * .5 + .5) * box.height);
-  await page.getByText(/Thinking about you/).waitFor();
+  await page.getByRole('status').filter({hasText:'😈'}).waitFor();
   await page.getByRole('button', { name: 'San Francisco', exact: true }).click();
   await page.getByRole('button', { name: 'Step outside', exact: true }).click();
   await page.waitForTimeout(1800);

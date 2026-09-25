@@ -6,6 +6,7 @@ import { join, resolve, sep } from 'node:path';
 import { once } from 'node:events';
 import { get } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
+import { total,activeFortuneIds } from './fortune-test-data.mjs';
 
 const temp=await mkdtemp(join(tmpdir(),'penthouse-railway-test-'));
 const port=Number(process.env.TEST_PORT||3199),origin=`http://127.0.0.1:${port}`;
@@ -54,8 +55,8 @@ try {
  // when no fortunes remain. Never consume real production notes in tests.
  const db=new DatabaseSync(join(temp,'fortunes.sqlite'));
  const insert=db.prepare('INSERT OR IGNORE INTO opened_fortunes VALUES (?, ?, ?, ?)');
- for(let i=0;i<200;i++)insert.run(i,crypto.randomUUID(),'test-seed',new Date().toISOString());db.close();
- await start();assert.deepEqual(await (await post()).json(),{exhausted:true,total:200});assert.deepEqual(await (await post(id)).json(),first);await stop();
+ for(const id of activeFortuneIds)insert.run(id,crypto.randomUUID(),'test-seed',new Date().toISOString());db.close();
+ await start();assert.deepEqual(await (await post()).json(),{exhausted:true,total});assert.deepEqual(await (await post(id)).json(),first);await stop();
  const importDir=join(temp,'import-check'),imported=[{id:7,openedAt:'2026-09-25T00:00:00.000Z'},{id:19,openedAt:'2026-09-25T00:01:00.000Z'}];
  await start({DATA_DIR:importDir,FORTUNES_IMPORT_JSON:JSON.stringify(imported)});
  assert.deepEqual((await (await fetch(origin+'/api/fortunes')).json()).fortunes,[...imported].reverse());await stop();

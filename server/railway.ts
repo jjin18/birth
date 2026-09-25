@@ -5,6 +5,8 @@ import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
 import worker from '../worker/index';
+import { fortunes } from '../lib/fortunes';
+import { initializeFortuneStorage } from './fortune-storage';
 
 const root=resolve('dist/client');
 const onRailway=Boolean(process.env.RAILWAY_ENVIRONMENT_ID);
@@ -13,19 +15,15 @@ if(onRailway&&!process.env.RAILWAY_VOLUME_MOUNT_PATH)throw Error('Mount a Railwa
 const dataDir=resolve(process.env.RAILWAY_VOLUME_MOUNT_PATH||process.env.DATA_DIR||'.local-data');
 mkdirSync(dataDir,{recursive:true});
 const db=new DatabaseSync(join(dataDir,'fortunes.sqlite'),{timeout:5000});
-db.exec(`PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;
- CREATE TABLE IF NOT EXISTS opened_fortunes (
- id INTEGER PRIMARY KEY CHECK(id >= 0 AND id < 200),
- request_id TEXT NOT NULL UNIQUE, opened_by TEXT NOT NULL, opened_at TEXT NOT NULL
- );`);
+initializeFortuneStorage(db);
 // Import only note IDs and opening dates, never old account identifiers.
 // Repeated deployments are safe: existing notes are never replaced or reset.
 if(process.env.FORTUNES_IMPORT_JSON){
  const seed:unknown=JSON.parse(process.env.FORTUNES_IMPORT_JSON);
- if(!Array.isArray(seed)||seed.length>200)throw Error('Invalid fortune import');
+ if(!Array.isArray(seed)||seed.length>fortunes.length)throw Error('Invalid fortune import');
  const ids=new Set<number>();
  for(const item of seed){
-  if(!item||!Number.isInteger(item.id)||item.id<0||item.id>=200||ids.has(item.id)||typeof item.openedAt!=='string'||item.openedAt.length>40||!Number.isFinite(Date.parse(item.openedAt)))throw Error('Invalid fortune import entry');
+  if(!item||!Number.isInteger(item.id)||item.id<0||item.id>=fortunes.length||ids.has(item.id)||typeof item.openedAt!=='string'||item.openedAt.length>40||!Number.isFinite(Date.parse(item.openedAt)))throw Error('Invalid fortune import entry');
   ids.add(item.id);
  }
  db.exec('BEGIN IMMEDIATE');

@@ -22,7 +22,7 @@ const { outputFiles } = await build({
       <Canvas dpr={1} camera={{position:[4.5,3.4,5.5],fov:42}} onCreated={({scene,camera})=>{camera.lookAt(2.3,.7,2.1);window.tableState={scene,camera,THREE};}}>
         <color attach="background" args={['#596169']}/>
         <ambientLight intensity={2}/><directionalLight position={[3,5,4]} intensity={3}/>
-        <FortuneTable count={12} onFortune={()=>window.tableClicks.push('fortune')} onPaperclip={()=>window.tableClicks.push('paperclip')} onGloves={()=>window.tableClicks.push('gloves')}/>
+        <FortuneTable count={12} onFortune={()=>window.tableClicks.push('fortune')} onGloves={()=>window.tableClicks.push('gloves')}/>
       </Canvas>);
   ` },
 });
@@ -90,12 +90,12 @@ try {
   const paper = report.objects.find(object=>object.name==='fortune-paperclip');
   const panda = report.objects.find(object=>object.name==='panda-express');
   assert(paper.width<.29,'Paper stack remains much smaller than the original');
-  assert(paper.min[0]-panda.max[0]>.01 && paper.min[0]-panda.max[0]<.07,'Paper stack sits directly beside the Panda box');
+  assert(Math.abs((paper.min[0]+paper.max[0]-panda.min[0]-panda.max[0])/2)<.05,'Paper stack is centered directly in front of the Panda box');
   assert(report.paperVisibleFromOpenings,'Notes and metal clip are not hidden by the box or gloves from desktop or mobile opening positions');
   assert(paper.min[1]>=report.surface && paper.min[1]-report.surface<.02,'Paper rests on the tabletop');
   for (const [name,local,action] of [
     ['panda-express',[0,.22,.20],'fortune'],
-    ['fortune-paperclip',[.16,.04,.03],'paperclip'],
+    ['fortune-paperclip',[.16,.04,.03],'fortune'],
     ['boxing-gloves',[0,.18,.05],'gloves'],
   ]) {
     const point = await page.evaluate(({name,local})=>{
@@ -104,12 +104,13 @@ try {
       return {x:(p.x*.5+.5)*innerWidth,y:(-p.y*.5+.5)*innerHeight};
     },{name,local});
     console.log('Checking click:', action, point);
+    const previousCount=await page.evaluate(()=>window.tableClicks.length);
     await page.mouse.click(point.x,point.y);
-    await page.waitForFunction(action=>window.tableClicks.includes(action),action,{timeout:5000});
+    await page.waitForFunction(({action,previousCount})=>window.tableClicks.length===previousCount+1&&window.tableClicks.at(-1)===action,{action,previousCount},{timeout:5000});
   }
   await page.setViewportSize({width:390,height:844});
   await page.evaluate(()=>{const {camera}=window.tableState;camera.position.set(5.1,5.3,7.2);camera.lookAt(2.3,.7,2.1);camera.updateProjectionMatrix()});
   await page.screenshot({path:'preview-tabletop-mobile.png',timeout:60000});
   assert.deepEqual(errors,[]);
-  console.log('PASS: supplied table grounded; no cylinder; tiny adjacent paper stack; gloves fully supported; all three click handlers work; desktop/mobile renders without browser errors.');
+  console.log('PASS: supplied table grounded; no cylinder; tiny paper stack in front of Panda box; gloves fully supported; both fortune click targets work; desktop/mobile renders without browser errors.');
 } finally { await browser.close(); }

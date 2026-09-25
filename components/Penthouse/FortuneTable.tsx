@@ -8,9 +8,9 @@ import { BoxingGloves } from './RoomObjects';
 
 const MODEL_URL = '/models/girard-flower-table.glb';
 const FLOOR_Y = .075;
-type Props = { count: number; onFortune: () => void; onPaperclip: () => void; onGloves: () => void };
+type Props = { count: number; onFortune: () => void; onGloves: () => void };
 
-function TableAndObjects({ count, onFortune, onPaperclip, onGloves }: Props) {
+function TableAndObjects({ count, onFortune, onGloves }: Props) {
   const { scene } = useRoomModel(MODEL_URL);
   const { object, surfaceY } = useMemo(() => {
     const object = scene.clone(true);
@@ -32,7 +32,7 @@ function TableAndObjects({ count, onFortune, onPaperclip, onGloves }: Props) {
     <group name="uploaded-flower-table" position={[0, FLOOR_Y, 0]} dispose={null}><primitive object={object} /></group>
     <group name="tabletop-objects" position={[0, surfaceY + .004, 0]}>
       <PandaTakeout position={[-.45, 0, -.19]} click={onFortune} />
-      <Paperclip position={[.14, .003, -.35]} scale={.32} count={count} click={onPaperclip} />
+      <Paperclip position={[-.45, .003, .12]} scale={.32} count={count} click={onFortune} />
       <BoxingGloves position={[-.06, .005, .6]} scale={.7} click={onGloves} />
     </group>
   </>;

@@ -1,4 +1,5 @@
-import { fortunes } from '../lib/fortunes';
+import { genericFortuneIds,jokeFortuneIds,fortunePoolSize } from '../lib/fortunes';
+const candidates=[...genericFortuneIds.map(id=>`(${id},'generic')`),...jokeFortuneIds.map(id=>`(${id},'joke')`)].join(',');
 type Row = { id: number; opened_at: string };
 type Statement = { bind(...values: unknown[]): Statement; all<T>(): Promise<{results:T[]}> };
 type Env = {
@@ -23,7 +24,7 @@ export default {
   try {
    if(request.method==='GET') {
     const {results}=await env.DB.prepare('SELECT id, opened_at FROM opened_fortunes ORDER BY opened_at DESC, id DESC').all<Row>();
-    return json({fortunes:results.map(row=>({id:row.id,openedAt:row.opened_at})),total:fortunes.length});
+    return json({fortunes:results.map(row=>({id:row.id,openedAt:row.opened_at})),total:fortunePoolSize});
    }
    if(request.method!=='POST')return json({error:'Method not allowed.'},405);
    const origin=request.headers.get('Origin');
@@ -33,23 +34,23 @@ export default {
    if(Number(request.headers.get('Content-Length')||0)>512)return json({error:'Request too large.'},413);
    const raw=await request.text();
    if(raw.length>512)return json({error:'Request too large.'},413);
-   let body:{requestId?:unknown};try{body=JSON.parse(raw)}catch{return json({error:'Invalid request.'},400)}
+   let body:{requestId?:unknown;kind?:unknown};try{body=JSON.parse(raw)}catch{return json({error:'Invalid request.'},400)}
    if(!body||typeof body.requestId!=='string'||!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(body.requestId))return json({error:'A unique opening ID is required.'},400);
+   if(body.kind!==undefined&&body.kind!=='generic'&&body.kind!=='joke')return json({error:'Invalid fortune kind.'},400);
    // One transactional batch reserves an unused ID and clips it immediately.
    // The unique request ID also makes retries/Strict Mode mounts idempotent.
    const now=new Date().toISOString();
    const result=await env.DB.batch<Row>([
-    env.DB.prepare(`WITH RECURSIVE candidates(id) AS (
-      SELECT 0 UNION ALL SELECT id+1 FROM candidates WHERE id < ?
-     ) INSERT OR IGNORE INTO opened_fortunes (id,request_id,opened_by,opened_at)
+    env.DB.prepare(`WITH candidates(id,kind) AS (VALUES ${candidates})
+     INSERT OR IGNORE INTO opened_fortunes (id,request_id,opened_by,opened_at)
      SELECT id,?,?,? FROM candidates
      WHERE NOT EXISTS (SELECT 1 FROM opened_fortunes f WHERE f.id=candidates.id)
-     ORDER BY random() LIMIT 1`).bind(fortunes.length-1,body.requestId,user,now),
+     ORDER BY CASE WHEN kind=? THEN 0 ELSE 1 END,random() LIMIT 1`).bind(body.requestId,user,now,body.kind||'generic'),
     env.DB.prepare('SELECT id, opened_at FROM opened_fortunes WHERE request_id=? AND opened_by=?').bind(body.requestId,user),
    ]);
    const row=result[1].results[0];
-   if(!row)return json({exhausted:true,total:fortunes.length},200);
-   return json({fortune:{id:row.id,openedAt:row.opened_at},total:fortunes.length});
+   if(!row)return json({exhausted:true,total:fortunePoolSize},200);
+   return json({fortune:{id:row.id,openedAt:row.opened_at},total:fortunePoolSize});
   }catch(error){console.error('Fortune storage failed:',error);return json({error:'Your cookie could not be saved. Please retry; the same opening will never use two fortunes.'},503)}
  }
 };

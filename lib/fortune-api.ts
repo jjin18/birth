@@ -1,4 +1,4 @@
-import { fortunes, type SavedFortune } from './fortunes';
+import { fortunes, fortunePoolSize, fortuneKindForOpening, type SavedFortune } from './fortunes';
 
 type Collection = { fortunes: SavedFortune[]; total: number };
 type Opening = { fortune?: SavedFortune; exhausted?: boolean; total: number };
@@ -17,12 +17,12 @@ function savedFortune(value: unknown): value is SavedFortune {
     (value.id as number) < fortunes.length && typeof value.openedAt === 'string' && Number.isFinite(Date.parse(value.openedAt));
 }
 function collection(value: unknown): value is Collection {
-  return record(value) && value.total === fortunes.length && Array.isArray(value.fortunes) &&
+  return record(value) && value.total === fortunePoolSize && Array.isArray(value.fortunes) &&
     value.fortunes.length <= fortunes.length && value.fortunes.every(savedFortune) &&
     new Set(value.fortunes.map(note => note.id)).size === value.fortunes.length;
 }
 function opening(value: unknown): value is Opening {
-  return record(value) && value.total === fortunes.length &&
+  return record(value) && value.total === fortunePoolSize &&
     ((savedFortune(value.fortune) && !value.exhausted) || (value.exhausted === true && value.fortune === undefined));
 }
 
@@ -69,6 +69,15 @@ async function request<T>(init: RequestInit, valid: (data: unknown) => data is T
 }
 
 export function getFortunes() { return request({ method: 'GET' }, collection); }
+// A fresh page visit starts a new rhythm. Retries/duplicate mounts do not count
+// as extra cookies; the second successful opening requests an inside joke.
+const openedThisVisit=new Set<string>();
+const pendingOpenings=new Map<string,Promise<Opening>>();
 export function openFortune(requestId: string) {
-  return request({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ requestId }) }, opening);
+  const pending=pendingOpenings.get(requestId);if(pending)return pending;
+  const kind=fortuneKindForOpening(openedThisVisit.size+1);
+  const result=request({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ requestId,kind }) }, opening)
+   .then(data=>{if(data.fortune)openedThisVisit.add(requestId);return data})
+   .finally(()=>pendingOpenings.delete(requestId));
+  pendingOpenings.set(requestId,result);return result;
 }

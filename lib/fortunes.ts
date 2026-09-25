@@ -198,7 +198,28 @@ export const fortunes = [
   'Keep the memory. Let the awkward part become the funny part.',
   'You are making a life, not just getting through a schedule.',
   'A warm room and a person who is glad you are here: that is a kind of fortune.',
-  'When the last cookie is opened, there will still be more good things ahead.'
+  'When the last cookie is opened, there will still be more good things ahead.',
+  // Append new fortunes so previously saved note IDs keep their original words.
+  'johnisgay',
+  'so buns',
+  'just be a chiller',
+  'ur racist',
+  'ur my little cute chud',
+  'just take a walk in the tenderloin',
+  'combine the future of medicine and ai',
+  'ur the soma tweaker',
+  'stussy makes you a socal abb',
 ] as const;
 
 export type SavedFortune = { id: number; openedAt: string };
+
+// The full ID-to-text catalog remains readable for notes already saved. Only
+// these 100 regular notes and the inside jokes can be drawn from now on.
+export const genericFortuneIds = Array.from({length:100},(_,index)=>index*2);
+export const jokeFortuneIds = Array.from({length:fortunes.length-200},(_,index)=>200+index);
+export const activeFortuneIds = [...genericFortuneIds,...jokeFortuneIds];
+export const fortunePoolSize = activeFortuneIds.length;
+export type FortuneKind = 'generic'|'joke';
+export function fortuneKindForOpening(number:number):FortuneKind {
+ return number>=2&&(number-2)%12===0?'joke':'generic';
+}
