@@ -1,8 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { KeyRound } from 'lucide-react';
 
-/** HTML/SVG only: visible before the 3D bundle loads, with no texture allocation. */
+/** A plain fade into the finished room, with no loading icon or extra assets. */
 export default function RoomLoader({ready}:{ready:boolean}) {
  const [dismissed,setDismissed]=useState(false);
  useEffect(()=>{
@@ -12,5 +11,5 @@ export default function RoomLoader({ready}:{ready:boolean}) {
   return()=>clearTimeout(timer);
  },[ready]);
  if(dismissed)return null;
- return <div className="room-loader" data-ready={ready} role="status" aria-label={ready?'Your room is ready':'Getting your keys ready'}><KeyRound className="room-loader-key" size={52} strokeWidth={1.25} aria-hidden="true"/></div>;
+ return <div className="room-loader" data-ready={ready} role="status" aria-label={ready?'Your room is ready':'Loading the room'}/>;
 }

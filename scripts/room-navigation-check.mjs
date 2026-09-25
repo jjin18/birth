@@ -41,7 +41,8 @@ assert.equal(renderStandalone(),'','isolated arcade has no room controls');
 const experience=await readFile('components/Experience.tsx','utf8');
 assert(experience.includes('[interior,setInterior]=useState(false)'),'first entrance is outside');
 assert(experience.includes("const welcome=!interior&&focus==='home'"),'welcome copy stays out of the interior and focused views');
-for(const text of ['Happy 22nd B-day Ryan','You told me your dream was a high rise in your favorite cities. I made you a little glimpse of that future as a reminder that the keys to your goals are closer than you think <3','I coded some games for when you want to relax from work'])assert(experience.includes(text));
+for(const text of ['Happy Birthday Ryan','You told me your dream was a high rise in your favorite cities. I made you a little glimpse of that future as a reminder that the keys to your goals are closer than you think <3','I coded some mini games, click on the objects!'])assert(experience.includes(text));
+assert(!experience.includes('Happy 22nd B-day Ryan'),'entrance uses the simplified birthday heading');
 assert(experience.includes('inert={!roomReady}'),'covered room controls are not keyboard-focusable');
 for(const [width,height] of [[1280,350],[390,270],[844,160]]){
  const home=roomHomeView(false,width,height);
@@ -54,13 +55,17 @@ for(const [width,height] of [[1280,350],[390,270],[844,160]]){
  }
 }
 const loader=await readFile('components/RoomLoader.tsx','utf8');
-assert(loader.includes('KeyRound')&&!/<img|<canvas/.test(loader),'key is an inline vector, not another texture');
+assert(!/KeyRound|room-loader-key|Getting your keys ready|<img|<canvas/.test(loader),'opening key is removed with no replacement asset');
+const entranceStyles=await readFile('app/interior.css','utf8');
+assert(!/room-loader-key|key-turn/.test(entranceStyles),'unused key animation is removed');
+assert(entranceStyles.includes('clamp(24px,3vw,36px)')&&entranceStyles.includes('max-width:560px'),'entrance typography is smaller and the caption has a balanced line length');
+assert.deepEqual(roomHomeView(false,1280,720).target,roomHomeView(false,390,667).target,'outside room stays centered under the heading on every screen');
 assert(loader.includes('setDismissed(true)'),'loader is removed after the fade');
 const sceneReady=await readFile('components/Penthouse/SceneReady.tsx','utf8');
 assert(sceneReady.includes('useProgress')&&sceneReady.includes('frames.current>=3'),'reveal waits for asset loading and complete rendered frames');
-assert(!sceneReady.includes('useEffect'),'always-mounted canvas fallback cannot dismiss the key');
+assert(!sceneReady.includes('useEffect'),'always-mounted canvas fallback cannot dismiss the loading cover');
 assert(!experience.includes('Thinking about you'));
-assert(experience.includes("setTip('Thank you for sleeping on the floor. Here is a bed')"));
+assert(experience.includes("setTip('Thank you for sleeping on the floor lol')"));
 assert(!experience.includes('😈')&&!experience.includes('moment-emoji'),'bed uses the new message instead of an emoji');
 assert(experience.includes('moment moment-message'),'bed and chair messages wrap on small screens');
 assert(experience.includes("setTip('May your future have ergonomic support')"),'chair has its own requested message');
