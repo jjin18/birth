@@ -32,7 +32,7 @@ export default function Experience(){
  useEffect(()=>{const tick=()=>setNow(new Date());tick();const timer=setInterval(tick,30000);const refresh=()=>{if(document.visibilityState==='visible')tick()};document.addEventListener('visibilitychange',refresh);window.addEventListener('focus',tick);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',refresh);window.removeEventListener('focus',tick)}},[]);
  useEffect(()=>{const timers:ReturnType<typeof setTimeout>[]=[];setPanel('home');setTip('');
   if(['wall','gloves','fortune','paperclip','laptop'].includes(focus))timers.push(setTimeout(()=>setPanel(focus),700));
-  if(focus==='bed'){setTip('😈');timers.push(setTimeout(()=>{setTip('');setFocus('home')},2800))}
+  if(focus==='bed'){setTip('Thank you for sleeping on the floor. Here is a bed');timers.push(setTimeout(()=>{setTip('');setFocus('home')},4500))}
   if(focus==='window'&&!windowSeen.current){windowSeen.current=true;timers.push(setTimeout(()=>setFocus('home'),7000))}
   return()=>timers.forEach(clearTimeout);
  },[focus]);
@@ -45,7 +45,7 @@ export default function Experience(){
   {welcome&&<footer className="birthday-message"><p>{'You told me your dream was a high rise in your favorite cities. I made you a little glimpse of that future as a reminder that the keys to your goals are closer than you think <3'}</p><p className="birthday-games">I coded some games for when you want to relax from work</p></footer>}
   <nav className="city-selector room-city-selector" aria-label="Choose your city">{cities.map((c,i)=><button key={c.id} aria-label={c.name} aria-describedby={`city-time-${c.id}`} aria-pressed={city===i} onClick={()=>{setCity(i);home()}}><time id={`city-time-${c.id}`} className="city-local-time" dateTime={now?.toISOString()}>{formatCityTime(c,now)}</time><span className="city-toggle-name"><span className="city-dot"/>{c.name}</span></button>)}</nav>
   {focus==='window'&&skyUnavailable&&<div className="sky-controls"><p className="sky-caption" role="status">Skyline unavailable — try another city.</p></div>}
-  {tip&&<div className="moment moment-emoji" role="status">{tip}</div>}
+  {tip&&<div className="moment moment-bed" role="status">{tip}</div>}
   {panel==='wall'&&<WallPanel close={home}/>}
   {panel==='gloves'&&<Arcade close={home}/>}
   {musicOpened&&<MusicPanel open={panel==='laptop'} close={home}/>}

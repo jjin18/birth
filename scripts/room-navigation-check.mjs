@@ -60,7 +60,9 @@ const sceneReady=await readFile('components/Penthouse/SceneReady.tsx','utf8');
 assert(sceneReady.includes('useProgress')&&sceneReady.includes('frames.current>=3'),'reveal waits for asset loading and complete rendered frames');
 assert(!sceneReady.includes('useEffect'),'always-mounted canvas fallback cannot dismiss the key');
 assert(!experience.includes('Thinking about you'));
-assert(experience.includes("setTip('😈')"));
+assert(experience.includes("setTip('Thank you for sleeping on the floor. Here is a bed')"));
+assert(!experience.includes('😈')&&!experience.includes('moment-emoji'),'bed uses the new message instead of an emoji');
+assert(experience.includes('moment moment-bed'),'bed message wraps on small screens');
 assert(!experience.includes('back-room'));
 assert(experience.includes('formatCityTime(c,now)'),'city clocks share the daylight timer');
 assert(experience.includes('aria-label={c.name}'),'clock updates preserve accessible toggle names');
@@ -84,4 +86,4 @@ assert.equal((workstation.match(/onLaptop\(\)/g)||[]).length,1,'one bubbling han
 assert(!workstation.includes('imac-reference.png'),'retired iMac wallpaper is never loaded');
 assert(workstation.includes('<Screen music/>')&&workstation.includes('<meshBasicMaterial map={map} toneMapped={false}/>'),'iMac music display remains unlit and glare-free');
 assert(workstation.includes('canvas.width=music?256:768')&&workstation.includes('texture.generateMipmaps=false'),'music screen has a small 144 KiB texture, no mipmap pyramid');
-console.log('PASS: camera reset detection on desktop/mobile inside/outside, containment, icon-only accessible navigation and emoji-only bed message.');
+console.log('PASS: camera reset detection on desktop/mobile inside/outside, containment, icon-only accessible navigation and updated bed message.');
