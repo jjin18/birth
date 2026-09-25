@@ -4,7 +4,7 @@ import { useRoomModel, preloadRoomModel } from './useRoomModel';
 import * as THREE from 'three';
 
 const DESK_URL = '/models/herman-miller-motia-desk.glb';
-const BED_URL = '/models/uploaded-bed-v2.glb';
+const BED_URL = '/models/uploaded-bed-2k.glb';
 const FLOOR_Y = .075;
 
 function useFurniture(url: string, width: number) {

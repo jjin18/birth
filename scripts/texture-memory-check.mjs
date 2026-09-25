@@ -5,6 +5,9 @@ import { build } from 'esbuild';
 import { chromium } from '@playwright/test';
 
 const manifest = JSON.parse(readFileSync('lib/site-assets.json', 'utf8'));
+const selected=process.argv.find(arg=>arg.startsWith('--model='))?.slice('--model='.length);
+if(selected)assert(manifest.models.includes(selected),'Unknown model');
+const models=selected?[selected]:manifest.models;
 assert(!manifest.models.some(file => /sofa|couch/.test(file)));
 assert(!readFileSync('components/Penthouse/Scene.tsx', 'utf8').includes('ImportedSofa'));
 for (const file of ['SoftFurnishings','Terrier','MeshChair']) assert(!existsSync('components/Penthouse/'+file+'.tsx'), 'Obsolete loading model: '+file);
@@ -154,7 +157,7 @@ const { outputFiles } = await build({ bundle: true, write: false, format: 'iife'
 const browser = await chromium.launch({channel:'msedge',headless:true});
 const reports=[];
 try {
-  for (const file of manifest.models) {
+  for (const file of models) {
     const page=await browser.newPage(); const errors=[];
     page.on('pageerror',error=>errors.push(error.message));
     page.on('console',message=>{ if(message.type()==='error') errors.push(message.text()); });
@@ -177,4 +180,4 @@ try {
   }
 } finally { await browser.close(); }
 const sum=key=>reports.reduce((total,report)=>total+report[key],0);
-console.log('Model texture budget (original dimensions + mipmaps; not total device memory):',JSON.stringify({beforeMiB:sum('beforeBytes')/2**20,afterMiB:sum('afterBytes')/2**20,savedMiB:(sum('beforeBytes')-sum('afterBytes'))/2**20,checkedPixels:sum('checkedPixels')}));
+console.log('Model texture budget (asset dimensions + mipmaps; not total device memory):',JSON.stringify({models:models.length,beforeMiB:sum('beforeBytes')/2**20,afterMiB:sum('afterBytes')/2**20,savedMiB:(sum('beforeBytes')-sum('afterBytes'))/2**20,checkedPixels:sum('checkedPixels')}));
