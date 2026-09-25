@@ -1,0 +1,14 @@
+.git
+node_modules
+.next
+.next-build
+dist
+out
+.wrangler
+.local-data
+.sites-runtime
+.env*
+preview-*.png
+*.tsbuildinfo
+*.tar.gz
+docs

@@ -38,9 +38,9 @@ try {
     assert.equal(calls.length,3); sameOpening();
   }
   responses(new Response('',{status:401}));
-  await assert.rejects(getFortunes(), /sign in again/); assert.equal(calls.length,1);
+  await assert.rejects(getFortunes(), /reopen the apartment/); assert.equal(calls.length,1);
   responses(new Response('',{status:403}));
-  await assert.rejects(openFortune(requestId), /signed-in tab/); assert.equal(calls.length,1);
+  await assert.rejects(openFortune(requestId), /reopen the apartment/); assert.equal(calls.length,1);
   responses(Response.json({error:'A unique opening ID is required.'},{status:400}));
   await assert.rejects(openFortune(''), /unique opening ID/); assert.equal(calls.length,1);
   for (const value of [{},null,{total:200},{fortune:{id:999,openedAt:note.openedAt},total:200},{fortune:note,exhausted:true,total:200}]) {

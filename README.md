@@ -2,6 +2,53 @@
 
 A Three.js birthday apartment for Jia and Ryan, built with Next.js, React Three Fiber and Drei. The private Sites Worker serves the exported frontend and a D1-backed shared fortune collection.
 
+## Independent Railway hosting (no ChatGPT login)
+
+The repository also supports a public Railway deployment. `Dockerfile` builds
+the same audited frontend and packages a small Node 24 server with SQLite.
+The runtime image contains only the exported client and bundled server, not
+the build toolchain or historical graphics. Models are streamed from disk;
+their geometry, textures, and rendering quality are unchanged.
+
+Railway service setup:
+
+1. Connect `supersigma-67/birth`, production branch `main`, with automatic deploys enabled.
+2. Select the Dockerfile builder with path `Dockerfile`. Set the service start
+   command to `node dist/railway/server.mjs`, health check to `/healthz`, and
+   health-check timeout to 120 seconds. Do not add deprecated `railway.json`.
+3. Attach a persistent volume at `/data` **before deployment** and use one replica.
+   The server refuses Railway startup without `RAILWAY_VOLUME_MOUNT_PATH` so
+   notes cannot silently disappear on the next deployment.
+4. Generate a Railway public domain. Railway's `PORT` and `RAILWAY_PUBLIC_DOMAIN`
+   are used automatically. The health check is `/healthz`.
+5. After a healthy deployment, register `happybirthdayunc.com` and `www.happybirthdayunc.com`
+   on that service and copy Railway's exact DNS targets into GoDaddy. Do not
+   guess DNS values or switch away from the current host before verification.
+
+Local validation: `npm run build`, `npm run test:railway`, then `npm start`.
+The default local address is `http://127.0.0.1:3023`; notes live in ignored
+`.local-data/`. `DATA_DIR` overrides local storage. `PUBLIC_ORIGINS` is a
+comma-separated list of complete production origins; the two birthday-domain
+origins are included by default.
+
+This deployment is deliberately public: anyone with the URL can see the room
+and participate in the same 200-note fortune collection. The server does not
+trust OpenAI identity headers, exposes no user IDs, rejects cross-origin writes,
+limits request bodies, and allows at most 12 fortune POST requests per minute
+for the entire room. Existing saved notes in the old Sites D1 database must
+be migrated separately before switching domains; a new SQLite file does not
+automatically contain them. The legacy Sites deployment and its D1 remain intact.
+
+For the one-time migration, set `FORTUNES_IMPORT_JSON` privately on the Railway
+service to a validated array of `{ "id": 7, "openedAt": "2026-09-25T00:00:00.000Z" }`
+objects exported from the old collection. The startup importer preserves those
+IDs/dates without copying account identifiers, and is idempotent across restarts.
+Do not commit real exported notes or deployment variable values to Git.
+
+Adding these files does **not** connect a Railway account, enable a GitHub hook,
+provision a persistent volume, or update production DNS. Those are separate
+account-side steps. No paid-plan purchase or upgrade is part of the code change.
+
 ## Run
 
 ```sh
@@ -87,7 +134,7 @@ The user subsequently approved reducing only the bed textures. `scripts/resize-b
 
 `node scripts/texture-memory-check.mjs` loads all six actual models with the same `three-stdlib` loader used by Drei, checks every retained channel byte and texture/UV setting, verifies real R8/RG8 WebGL allocations, compares before/after rendered frames, and tests WebGL context restoration and cloned animation shader hooks. The tested frames had zero changed pixel channels. Temporary RGBA readback canvases are released immediately; packed CPU bytes remain for context restoration. The GLTF loader's original source cache is retained safely, so these numbers are a GPU texture budget, not a measurement of total browser RAM or a guaranteed device limit.
 
-The current server is a Cloudflare Worker, not a Node server: `worker/index.ts` requires D1, an asset binding, and Sites-provided authentication. There is no Railway production start command. Moving it to Railway requires adapting the API/storage and real authentication; simply serving `out/` would display the room but lose shared fortunes. Never trust the Sites identity header on an arbitrary public host. No Railway deployment or database migration has been performed.
+The original `worker/index.ts` still supports the private Sites runtime. The independent Railway runtime in `server/railway.ts` now supplies a SQLite adapter and explicitly selects public shared access; it never forwards client-supplied platform identity headers. Its Dockerfile and server are checked in; the service settings are documented above. Simply serving `out/` alone would still lose shared fortunes. A Railway deployment and migration of existing notes require the account-side setup described above.
 
 Notes do not need to be frozen for performance. Keep text and image metadata in a database; store image bytes in object storage. The deferred wall implementation already follows this separation through Supabase Storage. Its present 6 MB limit is client-side only, and it loads the whole wall, so a growing wall should add server-enforced limits, resized thumbnails, lazy loading, pagination, storage quotas, and deletion/retention controls before activation. Do not embed uploaded photos into GLBs, Git, or database rows as base64.
 

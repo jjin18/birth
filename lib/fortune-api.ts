@@ -3,7 +3,7 @@ import { fortunes, type SavedFortune } from './fortunes';
 type Collection = { fortunes: SavedFortune[]; total: number };
 type Opening = { fortune?: SavedFortune; exhausted?: boolean; total: number };
 const unavailable = 'The paper clip could not be reached. Please try again; this opening will not use a second fortune.';
-const signIn = 'Please refresh the apartment and sign in again to open your shared fortunes.';
+const signIn = 'The paper clip is unavailable on this address. Please reopen the apartment and try again.';
 
 class FortuneRequestError extends Error {
   constructor(message: string, readonly retryable = false) { super(message); }
@@ -30,7 +30,7 @@ async function readResult<T>(response: Response, valid: (data: unknown) => data 
   // A sign-in redirect, empty proxy error, or truncated body isn't an API
   // object. Never leak JSON parser errors or interpret it as an empty archive.
   if (response.status === 401 || response.redirected) throw new FortuneRequestError(signIn);
-  if (response.status === 403) throw new FortuneRequestError('Please reopen the apartment in your signed-in tab and try again.');
+  if (response.status === 403) throw new FortuneRequestError('Please reopen the apartment and try again.');
   const retryable = response.ok || response.status === 408 || response.status === 429 || response.status >= 500;
   const text = await response.text();
   const contentType = response.headers.get('content-type') || '';

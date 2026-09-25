@@ -5,6 +5,7 @@ type Env = {
  DB: {prepare(sql:string):Statement;batch<T>(statements:Statement[]):Promise<{results:T[]}[]>};
  ASSETS: {fetch(request:Request):Promise<Response>};
  LOCAL_PREVIEW?: string;
+ PUBLIC_ACCESS?: 'shared';
 };
 const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});
 const publicOrigin='https://penthouse-22.rocky-owl-3221.chatgpt.site';
@@ -13,7 +14,10 @@ export default {
   const url=new URL(request.url);
   if(url.pathname.replace(/\/$/,'')!=='/api/fortunes')return env.ASSETS.fetch(request);
   const local=env.LOCAL_PREVIEW==='1'&&['localhost','127.0.0.1','[::1]'].includes(url.hostname);
-  const user=request.headers.get('oai-authenticated-user-id')||(local?'local-preview':null);
+  // Public hosting has one shared collection, not a spoofable platform identity.
+  // The existing Sites deployment stays private unless explicitly configured.
+  const publicAccess=env.PUBLIC_ACCESS==='shared';
+  const user=publicAccess?'public-room':request.headers.get('oai-authenticated-user-id')||(local?'local-preview':null);
   if(!user)return json({error:'Please sign in to this private site to open your shared fortunes.'},401);
   if(!env.DB)return json({error:'The shared paper clip is temporarily unavailable. Please try again.'},503);
   try {
@@ -23,7 +27,8 @@ export default {
    }
    if(request.method!=='POST')return json({error:'Method not allowed.'},405);
    const origin=request.headers.get('Origin');
-   if((origin&&origin!==url.origin&&origin!==publicOrigin)||request.headers.get('Sec-Fetch-Site')==='cross-site')return json({error:'Open the cookie from the apartment.'},403);
+   const allowedOrigin=origin===url.origin||(!publicAccess&&origin===publicOrigin);
+   if((origin&&!allowedOrigin)||(publicAccess&&!origin)||request.headers.get('Sec-Fetch-Site')==='cross-site')return json({error:'Open the cookie from the apartment.'},403);
    if(!request.headers.get('Content-Type')?.startsWith('application/json'))return json({error:'Expected JSON.'},415);
    if(Number(request.headers.get('Content-Length')||0)>512)return json({error:'Request too large.'},413);
    const raw=await request.text();

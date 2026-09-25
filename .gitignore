@@ -10,3 +10,4 @@ dist/
 *.tsbuildinfo
 .sites-runtime/
 *.tar.gz
+.local-data/
