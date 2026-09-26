@@ -1,0 +1,57 @@
+import assert from 'node:assert/strict';
+import {build} from 'esbuild';
+import {DatabaseSync} from 'node:sqlite';
+import {createServer} from 'node:http';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join,resolve,sep} from 'node:path';
+import {once} from 'node:events';
+
+const compiled=await build({entryPoints:['server/typing.ts'],bundle:true,write:false,format:'esm',platform:'node'});
+const {createTyping}=await import('data:text/javascript;base64,'+Buffer.from(compiled.outputFiles[0].contents).toString('base64'));
+const temp=await mkdtemp(join(tmpdir(),'typing-shared-test-'));
+let db=new DatabaseSync(join(temp,'typing.sqlite')),time=100000;
+db.exec("CREATE TABLE opened_fortunes(id INTEGER); INSERT INTO opened_fortunes VALUES(7); CREATE TABLE wall_entries(id TEXT); INSERT INTO wall_entries VALUES('keep-date');");
+let handler=createTyping(db,()=>time);
+const server=createServer((req,res)=>handler(req,res,new URL(req.url,`http://${req.headers.host}`)));
+server.listen(0,'127.0.0.1');await once(server,'listening');
+const origin=`http://127.0.0.1:${server.address().port}`;
+const get=()=>fetch(origin+'/api/typing').then(r=>r.json());
+const post=(path,value,headers={})=>fetch(origin+'/api/typing'+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',...headers},body:typeof value==='string'?value:JSON.stringify(value)});
+try{
+ const first=await get();assert.equal(first.challenges.length,6);assert.equal(first.best,null);
+ const text='Chat, lock in. Ottawa is the lore. No cap.';
+ const created=await post('/challenges',{text});assert.equal(created.status,201);const added=await created.json();
+ assert((await get()).challenges.some(c=>c.id===added.id&&c.text===text),'a separate reader sees the shared challenge');
+ const duplicate=await (await post('/challenges',{text})).json();assert.equal(duplicate.id,added.id);
+ assert.equal((await post('/challenges',{text:'x'.repeat(401)})).status,400);
+ assert.equal((await post('/challenges',{text:' '})).status,400);
+ assert.equal((await post('/challenges',{text},{Origin:'https://evil.example'})).status,403);
+ assert.equal((await post('/challenges',{text},{Origin:''})).status,403);
+ assert.equal((await post('/challenges','{')).status,400);
+ assert.equal((await post('/challenges','x'.repeat(8200))).status,413);
+ const seed=first.challenges[0],id=crypto.randomUUID();
+ assert.equal((await post('/start',{id,challengeId:seed.id})).status,200);
+ assert.equal((await post('/start',{id,challengeId:seed.id})).status,200,'start retries keep the same round');
+ const result={id,text:seed.text.slice(0,50),attempts:50,mistakes:0,elapsed:60000,wpm:999999};
+ assert.equal((await post('/finish',result)).status,400,'cannot immediately submit a sixty-second round');
+ time+=60000;
+ const score=await post('/finish',result);assert.equal(score.status,200);
+ assert.deepEqual((await score.json()).best,{wpm:10,accuracy:100},'server recomputes and ignores forged WPM');
+ assert.deepEqual((await (await post('/finish',result)).json()).best,{wpm:10,accuracy:100},'finish is idempotent');
+ const worseId=crypto.randomUUID();await post('/start',{id:worseId,challengeId:seed.id});time+=60000;
+ await post('/finish',{id:worseId,text:'O',attempts:1,mistakes:0,elapsed:60000});
+ assert.deepEqual((await get()).best,{wpm:10,accuracy:100},'lower scores never replace the record');
+ const fastId=crypto.randomUUID();await post('/start',{id:fastId,challengeId:added.id});time+=5000;
+ assert.equal((await post('/finish',{id:fastId,text,attempts:text.length,mistakes:0,elapsed:5000})).status,200,'finishing a short challenge early is supported');
+ const before=await get();db.close();db=new DatabaseSync(join(temp,'typing.sqlite'));handler=createTyping(db,()=>time);
+ assert.deepEqual(await get(),before,'shared challenges and record survive a server restart');
+ assert.equal(db.prepare('SELECT id FROM opened_fortunes').get().id,7);
+ assert.equal(db.prepare('SELECT id FROM wall_entries').get().id,'keep-date');
+ assert.equal((await fetch(origin+'/api/typing',{method:'DELETE'})).status,405);
+ console.log('PASS: cross-client challenge sharing, durable restart persistence, duplicate-safe adds, shared top score, server-calculated WPM, round validation/idempotency, request guards, other games untouched.');
+}finally{
+ server.close();server.closeAllConnections();await once(server,'close');db.close();
+ const target=resolve(temp);assert(target.startsWith(resolve(tmpdir())+sep)&&target.includes('typing-shared-test-'));
+ await rm(target,{recursive:true,force:true});
+}

@@ -9,6 +9,7 @@ import worker from '../worker/index';
 import { fortunes } from '../lib/fortunes';
 import { initializeFortuneStorage,hasFortuneReset,resetFortunesOnce } from './fortune-storage';
 import {createWall} from './wall';
+import {createTyping} from './typing';
 
 const root=resolve('dist/client');
 const onRailway=Boolean(process.env.RAILWAY_ENVIRONMENT_ID);
@@ -19,6 +20,7 @@ mkdirSync(dataDir,{recursive:true});
 const db=new DatabaseSync(join(dataDir,'fortunes.sqlite'),{timeout:5000});
 initializeFortuneStorage(db);
 const wall=createWall(db,dataDir);
+const typing=createTyping(db);
 // Import only note IDs and opening dates, never old account identifiers.
 // Repeated deployments are safe: existing notes are never replaced or reset.
 if(process.env.FORTUNES_IMPORT_JSON&&!hasFortuneReset(db)){
@@ -125,6 +127,7 @@ const server=createServer(async(req,res)=>{
    db.prepare('SELECT 1').get();return json(res,200,{ok:true});
   }
   if(!allowedHosts.has(host))return json(res,421,{error:'Unknown hostname.'});
+  if(url.pathname==='/api/typing'||url.pathname.startsWith('/api/typing/'))return await typing(req,res,url);
   if(url.pathname==='/api/wall'||url.pathname.startsWith('/api/wall/'))return await wall(req,res,url);
   if(url.pathname.replace(/\/$/,'')!=='/api/fortunes')return await staticFile(req,res,url);
   if(req.method!=='GET'&&req.method!=='POST')return json(res,405,{error:'Method not allowed.'},{Allow:'GET, POST'});

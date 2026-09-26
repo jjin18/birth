@@ -3,6 +3,7 @@ import { useEffect,useMemo,useState } from 'react';
 import AeronChair from './AeronChair';
 import { ImportedDesk } from './ImportedFurniture';
 import { RoundedBox } from '@react-three/drei';
+import {useThree} from '@react-three/fiber';
 import * as THREE from 'three';
 import { Surface,type SurfaceKind } from './Materials';
 import {keyboardColors,keyboardKeyColor} from '@/lib/room-finishes';
@@ -41,7 +42,7 @@ function BlueIMac(){
   </group>
  </group>;
 }
-export default function Workstation({onLaptop,onChair}:{onLaptop:()=>void;onChair:()=>void}){const [deskSurface,setDeskSurface]=useState(1.2646);return <group name="detailed-workstation" position={[3.15,0,-1.88]}>
+export default function Workstation({onLaptop,onChair,onKeyboard}:{onLaptop:()=>void;onChair:()=>void;onKeyboard:()=>void}){const [deskSurface,setDeskSurface]=useState(1.2646);const [keyboardHover,setKeyboardHover]=useState(false);const {gl}=useThree();useEffect(()=>{if(!keyboardHover)return;gl.domElement.style.cursor='pointer';return()=>{gl.domElement.style.cursor='auto'}},[keyboardHover,gl]);return <group name="detailed-workstation" position={[3.15,0,-1.88]}>
  <group name="music-desk" onClick={event=>{event.stopPropagation();onLaptop()}}>
  <ImportedDesk onSurface={setDeskSurface}/>
  <group name="desktop-accessories" position={[0,deskSurface-1.0975,0]}>
@@ -58,7 +59,8 @@ export default function Workstation({onLaptop,onChair}:{onLaptop:()=>void;onChai
   <Part p={[0,.019,.154]} s={[.23,.003,.117]} c="#999fa0" kind="metal" r={.006}/>
   <group position={[0,.236,-.244]} rotation={[-.16,0,0]}><Part p={[0,0,0]} s={[.72,.46,.022]} c="#a8aeaf" kind="metal" r={.009}/><group position={[0,0,.015]}><Screen laptop/></group><mesh position={[0,.215,.015]}><sphereGeometry args={[.005,8,8]}/><meshBasicMaterial color="#111718"/></mesh></group>
  </group>
- <group name="mechanical-keyboard" position={[-.56,1.14,.30]} rotation={[.03,0,0]}>
+ <group name="mechanical-keyboard" position={[-.56,1.14,.30]} rotation={[.03,0,0]} onClick={event=>{event.stopPropagation();setKeyboardHover(false);onKeyboard()}} onPointerOver={event=>{event.stopPropagation();setKeyboardHover(true)}} onPointerOut={()=>setKeyboardHover(false)}>
+  <mesh name="keyboard-click-target" position={[0,.025,0]}><boxGeometry args={[.96,.1,.42]}/><meshBasicMaterial transparent opacity={0} depthWrite={false}/></mesh>
   <Part p={[0,0,0]} s={[.85,.036,.315]} c={keyboardColors.case} kind="metal" r={.014}/>
   {Array.from({length:4},(_,row)=>Array.from({length:14},(_,col)=><Part key={row+'-'+col} p={[-.387+col*.059,.027,-.11+row*.053]} s={[.049,.021,.043]} c={keyboardKeyColor(row,col)} r={.005}/>))}
   {[-.35,-.285,-.22,.23,.295,.36].map(x=><Part key={x} p={[x,.027,.115]} s={[.053,.021,.044]} c={keyboardColors.modifier} r={.005}/>)}
