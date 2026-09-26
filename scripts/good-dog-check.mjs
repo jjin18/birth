@@ -39,6 +39,6 @@ for(const raw of ['{}','null','x'.repeat(65537),JSON.stringify({...JSON.parse(se
 const reinforced=new GameWorld(55);reinforced.start();reinforced.throwBall();for(let i=0;i<7;i++)reinforced.tick(100);const credit=reinforced.current,index=encode(reinforced.situation()),before=reinforced.brain.value(index,credit.action);assert(reinforced.treat());assert(reinforced.brain.value(index,credit.action)>before);assert.equal(reinforced.treat(),false,'no unlimited treat stacking');
 const html=await readFile('public/good-dog.html','utf8');assert(html.includes("connect-src 'none'"));assert(!/\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(/.test(html));assert(!/<(?:script|link|img)\b[^>]*(?:src|href)=["']https?:/i.test(html));
 let assetBytes=0;for(const file of ['poses','ball-poses','ryan','ryan-crouching','ryan-treat','tennis-ball','play-ball'])assetBytes+=(await stat(`public/dog/${file}.webp`)).size;
-assert(assetBytes<250000);assert(Buffer.byteLength(html)<370000);
+assert(assetBytes<250000);assert(Buffer.byteLength(html)<425000);
 assert(!/Export dog|Import dog|Website and offline saves are separate/.test(html));
 console.log('PASS: rewarded learning, all three tricks, deterministic ticks, fair show, bounded saves, corruption safeguards, offline/no-network budget.');

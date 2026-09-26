@@ -3,6 +3,10 @@ import {OWNER_X,type GameWorld} from './world';
 // Background-free sprites are packed into equal cells with one shared baseline.
 // Captions are removed from the source artwork, not hidden by a blurry mask.
 export const POSE_ROWS = [{top:0,height:216},{top:216,height:216},{top:432,height:216},{top:648,height:216}] as const;
+/** Read-only sound availability; never changes the learned policy or rewards. */
+export function canBark(world:GameWorld){
+ return world.goal!=='fetch'&&!world.dog.holding&&world.time-world.lastThrow>=650&&world.time-world.lastTreat>=1100;
+}
 // The supplied petting artwork contains BOTH subjects. Use it only at Ryan's
 // return spot, at rest and empty-mouthed: never teleport a chasing/carrying dog.
 export function isPettingReward(world:GameWorld){

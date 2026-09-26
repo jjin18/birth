@@ -2,6 +2,8 @@ import {preload} from 'react-dom';
 import {assetUrl} from '../asset-url';
 import type {DogAssets} from './ui';
 
+// Sound is loaded only on a user click, never as an image or a gameplay dependency.
+export const dogBarkUrl=assetUrl('/dog/bark.mp3');
 export const dogGameAssets:DogAssets={
  spriteUrl:assetUrl('/dog/poses.webp'),
  ballSpriteUrl:assetUrl('/dog/ball-poses.webp'),

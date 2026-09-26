@@ -1,10 +1,11 @@
 import {SaveManager} from './save';
+import {mountBarkAudio} from './bark';
 import {SKILLS} from './training';
-import {POSE_ROWS,dogSprite,fetchPhase,feedback,ballFlight,activityLabel,isPettingReward} from './presentation';
+import {POSE_ROWS,dogSprite,fetchPhase,feedback,ballFlight,activityLabel,isPettingReward,canBark} from './presentation';
 
 export type DogAssets={spriteUrl:string;ballSpriteUrl:string;ryanUrl:string;ryanCrouchUrl:string;ryanTreatUrl:string;tennisUrl:string;playUrl:string};
 /** Shared by the lazy popup and the dependency-free, completely offline build. */
-export function mountGoodDog(host:HTMLElement,options:DogAssets){
+export function mountGoodDog(host:HTMLElement,options:DogAssets,barkUrl:string){
  let storage:Storage|null=null;try{storage=window.localStorage}catch{}
  const saves=new SaveManager(storage);
  const world=saves.load();
@@ -27,7 +28,8 @@ export function mountGoodDog(host:HTMLElement,options:DogAssets){
  <ol class="gd-steps" aria-label="How to play"><li data-step="aim"><b>1</b> Throw</li><li data-step="fetch"><b>2</b> Fetch &amp; return</li><li data-step="reward"><b>3</b> Reward</li></ol>
  <div class="gd-status"><span data-behavior>Ready to play</span><span data-show></span></div>
  <p class="gd-message" role="status" aria-live="polite"></p>
- <div class="gd-primary"><button type="button" data-action="throw">Throw ball</button><button type="button" data-action="treat">Reward with treat ♥</button></div>
+ <div class="gd-primary"><button type="button" data-action="throw">Throw ball</button><button type="button" data-action="treat">Reward ♥</button><button type="button" data-bark aria-pressed="false" title="Play a bark. Does not affect training."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4zM15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg><span data-bark-label>Bark</span></button></div>
+ <span class="gd-audio-status" data-bark-status role="status" aria-live="polite"></span><audio data-bark-audio preload="none" hidden></audio>
  <div class="gd-secondary" aria-label="More dog commands"><button type="button" data-action="call">Come here</button><button type="button" data-action="sit">Sit</button><button type="button" data-action="roll">Roll</button><button type="button" data-action="show" title="Teach fetch, sit and roll first, then evaluate what he learned.">Dog show (train first)</button><button type="button" data-action="start" hidden>Pause</button></div>
  <div class="gd-progress" aria-label="Learned skills">${SKILLS.map(skill=>`<span data-skill="${skill}">${skill==='roll'?'Roll':skill[0].toUpperCase()+skill.slice(1)} <i></i></span>`).join('')}</div>
  <p class="gd-result" hidden></p>
@@ -35,12 +37,13 @@ export function mountGoodDog(host:HTMLElement,options:DogAssets){
   <p>Throw → watch → reward. He uses <strong>tabular Q-learning</strong>: a small table scores which action is useful in each situation. He usually chooses a promising move, but sometimes explores. Practice improves those scores; treats reinforce the move you reward.</p>
   <dl><dt>State space · 160 combinations</dt><dd>His current goal (wait, fetch, come here, sit or roll), plus whether the ball is visible, he is holding it, he is near it, he is near Ryan, and he is lying down.</dd>
   <dt>Action space · 10 moves</dt><dd>Wait, walk, run, pick up, return, drop, sit, lie down, look around and roll. Only moves possible in the current situation are available.</dd>
-  <dt>Rewards</dt><dd>Progress and completing a cue earn automatic rewards; delays or an early drop can lose points. Give a treat during a good move, or after a completed trick, to reinforce it. Wait if he is distracted — treats can teach that too.</dd>
-  <dt>Dog show · train, then evaluate</dt><dd>Think of practice as training an agent: teach fetch, sit and roll with rewards first. Dog show is the evaluation run — two fetches, a sit and a roll. His learned Q-table is frozen during the show, so there are no treats or learning updates. Use the results to see what needs more practice.</dd></dl>
+  <dt>Rewards</dt><dd>Progress and completing a cue earn automatic rewards; delays or an early drop can lose points. Give a treat during a good move, or after a completed trick, to reinforce it. Wait if he is distracted; treats can teach that too.</dd>
+  <dt>Dog show · train, then evaluate</dt><dd>Think of practice as training an agent: teach fetch, sit and roll with rewards first. Dog show is the evaluation run: two fetches, a sit and a roll. His learned Q-table is frozen during the show, so there are no treats or learning updates. Use the results to see what needs more practice.</dd></dl>
   <p><strong>Controls:</strong> Click the grass to aim and throw. B throw · C come here · S sit · R roll · T treat · D Dog show. Enter or Space throws when the grass is focused. Pause takes a break.</p>
   <p>The Q-table is just 6.25 KiB. Learning runs locally and saves automatically in this browser.</p>
  </details>`;
  const find=<T extends Element=HTMLElement>(selector:string)=>host.querySelector<T>(selector)!;
+ const bark=mountBarkAudio(find<HTMLAudioElement>('[data-bark-audio]'),find<HTMLButtonElement>('[data-bark]'),find('[data-bark-status]'),barkUrl);
  // Keep each decoded atlas in its own fixed-size viewport. Replacing href and
  // height on one SVG image can briefly squeeze the previous, taller sheet
  // into a one-row viewport and expose every dog pose.
@@ -94,6 +97,7 @@ export function mountGoodDog(host:HTMLElement,options:DogAssets){
   text(show,world.show?`Show ${world.show.round+1}/4`:world.best?`Best ${world.best}/100`:'');
   buttons.start.hidden=!world.started;text(buttons.start,world.running?'Pause':'Resume');
   buttons.throw.disabled=!canThrow();
+  bark.setDisabled(!assetsReady||!canBark(world));
   for(const action of ['call','sit','roll'])buttons[action].disabled=!assetsReady||!!world.show||(world.dog.holding&&action!=='call');
   buttons.treat.disabled=!assetsReady||!world.canTreat;buttons.treat.dataset.good=String(world.canTreat&&(['walk','run','pickup','return','drop'].includes(world.current?.action??'')||!!world.treatCredit?.success));
   buttons.treat.title=world.canTreat?`Reward: ${world.behavior().toLowerCase()}`:'Wait for a move to reward';
@@ -143,5 +147,5 @@ export function mountGoodDog(host:HTMLElement,options:DogAssets){
  })).then(()=>{
   if(disposed)return;assetsReady=true;render();drawMotion();schedule();
  }).catch(()=>{if(!disposed){assetError=true;render()}});
- return()=>{disposed=true;halt();host.removeEventListener('click',click);host.removeEventListener('keydown',keys);stage.removeEventListener('click',toss);stage.removeEventListener('mousemove',aim);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('blur',halt);window.removeEventListener('focus',focus);window.removeEventListener('pagehide',halt);host.replaceChildren()};
+ return()=>{disposed=true;bark.dispose();halt();host.removeEventListener('click',click);host.removeEventListener('keydown',keys);stage.removeEventListener('click',toss);stage.removeEventListener('mousemove',aim);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('blur',halt);window.removeEventListener('focus',focus);window.removeEventListener('pagehide',halt);host.replaceChildren()};
 }
