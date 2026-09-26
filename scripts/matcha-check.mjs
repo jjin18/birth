@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import {build} from 'esbuild';
+import {readFile} from 'node:fs/promises';
+const bundle=await build({entryPoints:['lib/matcha-art.ts'],bundle:true,write:false,platform:'node',format:'esm'});
+const {CUP,inTea,cupPoint,serializeArt,parseArt,between,canAddStroke,MAX_STROKES,MAX_POINTS,MATCHA_SAVE_KEY}=await import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles[0].contents).toString('base64'));
+assert(inTea({x:.5,y:.5}));assert(!inTea({x:0,y:0}));assert(!inTea({x:1,y:1}));
+for(const scale of [.35,1,1.7]){
+ const rect={left:22,top:80,width:CUP.width*scale,height:CUP.height*scale};
+ const center=cupPoint(22+CUP.x*scale,80+CUP.y*scale,rect);assert(Math.abs(center.x-.5)<1e-10&&Math.abs(center.y-.5)<1e-10,'pointer maps to the same cup center at every size');
+ const p=cupPoint(22+(CUP.x+CUP.radius)*scale,80+CUP.y*scale,rect);assert(Math.abs(p.x-1)<1e-10);assert.equal(p.y,.5);
+}
+const milk={tool:'milk',size:28,points:[{x:.3,y:.4},{x:.6,y:.6},{x:.7,y:.6,lift:true}]};
+const etch={tool:'etch',size:14,points:[{x:.5,y:.5},{x:.5,y:.6}]};
+assert.deepEqual(parseArt(serializeArt([milk,etch])),[milk,etch]);
+for(const tool of ['heart','leaf'])assert.equal(parseArt(serializeArt([{tool,size:28,points:[{x:.5,y:.5}]}]))[0].tool,tool);
+for(const value of ['', '{', '{}', '{"version":2,"strokes":[]}',serializeArt([{...milk,size:999}]),serializeArt([{...milk,tool:'bad'}]),serializeArt([{...milk,points:[{x:4,y:2}]}]),serializeArt([{...milk,points:[]}]),serializeArt(Array(MAX_STROKES+1).fill(milk)),serializeArt([{...milk,points:Array(MAX_POINTS+1).fill({x:.5,y:.5})}])])assert.throws(()=>parseArt(value));
+assert(canAddStroke([]));assert(!canAddStroke(Array(MAX_STROKES).fill(milk)));
+const path=between({x:.2,y:.5},{x:.8,y:.5},.02);assert(path.length>=30);assert.deepEqual(path.at(-1),{x:.8,y:.5});
+assert.equal(MATCHA_SAVE_KEY,'ryans-22nd-matcha-art-v1');
+const experience=await readFile('components/Experience.tsx','utf8');assert(experience.includes("dynamic(() => import('./MatchaGame'), { ssr: false })"));assert(experience.includes("panel==='matcha'&&<MatchaGame"));
+const table=await readFile('components/Penthouse/FortuneTable.tsx','utf8');assert(table.includes('<MatchaCup position={[.44, .006, -.12]} click={onMatcha}'));
+const cup=await readFile('components/Penthouse/MatchaCup.tsx','utf8');assert(cup.includes('name="matcha-teacup" position={position} scale={.8}'),'tabletop cup uniformly reduced 20 percent');
+const scene=await readFile('components/Penthouse/Scene.tsx','utf8');assert(scene.includes("onMatcha={()=>onInteract('matcha')}"));
+const rig=await readFile('components/Penthouse/CameraRig.tsx','utf8');assert.equal((rig.match(/matcha:\{p:/g)||[]).length,2);
+const ui=await readFile('components/MatchaGame.tsx','utf8');assert(ui.includes('onPointerCancel={release}')&&ui.includes('onLostPointerCapture='));assert(ui.includes('setPointerCapture')&&ui.includes('cancelAnimationFrame'));assert(!ui.includes('fetch('),'art never changes server data');assert(!ui.includes('localStorage.clear'),'other games remain untouched');
+assert(!ui.includes('A little cup of creativity.')&&!ui.includes('Pour, swirl, and make it yours.')&&!ui.includes('matcha-intro'),'removed intro copy leaves no empty container');
+for(const removed of ['Pour a heart','Pour a leaf','A little inspiration','Draft saved in this browser.','Your draft stays in this browser.','A fresh cup. What will you make this time?','pourPattern','matcha-save'])assert(!ui.includes(removed),`removed control/copy: ${removed}`);
+assert(ui.includes('Trace a guide')&&ui.includes("[null,'heart','leaf']")&&ui.includes('setGuide(item)'),'manual tracing guides stay available');
+assert(ui.includes('localStorage.setItem(MATCHA_SAVE_KEY')&&ui.includes('parseArt(raw)'),'draft persistence survives removal of its status label');
+for(const removed of ['Matcha studio','Choose your tool','Keep my creation','A few little tips','YOUR DAILY DOSE OF GREEN','function download','setMessage'])assert(!ui.includes(removed),`minimal interface removes: ${removed}`);
+assert(ui.includes('eyebrow="Your daily matcha"'),'requested title');
+assert(ui.includes('{error&&<p'),'only errors reserve feedback space');
+assert(ui.includes('id="matcha-canvas-help" className="matcha-sr-only"'),'keyboard instructions remain accessible without visible tips');
+console.log('PASS: responsive pointer mapping, tea bounds, draft round trips and limits, invalid data, interpolation, isolated storage, lazy loading, cup/camera integration and compact header.');

@@ -5,12 +5,13 @@ import * as THREE from 'three';
 import PandaTakeout from './PandaTakeout';
 import Paperclip from './Paperclip';
 import { BoxingGloves } from './RoomObjects';
+import MatchaCup from './MatchaCup';
 
 const MODEL_URL = '/models/girard-flower-table.glb';
 const FLOOR_Y = .075;
-type Props = { count: number; onFortune: () => void; onGloves: () => void };
+type Props = { count: number; onFortune: () => void; onGloves: () => void; onMatcha: () => void };
 
-function TableAndObjects({ count, onFortune, onGloves }: Props) {
+function TableAndObjects({ count, onFortune, onGloves, onMatcha }: Props) {
   const { scene } = useRoomModel(MODEL_URL);
   const { object, surfaceY } = useMemo(() => {
     const object = scene.clone(true);
@@ -34,6 +35,7 @@ function TableAndObjects({ count, onFortune, onGloves }: Props) {
       <PandaTakeout position={[-.45, 0, -.19]} click={onFortune} />
       <Paperclip position={[-.45, .003, .12]} scale={.32} count={count} click={onFortune} />
       <BoxingGloves position={[-.06, .005, .6]} scale={.7} click={onGloves} />
+      <MatchaCup position={[.44, .006, -.12]} click={onMatcha} />
     </group>
   </>;
 }

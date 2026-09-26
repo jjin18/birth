@@ -10,6 +10,7 @@ import RoomSceneBoundary from './RoomSceneBoundary';
 import {preloadDogGameArtwork} from '@/lib/good-dog/assets';
 
 const DogGame = dynamic(() => import('./DogGame'), { ssr: false });
+const MatchaGame = dynamic(() => import('./MatchaGame'), { ssr: false });
 const Arcade = dynamic(() => import('./Arcade'), { ssr: false });
 const MusicPanel = dynamic(() => import('./MusicPanel'), { ssr: false });
 const WallPanel = dynamic(() => import('./WallPanel'), { ssr: false });
@@ -33,7 +34,8 @@ export default function Experience(){
  useEffect(()=>{const tick=()=>setNow(new Date());tick();const timer=setInterval(tick,30000);const refresh=()=>{if(document.visibilityState==='visible')tick()};document.addEventListener('visibilitychange',refresh);window.addEventListener('focus',tick);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',refresh);window.removeEventListener('focus',tick)}},[]);
  useEffect(()=>{const timers:ReturnType<typeof setTimeout>[]=[];setPanel('home');setTip('');
   if(focus==='dog'){preloadDogGameArtwork();void import('./DogGame').catch(()=>{})}
-  if(['wall','gloves','fortune','paperclip','laptop','dog'].includes(focus))timers.push(setTimeout(()=>setPanel(focus),700));
+  if(focus==='matcha')void import('./MatchaGame').catch(()=>{});
+  if(['wall','gloves','fortune','paperclip','laptop','dog','matcha'].includes(focus))timers.push(setTimeout(()=>setPanel(focus),700));
   if(focus==='bed'){setTip('Thank you for sleeping on the floor lol');timers.push(setTimeout(()=>{setTip('');setFocus('home')},4500))}
   if(focus==='chair'){setTip('May your future have ergonomic support');timers.push(setTimeout(()=>{setTip('');setFocus('home')},4500))}
   if(focus==='window'&&!windowSeen.current){windowSeen.current=true;timers.push(setTimeout(()=>setFocus('home'),7000))}
@@ -51,6 +53,7 @@ export default function Experience(){
   {tip&&<div className="moment moment-message" role="status">{tip}</div>}
   {panel==='wall'&&<WallPanel close={home}/>}
   {panel==='dog'&&<DogGame close={home}/>}
+  {panel==='matcha'&&<MatchaGame close={home}/>}
   {panel==='gloves'&&<Arcade close={home}/>}
   {musicOpened&&<MusicPanel open={panel==='laptop'} close={home}/>}
   {(panel==='fortune'||panel==='paperclip')&&<FortunePanel key={panel+'-'+fortuneRequestId} mode={panel} requestId={fortuneRequestId} close={home} onCollection={setFortuneCount} onOpenClip={()=>interact('paperclip')} onAnother={()=>interact('fortune')}/>}
