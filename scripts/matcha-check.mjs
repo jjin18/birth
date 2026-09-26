@@ -31,4 +31,8 @@ for(const removed of ['Matcha studio','Choose your tool','Keep my creation','A f
 assert(ui.includes('eyebrow="Your daily matcha"'),'requested title');
 assert(ui.includes('{error&&<p'),'only errors reserve feedback space');
 assert(ui.includes('id="matcha-canvas-help" className="matcha-sr-only"'),'keyboard instructions remain accessible without visible tips');
+const css=await readFile('app/matcha.css','utf8');
+assert(css.includes('height:min(570px,var(--panel-available-height))')&&css.includes('grid-template-rows:auto minmax(0,1fr) auto'),'game fits the actual popup height');
+assert(css.includes('container-type:size')&&css.includes('100cqh'),'cup scales to available space without changing pointer coordinates');
+assert(css.includes('background:#20272c')&&!css.includes('background:#202c29'),'same charcoal background as other popups');
 console.log('PASS: responsive pointer mapping, tea bounds, draft round trips and limits, invalid data, interpolation, isolated storage, lazy loading, cup/camera integration and compact header.');

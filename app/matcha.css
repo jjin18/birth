@@ -1,33 +1,30 @@
-.panel.matcha-panel{width:min(940px,95vw);background:#202c29;border-color:#84917555;color:#eee9da;max-height:var(--panel-available-height);overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#758369 #233029}
-.matcha-panel>.panel-inner{padding:24px 28px 18px}
+.panel.matcha-panel{width:min(760px,95vw);height:min(570px,var(--panel-available-height));max-height:var(--panel-available-height);background:#20272c;border-color:#73726766;color:#eee8dc;overflow:hidden}
+.matcha-panel>.panel-inner{height:100%;min-height:0;display:flex;flex-direction:column;padding:clamp(12px,2.4svh,22px)}
+.matcha-panel .panel-head{flex-shrink:0;margin-bottom:12px;gap:12px}
 .matcha-panel .panel-head .eyebrow{font:500 14px/1.4 'DM Sans',Arial,sans-serif;letter-spacing:.03em;color:var(--gold);margin:0}
-.matcha-panel .panel-head .icon-button{width:32px;height:32px;background:#17242055}
-.matcha-panel .panel-head{margin-bottom:16px}
-.matcha-tool-buttons{display:flex;gap:8px;align-items:center}
-.matcha-tool-buttons>button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:7px 10px;border-radius:6px;border:1px solid #a6b09230;background:#ffffff03;color:#b4bea9;font-size:11px;line-height:1.4;white-space:nowrap}
-.matcha-tool-buttons>button[aria-pressed=true]{background:#afc38516;border-color:#b0c48788;color:#e5ecd1}
-.matcha-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.matcha-workspace{display:grid;grid-template-columns:minmax(0,1fr) 238px;gap:26px;align-items:start}
-.matcha-left{min-width:0}.matcha-stage{position:relative;isolation:isolate;background:radial-gradient(ellipse at 24% 20%,#f4f0e5,#d9dfcf);border:1px solid #dce2ca;border-radius:12px;overflow:hidden;box-shadow:0 10px 35px #0a1a1433}
-.matcha-stage:before{content:'';position:absolute;inset:0;z-index:-1;opacity:.28;background:repeating-linear-gradient(95deg,#ffffff22 0 1px,transparent 1px 4px),repeating-linear-gradient(5deg,#7d8d7012 0 1px,transparent 1px 4px);pointer-events:none}
-
-.matcha-canvas-wrap{position:relative;width:100%;margin:-4px 0 -8px}.matcha-canvas-wrap canvas{display:block;width:100%;height:auto;aspect-ratio:8/7;touch-action:none;cursor:crosshair;-webkit-user-select:none;user-select:none;outline-offset:-10px}
-.matcha-canvas-wrap canvas:focus-visible{outline:2px solid #71844d;border-radius:12px}
+.matcha-panel .panel-head .icon-button{width:32px;height:32px;background:#1e273077}
+.matcha-workspace{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 184px;gap:16px;align-items:stretch}
+.matcha-left{min-width:0;min-height:0;display:flex;flex-direction:column}
+.matcha-stage{flex:1;min-height:0;position:relative;container-type:size;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#20272c;border:1px solid var(--line);border-radius:10px}
+.matcha-canvas-wrap{position:relative;width:min(100cqw,calc((100cqh - 22px)*8/7));aspect-ratio:8/7;margin:0 auto 18px}
+.matcha-canvas-wrap canvas{display:block;width:100%;height:auto;aspect-ratio:8/7;touch-action:none;cursor:crosshair;-webkit-user-select:none;user-select:none;outline-offset:-7px}
+.matcha-canvas-wrap canvas:focus-visible{outline:2px solid var(--gold);border-radius:10px}
 .matcha-key-cursor{position:absolute;width:14px;height:14px;border:1px solid #fff;box-shadow:0 0 0 1px #324821;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
-.matcha-stage-bottom{display:flex;justify-content:space-between;padding:0 22px 18px;color:#6e775c;font-size:10px;letter-spacing:.03em}
-.matcha-history,.matcha-history>div{display:flex;align-items:center;gap:6px}.matcha-history{justify-content:space-between;margin-top:10px}.matcha-history button{display:flex;align-items:center;gap:7px;background:transparent;border:1px solid transparent;border-radius:6px;padding:8px;color:#c0c8b7;font-size:11px}.matcha-history button:hover:not(:disabled){background:#cad5b511}.matcha-history button:disabled{opacity:.3}.matcha-history .matcha-confirm{border-color:#dbb98477;color:var(--gold)}
-.matcha-clear-note{font-size:11px;color:var(--gold);text-align:right;margin:6px 0}.matcha-clear-note button{background:none;color:inherit;text-decoration:underline;border:0}
-.matcha-tools{display:flex;flex-direction:column;gap:19px}
-
-.matcha-size{display:flex;justify-content:space-between;gap:10px;font-size:10px;color:#9fac95;margin:14px 0 8px}.matcha-size span+span{color:#d1d7c3}.matcha-tools input[type=range]{width:100%;height:16px;margin:0;accent-color:#bdcb94;cursor:pointer}
-
-.matcha-guide{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:0;font-size:10px;color:#9dad91}.matcha-guide>div{display:flex;gap:3px}.matcha-guide button{border:1px solid transparent;background:transparent;padding:5px 7px;font-size:10px;border-radius:4px;color:#a7b69b}.matcha-guide button[aria-pressed=true]{color:#e3e8d0;background:#afc38518;border-color:#afc29544}
-.matcha-feedback{border-top:1px solid #a6b09230;padding-top:14px;margin:0;color:#b3bea6;font-size:11px;line-height:1.75;min-height:55px}
-
-
-
-@media(min-width:701px) and (max-height:760px){.panel.matcha-panel{width:min(840px,95vw)}.matcha-panel>.panel-inner{padding:14px 22px 10px}.matcha-workspace{grid-template-columns:minmax(0,1fr) 226px;gap:22px}.matcha-canvas-wrap{width:min(100%,calc((100svh - 280px)*1.14));margin:-4px auto -8px}.matcha-tools{gap:12px}.matcha-size{margin-top:10px}.matcha-feedback{padding-top:10px;min-height:0}.matcha-history{margin-top:5px}}
-@media(max-width:700px){.matcha-panel>.panel-inner{padding:18px}.matcha-workspace{grid-template-columns:1fr;gap:18px}.matcha-left{width:100%;max-width:480px;justify-self:center}.matcha-tools{gap:16px}.matcha-stage-bottom{padding-bottom:14px;font-size:9px}.matcha-feedback{min-height:0}.matcha-guide{font-size:11px}.matcha-guide button{padding:7px 9px}}
-@media(prefers-reduced-motion:reduce){}
-@media(min-width:701px) and (max-height:760px){.matcha-panel:has(>.view-controls) .matcha-canvas-wrap{width:min(100%,calc((var(--panel-available-height) - 230px)*1.14))}.matcha-panel:has(>.view-controls) .matcha-tools{gap:9px}}
-@media(max-width:700px){.matcha-tools{display:contents}.matcha-tools>section:first-child{grid-row:1}.matcha-left{grid-row:2}.matcha-workspace{gap:14px}.matcha-history button{white-space:nowrap}.matcha-stage-bottom{padding-left:15px;padding-right:15px}}
+.matcha-stage-bottom{position:absolute;bottom:9px;left:14px;right:14px;display:flex;justify-content:space-between;color:#aab2b5;font-size:9px;letter-spacing:.03em;pointer-events:none}
+.matcha-history,.matcha-history>div{display:flex;align-items:center;gap:4px}
+.matcha-history{flex-shrink:0;justify-content:space-between;margin-top:5px}
+.matcha-history button{display:flex;align-items:center;gap:5px;min-height:28px;background:transparent;border:1px solid transparent;border-radius:5px;padding:5px 6px;color:#b5bdc1;font-size:10px;white-space:nowrap}
+.matcha-history button:hover:not(:disabled){background:#ffffff09}.matcha-history button:disabled{opacity:.3}.matcha-history .matcha-confirm{border-color:#dbb98477;color:var(--gold)}
+.matcha-clear-note{flex-shrink:0;font-size:10px;color:var(--gold);text-align:right;margin:3px 0}.matcha-clear-note button{background:none;color:inherit;text-decoration:underline;border:0}
+.matcha-tools{min-width:0;display:flex;flex-direction:column;gap:17px}
+.matcha-tool-buttons{display:flex;gap:7px;align-items:center}
+.matcha-tool-buttons>button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:32px;padding:6px 9px;border-radius:6px;border:1px solid #81929c66;background:transparent;color:#b5bdc1;font-size:11px;line-height:1.4;white-space:nowrap}
+.matcha-tool-buttons>button[aria-pressed=true]{background:#aa885e22;border-color:#bba37e99;color:#ead9bc}
+.matcha-size{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:#aab2b5;margin:12px 0 5px}.matcha-size span+span{color:#d5d4ca}
+.matcha-tools input[type=range]{display:block;width:100%;height:16px;margin:0;accent-color:#d6b889;cursor:pointer}
+.matcha-guide{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:5px;font-size:10px;color:#aab2b5}.matcha-guide>div{display:flex;gap:3px}
+.matcha-guide button{border:1px solid transparent;background:transparent;padding:5px 7px;font-size:10px;border-radius:4px;color:#aab2b5}.matcha-guide button[aria-pressed=true]{color:#ead9bc;background:#aa885e22;border-color:#bba37e70}
+.matcha-feedback{grid-column:1/-1;flex-shrink:0;max-height:60px;overflow:auto;border-top:1px solid var(--line);padding-top:7px;margin:0;color:#e4aea1;font-size:11px;line-height:1.5}
+.matcha-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:700px){.matcha-panel>.panel-inner{padding:12px 14px}.matcha-panel .panel-head{margin-bottom:9px}.matcha-workspace{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr) auto;gap:8px}.matcha-tools{display:contents}.matcha-tools>section:first-child{grid-row:1;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px;align-items:center}.matcha-tool-buttons{grid-column:1;grid-row:1/3}.matcha-size{grid-column:2;margin:0;font-size:9px}.matcha-tools input[type=range]{grid-column:2;grid-row:2;height:14px}.matcha-left{grid-row:2}.matcha-tools>section[aria-label='Tracing guides']{grid-row:3}.matcha-guide{justify-content:center;gap:12px}.matcha-guide button{padding:4px 10px;min-height:26px}.matcha-history{margin-top:3px}.matcha-stage-bottom{left:12px;right:12px}}
+@media(max-height:600px){.matcha-stage-bottom{display:none}.matcha-canvas-wrap{width:min(100cqw,calc(100cqh*8/7));margin:0 auto}}
