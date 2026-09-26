@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type { OrbitControls as OrbitType } from 'three-stdlib';
 import type { Focus } from '@/lib/cities';
 import { containRoomCamera,roomHomeView,roomViewIsAway } from '@/lib/room-camera';
-import { prepareRoomCamera,type RoomCamera } from '@/lib/scene-camera';
+import { prepareRoomCamera,startRoomViewTransition,type RoomCamera } from '@/lib/scene-camera';
 
 type V=[number,number,number];
 type View={p:V;t:V;zoom:number};
@@ -28,7 +28,9 @@ export default function CameraRig({focus,reset,interior,onViewChange}:Props){
   const bounds=gl.domElement.parentElement?.getBoundingClientRect();
   const width=bounds?.width||size.width,height=bounds?.height||size.height;
   if(Math.abs(width-size.width)>.5||Math.abs(height-size.height)>.5)setSize(width,height,bounds?.top,bounds?.left);
+  const switched=previous.current!==null&&previous.current!==camera;
   prepareRoomCamera(camera,interior,width,height,previous.current!==camera);
+  if(switched)startRoomViewTransition(camera,interior,width,height);
   previous.current=camera;
   // No unmount cleanup briefly restoring the old default camera against the new room shell.
   set({camera});invalidate();
@@ -49,7 +51,7 @@ function Controller({focus,reset,interior,onViewChange,camera}:Props&{camera:Roo
   if(controls.current&&transition.current){
    // An idle/paused renderer may resume after a large wall-clock gap. Animate
    // from the previous view, never consume that whole gap in a single frame.
-   const blend=1-Math.exp(-Math.min(delta,1/30)*3);
+   const blend=1-Math.exp(-Math.min(delta,1/30)*4);
    camera.position.lerp(destination,blend);controls.current.target.lerp(target,blend);
    if(camera instanceof THREE.OrthographicCamera){camera.zoom=THREE.MathUtils.lerp(camera.zoom,baseZoom*view.zoom,blend);camera.updateProjectionMatrix()}
    controls.current.update();

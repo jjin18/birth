@@ -55,7 +55,7 @@ export function feedback(world:GameWorld){
  return world.started?'Try another throw, or teach Sit and Roll. He remembers what you reward.':'Click the grass to aim, or Throw ball. Treats teach him which moves to repeat.';
 }
 /** A short physical-looking arc followed by one small bounce; no orbiting ball. */
-export function ballFlight(world:GameWorld){
- const t=Math.max(0,Math.min(1,(world.time-world.lastThrow)/650));
+export function ballFlight(world:GameWorld,time=world.time){
+ const t=Math.max(0,Math.min(1,(time-world.lastThrow)/650));
  return {x:OWNER_X+(world.ball.x-OWNER_X)*t,lift:t===1?0:t<.8?Math.sin(t/.8*Math.PI)*52:Math.sin((t-.8)/.2*Math.PI)*8,airborne:t<1};
 }

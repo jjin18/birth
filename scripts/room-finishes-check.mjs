@@ -29,6 +29,11 @@ for(const file of ['Scene.tsx','InteriorEnvelope.tsx']){
 const materials=await readFile('components/Penthouse/Materials.tsx','utf8');
 assert(materials.includes('map=isWood?maps.wood'),'reuse the existing oak map');
 assert(materials.includes('bumpMap={map} bumpScale={isWood?.018'),'retain wood grain relief');
+assert(materials.includes('useTexture(texturePaths)')&&!materials.includes('setMaps'),'floor is textured on its first visible frame, not recoloured by late state');
+const scene=await readFile('components/Penthouse/Scene.tsx','utf8');
+assert(scene.includes('<Suspense fallback={null}><RoomMaterials>'),'texture wait never blanks the skyline or whole canvas');
+const lighting=await readFile('components/Penthouse/Lighting.tsx','utf8');
+assert(lighting.includes('scene.environmentIntensity=initial.environment')&&lighting.includes('intensity={initial.ambient}'),'first frame uses the finished lighting instead of ramping from night defaults');
 const workstation=await readFile('components/Penthouse/Workstation.tsx','utf8');
 const keyboard=workstation.split('<group name="mechanical-keyboard"')[1]?.split('</group>')[0];
 assert(keyboard,'mechanical keyboard exists');

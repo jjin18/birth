@@ -5,7 +5,7 @@ import {brotliDecompressSync,gunzipSync} from 'node:zlib';
 import {build} from 'esbuild';
 const bundle=await build({stdin:{contents:"export * from './lib/render-budget';export * from './server/static-encoding';export * from './lib/asset-url';",resolveDir:process.cwd()},bundle:true,write:false,platform:'node',format:'esm'});
 const {renderMode,MAX_ROOM_DPR,acceptedEncodings,assetUrl}=await import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles[0].contents).toString('base64'));
-assert.equal(renderMode(true,false,1,100),'paused');assert.equal(renderMode(false,true,101,100),'paused');assert.equal(renderMode(false,true,90,100),'active');assert.equal(renderMode(false,false,101,100),'idle');
+assert.equal(renderMode(true,false,1,100),'paused');assert.equal(renderMode(false,true,101,100),'paused');assert.equal(renderMode(false,true,90,100),'paused');assert.equal(renderMode(false,false,101,100),'idle');
 assert.equal(MAX_ROOM_DPR,2,'bounded, consistently sharp rendering');
 const budgetSource=await readFile('components/Penthouse/RenderBudget.tsx','utf8');assert(!budgetSource.includes('setDpr')&&!budgetSource.includes('onQuality'),'slow startup cannot permanently degrade the room');
 const effects=await readFile('components/Penthouse/RoomEffects.tsx','utf8');assert(effects.includes('multisampling={4}'),'composer has its own anti-aliasing');

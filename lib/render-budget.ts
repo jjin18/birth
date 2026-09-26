@@ -4,5 +4,5 @@ export const SETTLE_MS = 4500;
 /** Sharp on high-density screens, bounded to avoid unbounded GPU allocation. */
 export const MAX_ROOM_DPR = 2;
 export function renderMode(hidden: boolean, occluded: boolean, now: number, activeUntil: number) {
-  return hidden || (occluded && now >= activeUntil) ? 'paused' : now < activeUntil ? 'active' : 'idle';
+  return hidden || occluded ? 'paused' : now < activeUntil ? 'active' : 'idle';
 }

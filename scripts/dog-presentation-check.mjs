@@ -32,18 +32,42 @@ played.dog.holding=false;played.dog.x=.7;assert(!isPettingReward(played),'reward
 for(let i=0;i<11;i++)played.tick(100);assert(!isPettingReward(played),'reward pose expires');
 assert.equal(played.pose(),3,'reward does not make a seated dog jump to a standing pose');
 played.dog.facing=1;played.command('call');assert.equal(played.dog.facing,-1);assert.equal(played.dog.posture,'sit');assert.equal(played.goal,'none');
+const restingBall=JSON.stringify(played.ball),previousThrow=played.lastThrow;
+assert(played.ball.visible,'calling a returned dog leaves the dropped ball visible');
+for(const cue of ['sit','roll','call']){
+ played.command(cue);
+ assert.equal(JSON.stringify(played.ball),restingBall,`${cue} never hides or moves the resting ball`);
+ for(let n=0;n<120&&played.goal!=='none';n++){
+  assert(!played.actions().some(action=>['pickup','walk','run'].includes(action)),'a visible resting ball does not hijack a trick');
+  played.tick(100);assert.equal(JSON.stringify(played.ball),restingBall);
+ }
+ assert.equal(played.lastThrow,previousThrow,'a trick never restarts the ball arc');
+}
+played.throwBall(.82);assert.equal(played.lastThrow,played.time);assert(played.ball.visible);assert.equal(played.ball.x,.82);
 const source=await readFile('lib/good-dog/ui.ts','utf8');assert(!source.includes('gd-mouth-ball'),'carrying uses supplied artwork instead of floating overlay');
 assert(source.includes("world.dog.holding||spec.sheet==='ball'"),'world ball is hidden when sprite already contains one');
 assert(!source.includes("phase==='reward'?`calc"),'ball coordinates do not follow status labels');
-assert(source.includes('renderedThrow!==world.lastThrow'),'new throws cannot interpolate from the last round');
+assert(source.includes('ballFlight(world,world.time+accumulator)')&&!source.includes('ball.style.transition'),'each throw follows physics without stale CSS interpolation');
 assert(source.includes('Train your dog!'));
-// A stale rewarded fetch used to create a phantom ball during show tricks.
+assert(source.includes('data-sheet="tricks"')&&source.includes('data-sheet="ball"'),'separate fixed atlas elements prevent a one-frame full-sheet flash');
+assert(source.includes('preserveAspectRatio="none"')&&!source.includes("sprite.setAttribute('height'"),'atlas dimensions never change at runtime');
+assert(source.includes('image.decode()'),'all poses decode before commands are enabled');
+assert(source.includes("sheets.tricks.ready=true;render()"),'idle dog appears as soon as its own atlas decodes');
+const experience=await readFile('components/Experience.tsx','utf8');
+assert(experience.includes("if(focus==='dog'){preloadDogGameArtwork()"),'artwork starts loading during the camera approach');
+assert(source.includes('requestAnimationFrame(animate)')&&!source.includes('setInterval'),'smooth composited motion is independent of policy ticks');
+assert(source.includes('world.tick(100)')&&source.includes('Math.min(100,now-lastFrame)'),'learning tick stays deterministic and resume cannot fast-forward');
+assert(source.includes('cancelAnimationFrame(frame)'),'closing or backgrounding cancels rendering');
+const css=await readFile('app/good-dog.css','utf8');
+assert(!css.includes('min-height:2.9em'),'short feedback no longer reserves an empty second line');
+assert(!css.includes('transition:left'),'moving dog and ball never interpolate stale show-round positions');
+// Show tricks retain the real dropped ball, not a stale reward/throw overlay.
 played.startShow();let trickTicks=0;
 for(let i=0;i<500&&played.show;i++){
  const prevRound=played.show.round,prevX=played.ball.x,prevAction=played.current?.action;
  played.tick(100);
  if(played.show?.round===prevRound&&played.ball.x!==prevX)assert.equal(prevAction,'drop','only dropping moves a resting ball');
- if(played.show&&(played.goal==='sit'||played.goal==='roll')){trickTicks++;assert(!played.ball.visible);assert.notEqual(fetchPhase(played),'reward')}
+ if(played.show&&(played.goal==='sit'||played.goal==='roll')){trickTicks++;assert(played.ball.visible);assert.equal(ballFlight(played).lift,0);assert.notEqual(fetchPhase(played),'reward')}
  assert(!isPettingReward(played),'evaluation cannot replay training reward art');
 }
 assert(trickTicks>0);

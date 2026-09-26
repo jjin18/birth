@@ -7,7 +7,9 @@ export type DogAssets={spriteUrl:string;ballSpriteUrl:string;ryanUrl:string;ryan
 export function mountGoodDog(host:HTMLElement,options:DogAssets){
  let storage:Storage|null=null;try{storage=window.localStorage}catch{}
  const saves=new SaveManager(storage);
- let world=saves.load(),timer:ReturnType<typeof setInterval>|null=null,disposed=false,lastRevision=-1,lastSave=0,aimX=.76;
+ const world=saves.load();
+ let frame:number|null=null,disposed=false,assetsReady=false,assetError=false,lastRevision=-1,lastSave=0,aimX=.76;
+ let lastFrame=0,accumulator=0,previousDogX=world.dog.x;
  host.classList.add('good-dog');
  host.innerHTML=`<div class="gd-intro"><span>Train your dog!</span><span data-returns>0 returns</span></div>
  <div class="gd-stage" role="button" tabindex="0" aria-label="Aim and throw the tennis ball. Click the grass or press Enter.">
@@ -15,8 +17,11 @@ export function mountGoodDog(host:HTMLElement,options:DogAssets){
   <div class="gd-human" data-pose="standing"><img data-ryan-standing alt="Ryan standing" draggable="false"><img data-ryan-crouching alt="Ryan crouching to train the dog" draggable="false" hidden></div><span class="gd-owner-label">Ryan</span>
   <img class="gd-petting" alt="Ryan rewarding and petting the dog" draggable="false" hidden>
   <span class="gd-aim" aria-hidden="true"></span>
-  <div class="gd-puppy"><svg class="gd-sprite" viewBox="0 0 384 216" aria-hidden="true"><svg class="gd-crop" overflow="hidden"><image width="1536" height="864"/></svg></svg><img class="gd-play" alt="Dog with a tennis ball" draggable="false" hidden><span class="gd-treat" hidden>♥</span></div>
-  <img class="gd-ball" alt="Tennis ball" draggable="false" hidden>
+  <div class="gd-motion" data-dog-motion><div class="gd-puppy">
+   <svg class="gd-sprite" data-sheet="tricks" viewBox="0 0 384 216" aria-hidden="true" hidden><svg class="gd-crop" viewBox="0 0 384 216" width="384" height="216" overflow="hidden"><image width="1536" height="864" preserveAspectRatio="none"/></svg></svg>
+   <svg class="gd-sprite" data-sheet="ball" viewBox="0 0 384 216" aria-hidden="true" hidden><svg class="gd-crop" viewBox="0 0 384 216" width="384" height="216" overflow="hidden"><image width="1536" height="216" preserveAspectRatio="none"/></svg></svg>
+   <img class="gd-play" alt="Dog with a tennis ball" draggable="false" hidden><span class="gd-treat" hidden>♥</span></div></div>
+  <div class="gd-motion" data-ball-motion><img class="gd-ball" alt="Tennis ball" draggable="false" hidden></div>
   <span class="gd-stage-hint">Click the grass to aim</span>
  </div>
  <ol class="gd-steps" aria-label="How to play"><li data-step="aim"><b>1</b> Throw</li><li data-step="fetch"><b>2</b> Fetch &amp; return</li><li data-step="reward"><b>3</b> Reward</li></ol>
@@ -36,7 +41,15 @@ export function mountGoodDog(host:HTMLElement,options:DogAssets){
   <p>The Q-table is just 6.25 KiB. Learning runs locally and saves automatically in this browser.</p>
  </details>`;
  const find=<T extends Element=HTMLElement>(selector:string)=>host.querySelector<T>(selector)!;
- const sprite=find<SVGImageElement>('image'),crop=find<SVGSVGElement>('.gd-crop'),spriteBox=find<SVGSVGElement>('.gd-sprite');
+ // Keep each decoded atlas in its own fixed-size viewport. Replacing href and
+ // height on one SVG image can briefly squeeze the previous, taller sheet
+ // into a one-row viewport and expose every dog pose.
+ const sheets=Object.fromEntries((['tricks','ball'] as const).map(name=>{
+  const box=find<SVGSVGElement>(`[data-sheet="${name}"]`),crop=box.querySelector<SVGSVGElement>('.gd-crop')!;
+  box.querySelector('image')!.setAttribute('href',name==='ball'?options.ballSpriteUrl:options.spriteUrl);
+  return [name,{box,crop,ready:false}];
+ }));
+ const dogMotion=find('[data-dog-motion]'),ballMotion=find('[data-ball-motion]');
  const puppy=find('.gd-puppy'),stage=find('.gd-stage'),ball=find<HTMLImageElement>('.gd-ball'),heart=find('.gd-treat'),play=find<HTMLImageElement>('.gd-play'),target=find('.gd-aim');
  const ryan=find('.gd-human'),standing=find<HTMLImageElement>('[data-ryan-standing]'),crouching=find<HTMLImageElement>('[data-ryan-crouching]');
  const pettingImage=find<HTMLImageElement>('.gd-petting');pettingImage.src=options.ryanTreatUrl;
@@ -45,57 +58,69 @@ export function mountGoodDog(host:HTMLElement,options:DogAssets){
  const buttons=Object.fromEntries(Array.from(host.querySelectorAll<HTMLButtonElement>('[data-action]'),button=>[button.dataset.action!,button]));
  const progress=SKILLS.map(skill=>({skill,element:find(`[data-skill="${skill}"]`),dots:find(`[data-skill="${skill}"] i`)}));
  const text=(el:Element,value:string)=>{if(el.textContent!==value)el.textContent=value};
- const canThrow=()=>!world.show&&!world.dog.holding&&world.goal!=='fetch';
- let ballWasVisible=false,renderedThrow=-10000;
+ const canThrow=()=>assetsReady&&!world.show&&!world.dog.holding&&world.goal!=='fetch';
+ let renderedSprite='';
+ const steps=['aim','fetch','reward'].map(name=>({name,element:find(`[data-step="${name}"]`)}));
+ function drawMotion(alpha=1){
+  const x=previousDogX+(world.dog.x-previousDogX)*alpha;
+  dogMotion.style.transform=`translate3d(${x*100}%,0,0)`;
+  const flight=ballFlight(world,world.time+accumulator);
+  ballMotion.style.transform=`translate3d(${flight.x*100}%,${-flight.lift}px,0)`;
+ }
  function save(force=false){if(force||(world.revision!==lastRevision&&world.time-lastSave>=3000)){saves.save(world);lastRevision=world.revision;lastSave=world.time}}
  function render(){
   const petting=isPettingReward(world);pettingImage.hidden=!petting;ryan.hidden=petting;
   ryan.dataset.pose=world.started?'crouching':'standing';standing.hidden=world.started;crouching.hidden=!world.started;
-  const spec=dogSprite(world),row=POSE_ROWS[spec.sheet==='ball'?0:Math.floor(spec.pose/4)],phase=fetchPhase(world),flight=ballFlight(world);
+  const spec=dogSprite(world),row=POSE_ROWS[spec.sheet==='ball'?0:Math.floor(spec.pose/4)],phase=fetchPhase(world);
   const celebrating=world.current?.action==='drop';
-  const url=spec.sheet==='ball'?options.ballSpriteUrl:options.spriteUrl;
-  if(sprite.getAttribute('href')!==url)sprite.setAttribute('href',url);
-  sprite.setAttribute('height',spec.sheet==='ball'?'216':'864');
-  // Nested viewport really clips, including letterboxed padding. Masking alone
-  // lets the printed labels bleed through under the belly-up and running poses.
-  crop.setAttribute('viewBox',`${spec.pose%4*384} ${row.top} 384 ${row.height}`);
-  crop.setAttribute('x','0');crop.setAttribute('y',String(216-row.height));crop.setAttribute('width','384');crop.setAttribute('height',String(row.height));
-  spriteBox.style.display=celebrating||petting?'none':'';play.hidden=!celebrating||petting;
+  const spriteKey=`${spec.sheet}-${spec.pose}`;
+  if(renderedSprite!==spriteKey){sheets[spec.sheet].crop.setAttribute('viewBox',`${spec.pose%4*384} ${row.top} 384 ${row.height}`);renderedSprite=spriteKey}
+  for(const [name,sheet] of Object.entries(sheets))sheet.box.toggleAttribute('hidden',!sheet.ready||celebrating||petting||name!==spec.sheet);
+  play.hidden=!celebrating||petting||!assetsReady;
   play.style.setProperty('--gd-play-flip',world.dog.facing<0?'1':'-1');
-  puppy.style.left=`${world.dog.x*100}%`;puppy.style.setProperty('--gd-flip',spec.mirror?'-1':'1');
+  puppy.style.setProperty('--gd-flip',spec.mirror?'-1':'1');
   heart.hidden=world.time-world.lastTreat>=1100;
   // The carrying/dropping artwork includes its own ball. Never draw a second.
   ball.hidden=!world.ball.visible||world.dog.holding||spec.sheet==='ball'||celebrating;
-  // A new round starts a new throw, never a CSS slide from the previous ball.
-  ball.style.transition=!ballWasVisible||renderedThrow!==world.lastThrow?'none':'';
-  ball.style.left=`calc(${flight.x*100}% + var(--gd-muzzle)*${world.ball.side})`;
-  ball.style.bottom=`calc(var(--gd-ground) + ${flight.lift}px)`;
-  ballWasVisible=!ball.hidden;renderedThrow=world.lastThrow;
+  // The wrapper follows the physical flight directly, not a CSS transition
+  // left over from the preceding show round.
+  ball.style.left=`calc(var(--gd-muzzle)*${world.ball.side})`;
   stage.dataset.ready=String(canThrow());stage.setAttribute('aria-disabled',String(!canThrow()));
   target.style.left=`calc(${aimX*100}% + var(--gd-muzzle))`;
-  for(const step of ['aim','fetch','reward'])find(`[data-step="${step}"]`).dataset.active=String((phase==='return'?'fetch':phase)===step);
-  text(behavior,activityLabel(world));text(message,feedback(world));
+  for(const step of steps)step.element.dataset.active=String((phase==='return'?'fetch':phase)===step.name);
+  text(behavior,assetsReady?activityLabel(world):'Getting ready');
+  text(message,assetsReady?feedback(world):assetError?'Some dog artwork could not load. Close and reopen the game to retry.':'Preparing the dog artwork…');
   const count=world.training.skills.fetch.successes;text(returns,`${count} ${count===1?'return':'returns'}`);
   text(show,world.show?`Show ${world.show.round+1}/4`:world.best?`Best ${world.best}/100`:'');
   buttons.start.hidden=!world.started;text(buttons.start,world.running?'Pause':'Resume');
   buttons.throw.disabled=!canThrow();
-  for(const action of ['call','sit','roll'])buttons[action].disabled=!!world.show||(world.dog.holding&&action!=='call');
-  buttons.treat.disabled=!world.canTreat;buttons.treat.dataset.good=String(world.canTreat&&(['walk','run','pickup','return','drop'].includes(world.current?.action??'')||!!world.treatCredit?.success));
+  for(const action of ['call','sit','roll'])buttons[action].disabled=!assetsReady||!!world.show||(world.dog.holding&&action!=='call');
+  buttons.treat.disabled=!assetsReady||!world.canTreat;buttons.treat.dataset.good=String(world.canTreat&&(['walk','run','pickup','return','drop'].includes(world.current?.action??'')||!!world.treatCredit?.success));
   buttons.treat.title=world.canTreat?`Reward: ${world.behavior().toLowerCase()}`:'Wait for a move to reward';
-  buttons.show.disabled=!world.started;text(buttons.show,world.show?'Stop show':'Dog show (train first)');
+  buttons.show.disabled=!assetsReady||!world.started;text(buttons.show,world.show?'Stop show':'Dog show (train first)');
   for(const p of progress){const level=world.training.level(p.skill);text(p.dots,'●'.repeat(level)+'○'.repeat(3-level));p.element.setAttribute('aria-label',`${p.skill}: ${level} of 3`)}
   result.hidden=!world.result;if(world.result)text(result,`${world.result.score}/100 · Fetch ${world.result.fetches}/2 · Tricks ${world.result.tricks}/2 · ${world.result.seconds}s`);
   host.dataset.behavior=world.current?.action??world.dog.posture;host.dataset.phase=phase;host.dataset.sprite=petting?'petting':celebrating?'play-ball':`${spec.sheet}-${spec.pose}`;
  }
- function halt(){if(timer){clearInterval(timer);timer=null}save(true)}
- function schedule(){if(disposed||document.hidden||!world.running){halt();return}if(!timer)timer=setInterval(()=>{world.tick(100);save();render();if(!world.running)halt()},100)}
+ function halt(){if(frame!==null){cancelAnimationFrame(frame);frame=null}lastFrame=0;save(true)}
+ // Keep the learned policy at its original deterministic 10 Hz. Only the two
+ // composited motion wrappers update at display rate; never redraw all UI at 60 Hz.
+ function animate(now:number){
+  frame=null;if(disposed||document.hidden||!world.running)return;
+  accumulator+=lastFrame?Math.min(100,now-lastFrame):0;lastFrame=now;
+  while(accumulator>=100){previousDogX=world.dog.x;world.tick(100);accumulator-=100;save();render()}
+  drawMotion(world.running?accumulator/100:1);
+  if(world.running)frame=requestAnimationFrame(animate);else halt();
+ }
+ function schedule(){if(disposed||document.hidden||!world.running||!assetsReady){halt();return}if(frame===null)frame=requestAnimationFrame(animate)}
  function act(action:string){
+  if(!assetsReady)return;
   if(action==='start'){if(world.running){world.running=false;world.message='A little breather. Your dog will wait.'}else world.start()}
   if(action==='throw'&&canThrow()){if(!world.running)world.start();world.throwBall(aimX)}
   if(action==='call'||action==='sit'||action==='roll'){if(!world.running)world.start();world.command(action)}
   if(action==='treat'&&world.treat()&&isPettingReward(world))world.restUntil=Math.max(world.restUntil,world.time+1100);
   if(action==='show'){if(world.show)world.stopShow();else world.startShow()}
-  save(true);render();schedule();
+  previousDogX=world.dog.x;accumulator=0;save(true);render();drawMotion();schedule();
  }
  const click=(event:Event)=>{const button=(event.target as Element).closest<HTMLElement>('[data-action]');if(button&&!button.hasAttribute('disabled'))act(button.dataset.action!)};
  const keys=(event:KeyboardEvent)=>{if(event.ctrlKey||event.metaKey||event.altKey||event.repeat||(event.target as Element).closest('input,textarea,select,[contenteditable]'))return;if(event.target===stage&&(event.key==='Enter'||event.key===' ')){event.preventDefault();act('throw');return}const action=({b:'throw',c:'call',s:'sit',r:'roll',t:'treat',d:'show'} as Record<string,string>)[event.key.toLowerCase()];if(action&&!buttons[action].disabled){event.preventDefault();act(action)}};
@@ -105,6 +130,18 @@ export function mountGoodDog(host:HTMLElement,options:DogAssets){
  const focus=()=>schedule();
  host.addEventListener('click',click);host.addEventListener('keydown',keys);stage.addEventListener('click',toss);stage.addEventListener('mousemove',aim);
  document.addEventListener('visibilitychange',visibility);window.addEventListener('blur',halt);window.addEventListener('focus',focus);window.addEventListener('pagehide',halt);
- render();
+ render();drawMotion();
+ // Decode before enabling commands so the first catch or treat never stalls
+ // waiting for a new pose's image. Asset bytes and the user's save are unchanged.
+ void Promise.all(Object.entries(options).map(([key,src])=>{
+  const image=new Image();image.src=src;
+  return image.decode().then(()=>{
+   if(disposed)return;
+   if(key==='spriteUrl'){sheets.tricks.ready=true;render()}
+   if(key==='ballSpriteUrl'){sheets.ball.ready=true;render()}
+  });
+ })).then(()=>{
+  if(disposed)return;assetsReady=true;render();drawMotion();schedule();
+ }).catch(()=>{if(!disposed){assetError=true;render()}});
  return()=>{disposed=true;halt();host.removeEventListener('click',click);host.removeEventListener('keydown',keys);stage.removeEventListener('click',toss);stage.removeEventListener('mousemove',aim);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('blur',halt);window.removeEventListener('focus',focus);window.removeEventListener('pagehide',halt);host.replaceChildren()};
 }

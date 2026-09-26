@@ -22,24 +22,29 @@ export class GameWorld{
   const s=this.situation(),actions:Action[]=['idle','look','sit'];
   if(!s.lying&&(this.goal==='roll'||this.goal==='none'))actions.push('lie');
   if(s.lying)actions.push('roll');
-  if(s.ballVisible&&!s.holding){if(s.nearBall)actions.push('pickup');else actions.push('walk','run')}
+  // A resting ball remains part of the scene during tricks, but is only a
+  // fetch target when requested. Visibility and the current task are separate.
+  if(this.goal==='fetch'&&s.ballVisible&&!s.holding){if(s.nearBall)actions.push('pickup');else actions.push('walk','run')}
   if(!s.nearOwner&&(s.holding||this.goal==='call'||this.goal==='none'))actions.push('return');
   if(s.holding&&(s.nearOwner||this.goal!=='fetch'))actions.push('drop');
   return actions;
  }
- start(){if(this.result){this.dog.reset();this.ball.visible=false;this.result=null;this.current=null;this.goal='none';this.restUntil=0}this.started=true;this.running=true;this.message='Throw the ball. Reward the moments you want to see again.'}
+ private releaseBall(){
+  if(!this.dog.holding)return;
+  this.ball={x:this.dog.x,visible:true,side:this.dog.facing};this.dog.holding=false;
+ }
+ start(){if(this.result){this.releaseBall();this.dog.reset();this.result=null;this.current=null;this.goal='none';this.restUntil=0}this.started=true;this.running=true;this.message='Throw the ball. Reward the moments you want to see again.'}
  command(goal:Exclude<Goal,'none'|'fetch'>){
   if(!this.running||this.show)return;
   if(goal==='call'){
    this.dog.facing=-1; // Ryan stands to the left of the dog's return spot.
    if(Math.abs(this.dog.x-OWNER_X)<.055&&!this.dog.holding){
-    this.current=null;this.goal='none';this.dog.posture='sit';this.restUntil=0;this.ball.visible=false;
+    this.current=null;this.goal='none';this.dog.posture='sit';this.restUntil=0;
     this.message='Right beside Ryan. Sitting and waiting for your next cue.';return;
    }
   }
   // Calling a dog carrying a fetch must not erase the fetch/drop objective.
   if(goal==='call'&&this.dog.holding){this.goal='fetch';this.current=null;this.restUntil=0;this.message='Bring it back to Ryan!';return}
-  if(!this.dog.holding)this.ball.visible=false;
   this.current=null;this.restUntil=0;this.goal=goal;this.training.recent=[];this.result=null;
   this.message=goal==='call'?'Come here, little one.':goal==='sit'?'Sit! Let’s see what happens.':'Roll over! Lying down is a good first step.';
  }
@@ -60,11 +65,10 @@ export class GameWorld{
   this.running=true;this.current=null;this.result=null;this.show=new Competition();this.showBrain=this.brain.clone();
   this.showBrain.seed=(this.brain.seed^(this.shows+1)*0x9e3779b9)>>>0||1;this.setupRound();
  }
- stopShow(){if(!this.show)return;this.show=null;this.showBrain=null;this.goal='none';this.current=null;this.dog.holding=false;this.ball.visible=false;this.message='Back to training. No show score saved.'}
+ stopShow(){if(!this.show)return;this.releaseBall();this.show=null;this.showBrain=null;this.goal='none';this.current=null;this.message='Back to training. No show score saved.'}
  private setupRound(){
-  this.dog.reset();this.current=null;this.restUntil=0;this.goal=SHOW_ROUNDS[this.show!.round][0];
-  this.ball={x:this.show!.round===0?.73:.81,visible:this.goal==='fetch',side:1};
-  if(this.goal==='fetch'){this.lastThrow=this.time;this.restUntil=this.time+650}
+  this.releaseBall();this.dog.reset();this.current=null;this.restUntil=0;this.goal=SHOW_ROUNDS[this.show!.round][0];
+  if(this.goal==='fetch'){this.ball={x:this.show!.round===0?.73:.81,visible:true,side:1};this.lastThrow=this.time;this.restUntil=this.time+650}
   this.message=`Dog Show · ${this.show!.round+1}/4 · ${this.goal==='fetch'?'Fetch!':this.goal==='sit'?'Sit!':'Roll over!'}`;
  }
  private beginAction(){

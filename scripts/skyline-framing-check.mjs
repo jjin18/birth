@@ -5,6 +5,8 @@ import sharp from 'sharp';
 
 const bundle=await build({entryPoints:['lib/skyline-framing.ts'],bundle:true,write:false,platform:'node',format:'esm'});
 const {skylineCrop,skylineHorizons,SKYLINE_HORIZON_FROM_BOTTOM}=await import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles[0].text).toString('base64'));
+assert.equal(skylineHorizons.tokyo.day,.55,'Tokyo uses the distant ground, not tower tops');
+assert.equal(skylineHorizons.tokyo.dark,.545);
 for(const [city,modes] of Object.entries(skylineHorizons))for(const [mode,horizon] of Object.entries(modes)){
  const suffix=mode==='dark'?'':'-'+mode;
  const image=await sharp(`public/cities/${city}${suffix}.jpg`).metadata();

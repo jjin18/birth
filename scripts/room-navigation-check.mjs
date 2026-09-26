@@ -5,7 +5,7 @@ import { OrthographicCamera,PerspectiveCamera,Vector3 } from 'three';
 
 const bundle=await build({stdin:{contents:`
 export {roomHomeView,roomViewIsAway,containRoomCamera,cameraBounds} from './lib/room-camera';
-export {prepareRoomCamera} from './lib/scene-camera';
+export {prepareRoomCamera,startRoomViewTransition} from './lib/scene-camera';
 export {syncRoomAO} from './lib/room-ao';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
@@ -15,7 +15,7 @@ export function renderStandalone(){return renderToStaticMarkup(<RoomNavigation/>
 `,resolveDir:process.cwd(),loader:'tsx'},bundle:true,write:false,format:'esm',platform:'node',jsx:'automatic',packages:'external'});
 // Resolve external React imports against this repository, not a data: URL.
 const executable=bundle.outputFiles[0].text.replace(/from "([^\"]+)"/g,(_,name)=>`from ${JSON.stringify(import.meta.resolve(name))}`);
-const {roomHomeView,roomViewIsAway,containRoomCamera,cameraBounds,renderNavigation,renderStandalone,prepareRoomCamera,syncRoomAO}=await import('data:text/javascript;base64,'+Buffer.from(executable).toString('base64'));
+const {roomHomeView,roomViewIsAway,containRoomCamera,cameraBounds,renderNavigation,renderStandalone,prepareRoomCamera,startRoomViewTransition,syncRoomAO}=await import('data:text/javascript;base64,'+Buffer.from(executable).toString('base64'));
 const aoCalls=[],perspective=new PerspectiveCamera(),orthographic=new OrthographicCamera(),buffers={};
 const ao={camera:perspective,configuration:{depthBufferType:1},buffers,configureAOPass:(depth,ortho)=>aoCalls.push(['ao',depth,ortho]),configureDenoisePass:(depth,ortho)=>aoCalls.push(['denoise',depth,ortho]),configureEffectCompositer:(depth,ortho)=>aoCalls.push(['composite',depth,ortho]),firstFrame:()=>aoCalls.push(['refresh'])};
 syncRoomAO(ao,orthographic);assert.equal(ao.camera,orthographic);assert.equal(ao.buffers,buffers);
@@ -32,6 +32,12 @@ for(const interior of [false,true,false,true])for(const [width,height] of [[1280
  camera.position.x+=.1;
  prepareRoomCamera(camera,interior,width+10,height,false);
  assert.equal(camera.position.x,home.position[0]+.1,'resize does not teleport the camera');
+ prepareRoomCamera(camera,interior,width,height,true);
+ startRoomViewTransition(camera,interior,width,height);
+ assert(camera.position.distanceTo(new Vector3(...home.position))>.1,'view switches retain a visible camera journey');
+ if(interior){assert(camera.position.x<=cameraBounds.maxX&&camera.position.z<=cameraBounds.maxZ,'entry dolly stays inside the shell')}
+ else assert(camera.zoom>home.zoom,'outside starts closer then gently pulls back');
+ assert(camera.projectionMatrix.elements.every(Number.isFinite));
 }
 const point=([x,y,z])=>({x,y,z});
 for(const interior of [true,false])for(const [width,height] of [[1280,850],[390,844]]){

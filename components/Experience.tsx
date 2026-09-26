@@ -7,6 +7,7 @@ import FortunePanel from './FortunePanel';
 import RoomNavigation, { RoomNavigationContext } from './RoomNavigation';
 import { getDaylight } from '@/lib/daylight';
 import RoomSceneBoundary from './RoomSceneBoundary';
+import {preloadDogGameArtwork} from '@/lib/good-dog/assets';
 
 const DogGame = dynamic(() => import('./DogGame'), { ssr: false });
 const Arcade = dynamic(() => import('./Arcade'), { ssr: false });
@@ -31,6 +32,7 @@ export default function Experience(){
  useEffect(()=>{const refresh=()=>{void getFortunes().then(data=>setFortuneCount(data.fortunes.length)).catch(()=>{})};refresh();window.addEventListener('focus',refresh);return()=>window.removeEventListener('focus',refresh)},[]);
  useEffect(()=>{const tick=()=>setNow(new Date());tick();const timer=setInterval(tick,30000);const refresh=()=>{if(document.visibilityState==='visible')tick()};document.addEventListener('visibilitychange',refresh);window.addEventListener('focus',tick);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',refresh);window.removeEventListener('focus',tick)}},[]);
  useEffect(()=>{const timers:ReturnType<typeof setTimeout>[]=[];setPanel('home');setTip('');
+  if(focus==='dog'){preloadDogGameArtwork();void import('./DogGame').catch(()=>{})}
   if(['wall','gloves','fortune','paperclip','laptop','dog'].includes(focus))timers.push(setTimeout(()=>setPanel(focus),700));
   if(focus==='bed'){setTip('Thank you for sleeping on the floor lol');timers.push(setTimeout(()=>{setTip('');setFocus('home')},4500))}
   if(focus==='chair'){setTip('May your future have ergonomic support');timers.push(setTimeout(()=>{setTip('');setFocus('home')},4500))}
@@ -41,7 +43,7 @@ export default function Experience(){
  const welcome=!interior&&focus==='home';
  return <RoomNavigationContext.Provider value={{interior,canReset:focus!=='home'||cameraAway,reset:home,toggle:()=>{setInterior(value=>!value);home()}}}><main className="experience" aria-busy={!roomReady} data-sky-mode={skyMode} data-sky-choice="auto" data-city={cities[city].id} data-interior={interior} data-welcome={welcome}>
   {!interior&&<header className="birthday-heading" aria-hidden={!welcome}><h1>Happy Birthday Ryan</h1></header>}
-  <div className="scene-layer"><RoomSceneBoundary onReady={onReady}><Scene interior={interior} city={city} focus={focus} reset={reset} onInteract={interact} onReady={onReady} lampOn={lampOn} onLampToggle={toggleLamp} dogReaction={dogReaction} onDogClick={onDogClick} fortuneCount={fortuneCount} skyMode={skyMode} onSkyUnavailable={setSkyUnavailable} onViewChange={setCameraAway} occluded={panel!=='home'} ready={roomReady}/></RoomSceneBoundary></div>
+  <div className="scene-layer"><RoomSceneBoundary onReady={onReady}>{now&&<Scene interior={interior} city={city} focus={focus} reset={reset} onInteract={interact} onReady={onReady} lampOn={lampOn} onLampToggle={toggleLamp} dogReaction={dogReaction} onDogClick={onDogClick} fortuneCount={fortuneCount} skyMode={skyMode} onSkyUnavailable={setSkyUnavailable} onViewChange={setCameraAway} occluded={panel!=='home'} ready={roomReady}/>}</RoomSceneBoundary></div>
   <RoomNavigation/>
   {!interior&&<footer className="birthday-message" aria-hidden={!welcome}><p>{'You told me your dream was a high rise in each of these cities. I made you a little glimpse of that future as a reminder that the keys to your goals are closer than you think <3'}</p><p className="birthday-games">I coded some mini games, click on the objects!</p></footer>}
   <nav className="city-selector room-city-selector" aria-label="Choose your city">{cities.map((c,i)=><button key={c.id} aria-label={c.name} aria-describedby={`city-time-${c.id}`} aria-pressed={city===i} onClick={()=>setCity(i)}><time id={`city-time-${c.id}`} className="city-local-time" dateTime={now?.toISOString()}>{formatCityTime(c,now)}</time><span className="city-toggle-name"><span className="city-dot"/>{c.name}</span></button>)}</nav>
