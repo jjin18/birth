@@ -1,6 +1,7 @@
 'use client';
-import {Suspense,useState} from 'react';
+import {Suspense} from 'react';
 import RenderBudget from './RenderBudget';
+import {MAX_ROOM_DPR} from '@/lib/render-budget';
 import DateWallPhotos from './DateWallPhotos';
 import { Canvas, type ThreeEvent } from '@react-three/fiber';
 import { RoundedBox, ContactShadows } from '@react-three/drei';
@@ -33,9 +34,8 @@ function Room({onInteract,lampOn,onLampToggle,dogReaction,onDogClick,fortuneCoun
   <Lamp on={lampOn} toggle={onLampToggle}/><Dog reaction={dogReaction} click={onDogClick}/>
  </group>}
 export default function Scene(props:Props){
- const [quality,setQuality]=useState(0);
  const activity=[props.interior,props.city,props.focus,props.reset,props.lampOn,props.dogReaction,props.skyMode,props.ready].join(':');
- return <Canvas frameloop="demand" camera={{position:[4.4,2.35,5.4],fov:59,near:.08,far:100}} shadows={{type:THREE.PCFShadowMap}} dpr={[1,quality===0?1.6:quality===1?1.2:1]} gl={{antialias:true,alpha:true,powerPreference:'high-performance'}} fallback={<WebGLFallback/>}>
-  <RenderBudget activity={activity} occluded={props.occluded} onQuality={setQuality}/><SceneReady onReady={props.onReady}/><Lighting lampOn={props.lampOn} skyMode={props.skyMode} shadowSize={quality===0?2048:1024}/><CameraRig focus={props.focus} reset={props.reset} interior={props.interior} onViewChange={props.onViewChange}/><RoomMaterials><Room {...props}/></RoomMaterials><Backdrop interior={props.interior} city={props.city} mode={props.skyMode} onUnavailable={props.onSkyUnavailable}/><ContactShadows position={[0,-.54,0]} opacity={.36} scale={25} blur={2.5} far={5} resolution={256} frames={1}/><RoomEffects quality={quality}/>
+ return <Canvas frameloop="demand" camera={{position:[4.4,2.35,5.4],fov:59,near:.08,far:100}} shadows={{type:THREE.PCFShadowMap}} dpr={[1,MAX_ROOM_DPR]} gl={{antialias:true,alpha:true,powerPreference:'high-performance'}} fallback={<WebGLFallback/>}>
+  <RenderBudget activity={activity} occluded={props.occluded}/><SceneReady onReady={props.onReady}/><Lighting lampOn={props.lampOn} skyMode={props.skyMode} shadowSize={2048}/><CameraRig focus={props.focus} reset={props.reset} interior={props.interior} onViewChange={props.onViewChange}/><RoomMaterials><Room {...props}/></RoomMaterials><Backdrop interior={props.interior} city={props.city} mode={props.skyMode} onUnavailable={props.onSkyUnavailable}/><ContactShadows position={[0,-.54,0]} opacity={.36} scale={25} blur={2.5} far={5} resolution={256} frames={1}/><RoomEffects/>
  </Canvas>;
 }

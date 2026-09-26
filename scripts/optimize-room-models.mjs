@@ -12,7 +12,9 @@ const decoderModule = await draco.createDecoderModule({});
 const encoderModule = await draco.createEncoderModule({});
 await MeshoptSimplifier.ready;
 const reports = [];
-for (const [name, targetFaces, textureSize] of [['dog-on-bed', 250000, 2048], ['uploaded-floor-lamp', 80000, 2048]]) {
+// Keep the dog's reviewed original geometry and fur texture; simplification is
+// not worth losing its small silhouette/detail. The lamp remains optimized.
+for (const [name, targetFaces, textureSize] of [['uploaded-floor-lamp', 80000, 2048]]) {
   const source = execFileSync('git', ['show', `${revision}:public/models/${name}.glb`], { maxBuffer: 30 * 1024 ** 2, windowsHide: true });
   const gltf = JSON.parse(source.toString('utf8', 20, 20 + source.readUInt32LE(12)));
   const binary = source.subarray(28 + source.readUInt32LE(12));

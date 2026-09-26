@@ -11,7 +11,7 @@ export class GameWorld{
  readonly training=new TrainingManager();
  brain:DogBrain;
  private showBrain:DogBrain|null=null;
- ball={x:.75,visible:false};goal:Goal='none';running=false;started=false;time=0;restUntil=0;
+ ball={x:.75,visible:false,side:1};goal:Goal='none';running=false;started=false;time=0;restUntil=0;
  current:Step|null=null;lastTreat=-10000;lastThrow=-10000;best=0;shows=0;revision=0;
  message='One little dog. A little patience. A lot of good treats.';
  show:Competition|null=null;result:ShowResult|null=null;
@@ -30,16 +30,26 @@ export class GameWorld{
  start(){if(this.result){this.dog.reset();this.ball.visible=false;this.result=null;this.current=null;this.goal='none';this.restUntil=0}this.started=true;this.running=true;this.message='Throw the ball. Reward the moments you want to see again.'}
  command(goal:Exclude<Goal,'none'|'fetch'>){
   if(!this.running||this.show)return;
+  if(goal==='call'){
+   this.dog.facing=-1; // Ryan stands to the left of the dog's return spot.
+   if(Math.abs(this.dog.x-OWNER_X)<.055&&!this.dog.holding){
+    this.current=null;this.goal='none';this.dog.posture='sit';this.restUntil=0;this.ball.visible=false;
+    this.message='Right beside Ryan. Sitting and waiting for your next cue.';return;
+   }
+  }
+  // Calling a dog carrying a fetch must not erase the fetch/drop objective.
+  if(goal==='call'&&this.dog.holding){this.goal='fetch';this.current=null;this.restUntil=0;this.message='Bring it back to Ryan!';return}
+  if(!this.dog.holding)this.ball.visible=false;
   this.current=null;this.restUntil=0;this.goal=goal;this.training.recent=[];this.result=null;
   this.message=goal==='call'?'Come here, little one.':goal==='sit'?'Sit! Let’s see what happens.':'Roll over! Lying down is a good first step.';
  }
  throwBall(x=.76){
   if(!this.running||this.show||this.dog.holding)return false;
-  this.current=null;this.restUntil=0;this.ball={x:Math.max(.5,Math.min(.84,x)),visible:true};this.goal='fetch';this.lastThrow=this.time;
+  this.current=null;this.restUntil=this.time+650;this.dog.posture='stand';this.ball={x:Math.max(.5,Math.min(.84,x)),visible:true,side:1};this.goal='fetch';this.lastThrow=this.time;
   this.training.recent=[];this.result=null;this.message='Go get it! A treat can encourage a good choice.';return true;
  }
  get treatCredit():Credit|undefined{return this.current??this.training.recent.at(-1)}
- get canTreat(){const credit=this.treatCredit;return this.running&&!this.show&&!!credit&&!credit.rewarded&&this.time-this.lastTreat>=1100&&(!!this.current||this.time-credit.time<4500)}
+ get canTreat(){const credit=this.treatCredit;return this.running&&!this.show&&!!credit&&!credit.rewarded&&this.time-this.lastTreat>=1100&&(!!this.current||credit.success||this.time-credit.time<4500)}
  treat(){
   if(!this.canTreat)return false;
   const credit=this.treatCredit!;if(!this.training.treat(this.brain,credit))return false;
@@ -53,13 +63,14 @@ export class GameWorld{
  stopShow(){if(!this.show)return;this.show=null;this.showBrain=null;this.goal='none';this.current=null;this.dog.holding=false;this.ball.visible=false;this.message='Back to training. No show score saved.'}
  private setupRound(){
   this.dog.reset();this.current=null;this.restUntil=0;this.goal=SHOW_ROUNDS[this.show!.round][0];
-  this.ball={x:this.show!.round===0?.73:.81,visible:this.goal==='fetch'};
-  if(this.goal==='fetch')this.lastThrow=this.time;
+  this.ball={x:this.show!.round===0?.73:.81,visible:this.goal==='fetch',side:1};
+  if(this.goal==='fetch'){this.lastThrow=this.time;this.restUntil=this.time+650}
   this.message=`Dog Show · ${this.show!.round+1}/4 · ${this.goal==='fetch'?'Fetch!':this.goal==='sit'?'Sit!':'Roll over!'}`;
  }
  private beginAction(){
   const state=encode(this.situation()),action=this.policy.choose(state,this.actions(),!!this.show);
   let to=this.dog.x,duration=850;
+  if(!this.show&&(action==='idle'||action==='look'||(action==='sit'&&this.goal!=='sit')))duration=450;
   if(action==='walk'||action==='run')to=this.ball.x;
   if(action==='return')to=OWNER_X;
   if(to!==this.dog.x){duration=Math.max(500,Math.abs(to-this.dog.x)/(action==='walk'?.25:.46)*1000);this.dog.posture='stand'}
@@ -76,15 +87,16 @@ export class GameWorld{
    success=step.goal==='call';
   }
   if(step.action==='drop'){
-   dog.holding=false;this.ball.x=dog.x;dog.posture='down';
+   dog.holding=false;this.ball.x=dog.x;this.ball.side=dog.facing;this.ball.visible=true;dog.posture='down';
    success=step.goal==='fetch'&&Math.abs(dog.x-OWNER_X)<.055;
-   reward=success?2:-.3;if(success)this.ball.visible=false;
+   reward=success?2:-.3;
   }
   if(step.action==='sit'){dog.posture='sit';success=step.goal==='sit';if(success)reward=1}
   if(step.action==='lie'){dog.posture='lie';reward=step.goal==='roll'?.3:-.04}
   if(step.action==='look')dog.posture='look';
   if(step.action==='roll'){dog.posture='roll';success=step.goal==='roll';if(success)reward=1.6}
   step.success=success;step.time=this.time;
+  if(success&&!dog.holding&&Math.abs(dog.x-OWNER_X)<.055){dog.posture='sit';dog.facing=-1}
   if(!this.show){
    this.brain.update(step.state,step.action,reward,encode(this.situation()),this.actions(),success);
    this.training.record(step);this.revision++;
@@ -104,6 +116,9 @@ export class GameWorld{
    if(show.elapsed===0){this.setupRound();return}
   }
   if(this.time<this.restUntil)return;
+  // Keep the successful pose available to reward. No random actions overwrite
+  // a completed fetch/trick while the player is reading the feedback.
+  if(!this.show&&this.goal==='none'&&!this.current)return;
   if(!this.current){this.beginAction();return}
   const step=this.current;step.elapsed+=dt;
   this.dog.move(step.from+(step.to-step.from)*Math.min(1,step.elapsed/step.duration));
@@ -118,7 +133,7 @@ export class GameWorld{
   if(action==='sit')return 3;
   if(action==='lie')return 4;
   if(action==='look')return 1;
-  if(this.time-this.lastTreat<800&&!action)return 15;
+  if(this.time-this.lastTreat<800&&!action&&this.dog.posture!=='sit')return 15;
   return ({stand:0,sit:3,lie:4,roll:6,look:1,down:2} as const)[this.dog.posture];
  }
  behavior(){return this.current?BEHAVIOR[this.current.action]:this.dog.holding?'Holding the ball':this.dog.posture==='sit'?'Sitting':this.dog.posture==='roll'?'Belly up, very proud':this.dog.posture==='lie'?'Lying down':'Waiting for you'}

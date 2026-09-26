@@ -6,6 +6,7 @@ import { OrthographicCamera,PerspectiveCamera,Vector3 } from 'three';
 const bundle=await build({stdin:{contents:`
 export {roomHomeView,roomViewIsAway,containRoomCamera,cameraBounds} from './lib/room-camera';
 export {prepareRoomCamera} from './lib/scene-camera';
+export {syncRoomAO} from './lib/room-ao';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import RoomNavigation,{RoomNavigationContext} from './components/RoomNavigation';
@@ -14,7 +15,13 @@ export function renderStandalone(){return renderToStaticMarkup(<RoomNavigation/>
 `,resolveDir:process.cwd(),loader:'tsx'},bundle:true,write:false,format:'esm',platform:'node',jsx:'automatic',packages:'external'});
 // Resolve external React imports against this repository, not a data: URL.
 const executable=bundle.outputFiles[0].text.replace(/from "([^\"]+)"/g,(_,name)=>`from ${JSON.stringify(import.meta.resolve(name))}`);
-const {roomHomeView,roomViewIsAway,containRoomCamera,cameraBounds,renderNavigation,renderStandalone,prepareRoomCamera}=await import('data:text/javascript;base64,'+Buffer.from(executable).toString('base64'));
+const {roomHomeView,roomViewIsAway,containRoomCamera,cameraBounds,renderNavigation,renderStandalone,prepareRoomCamera,syncRoomAO}=await import('data:text/javascript;base64,'+Buffer.from(executable).toString('base64'));
+const aoCalls=[],perspective=new PerspectiveCamera(),orthographic=new OrthographicCamera(),buffers={};
+const ao={camera:perspective,configuration:{depthBufferType:1},buffers,configureAOPass:(depth,ortho)=>aoCalls.push(['ao',depth,ortho]),configureDenoisePass:(depth,ortho)=>aoCalls.push(['denoise',depth,ortho]),configureEffectCompositer:(depth,ortho)=>aoCalls.push(['composite',depth,ortho]),firstFrame:()=>aoCalls.push(['refresh'])};
+syncRoomAO(ao,orthographic);assert.equal(ao.camera,orthographic);assert.equal(ao.buffers,buffers);
+assert.deepEqual(aoCalls,[['ao',1,true],['denoise',1,true],['composite',1,true],['refresh']]);
+syncRoomAO(ao,orthographic);assert.equal(aoCalls.length,4,'stable frames never rebuild ambient shadows');
+aoCalls.length=0;syncRoomAO(ao,perspective);assert.deepEqual(aoCalls,[['ao',1,false],['denoise',1,false],['composite',1,false],['refresh']]);
 for(const interior of [false,true,false,true])for(const [width,height] of [[1280,720],[390,667],[844,390]]){
  const camera=interior?new PerspectiveCamera(59,1,.08,100):new OrthographicCamera(-1,1,1,-1,.1,100);
  prepareRoomCamera(camera,interior,width,height,true);
@@ -56,6 +63,9 @@ const rig=await readFile('components/Penthouse/CameraRig.tsx','utf8');
 assert(rig.includes('useLayoutEffect')&&rig.includes('set({camera});invalidate()')&&!rig.includes('<PerspectiveCamera'),'prepared cameras switch without a temporary default-camera restore');
 const effects=await readFile('components/Penthouse/RoomEffects.tsx','utf8');
 assert(effects.includes('camera={initialCamera.current}')&&effects.includes('setMainCamera(state.camera)'),'view changes reuse composer buffers and update the camera before drawing');
+assert(effects.includes('new N8AOPostPass(scene,get().camera)')&&effects.includes('syncRoomAO(ao,state.camera)')&&!effects.includes('<N8AO '),'AO targets survive camera changes and update projection shaders');
+assert(rig.includes('Math.min(delta,1/30)'),'resuming after a popup cannot skip the camera transition');
+assert(rig.includes('parentElement?.getBoundingClientRect()')&&rig.includes('setSize(width,height'),'camera switches measure the new canvas before publishing its projection');
 const budget=await readFile('components/Penthouse/RenderBudget.tsx','utf8');
 assert(budget.includes('if (get().frameloop !== loop) setFrameloop(loop)'),'animation clock is not reset on every scheduled frame');
 const experience=await readFile('components/Experience.tsx','utf8');

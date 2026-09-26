@@ -6,6 +6,6 @@ import {assetUrl} from '@/lib/asset-url';
 import '@/app/good-dog.css';
 export default function DogGame({close}:{close:()=>void}){
  const host=useRef<HTMLDivElement>(null);
- useEffect(()=>{if(host.current)return mountGoodDog(host.current,{spriteUrl:assetUrl('/dog/poses.webp'),offlineUrl:assetUrl('/good-dog.html')})},[]);
- return <Modal title="" eyebrow="Good Dog" ariaLabel="Good Dog" close={close} className="good-dog-panel"><div ref={host}/></Modal>;
+ useEffect(()=>{if(host.current)return mountGoodDog(host.current,{spriteUrl:assetUrl('/dog/poses.webp'),ballSpriteUrl:assetUrl('/dog/ball-poses.webp'),ryanUrl:assetUrl('/dog/ryan.webp'),ryanCrouchUrl:assetUrl('/dog/ryan-crouching.webp'),ryanTreatUrl:assetUrl('/dog/ryan-treat.webp'),tennisUrl:assetUrl('/dog/tennis-ball.webp'),playUrl:assetUrl('/dog/play-ball.webp')})},[]);
+ return <Modal title="" eyebrow="Dog RL environment" ariaLabel="Dog RL environment" close={close} className="good-dog-panel"><div ref={host}/></Modal>;
 }

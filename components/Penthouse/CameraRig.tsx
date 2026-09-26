@@ -1,5 +1,5 @@
 'use client';
-import { useEffect,useLayoutEffect,useMemo,useRef,useState } from 'react';
+import { useLayoutEffect,useMemo,useRef,useState } from 'react';
 import { useFrame,useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -15,18 +15,24 @@ const inside:Record<Focus,View>={dog:{p:[.4,1.9,4.2],t:[-2.7,.5,2.45],zoom:1},ch
 
 type Props={focus:Focus;reset:number;interior:boolean;onViewChange:(away:boolean)=>void};
 export default function CameraRig({focus,reset,interior,onViewChange}:Props){
- const {size,set,invalidate}=useThree();
+ const {size,set,setSize,gl,invalidate}=useThree();
  const [cameras]=useState(()=>({
   inside:prepareRoomCamera(new THREE.PerspectiveCamera(59,1,.08,100),true,size.width,size.height,true),
   outside:prepareRoomCamera(new THREE.OrthographicCamera(-1,1,1,-1,.1,100),false,size.width,size.height,true),
  }));
  const camera=interior?cameras.inside:cameras.outside,previous=useRef<RoomCamera|null>(null);
  useLayoutEffect(()=>{
-  prepareRoomCamera(camera,interior,size.width,size.height,previous.current!==camera);
+  // The outside grid and full-screen interior have different canvas heights.
+  // Read the committed container now, before ResizeObserver's later update;
+  // otherwise the outside camera first uses the interior zoom and visibly jumps.
+  const bounds=gl.domElement.parentElement?.getBoundingClientRect();
+  const width=bounds?.width||size.width,height=bounds?.height||size.height;
+  if(Math.abs(width-size.width)>.5||Math.abs(height-size.height)>.5)setSize(width,height,bounds?.top,bounds?.left);
+  prepareRoomCamera(camera,interior,width,height,previous.current!==camera);
   previous.current=camera;
   // No unmount cleanup briefly restoring the old default camera against the new room shell.
   set({camera});invalidate();
- },[camera,interior,size.width,size.height,set,invalidate]);
+ },[camera,interior,size.width,size.height,set,setSize,gl,invalidate]);
  return <Controller key={interior?'inside':'outside'} camera={camera} focus={focus} reset={reset} interior={interior} onViewChange={onViewChange}/>;
 }
 
@@ -37,11 +43,13 @@ function Controller({focus,reset,interior,onViewChange,camera}:Props&{camera:Roo
  const view=(interior?inside:outside)[focus],baseZoom=interior?(size.width<650?size.width/13.6:Math.min(size.width/17,100)):home.zoom;
  const destination=useMemo(()=>new THREE.Vector3(...(focus==='home'?home.position:view.p)),[home,view,focus]);
  const target=useMemo(()=>new THREE.Vector3(...(focus==='home'?home.target:view.t)),[home,view,focus]);
- useEffect(()=>{transition.current=true},[camera,focus,reset,size.width,size.height]);
+ useLayoutEffect(()=>{transition.current=true},[camera,focus,reset,size.width,size.height]);
  const contain=()=>{if(interior){containRoomCamera(camera.position);if(controls.current)camera.lookAt(controls.current.target)}};
  useFrame((_,delta)=>{
   if(controls.current&&transition.current){
-   const blend=1-Math.exp(-delta*3);
+   // An idle/paused renderer may resume after a large wall-clock gap. Animate
+   // from the previous view, never consume that whole gap in a single frame.
+   const blend=1-Math.exp(-Math.min(delta,1/30)*3);
    camera.position.lerp(destination,blend);controls.current.target.lerp(target,blend);
    if(camera instanceof THREE.OrthographicCamera){camera.zoom=THREE.MathUtils.lerp(camera.zoom,baseZoom*view.zoom,blend);camera.updateProjectionMatrix()}
    controls.current.update();
