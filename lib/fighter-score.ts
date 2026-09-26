@@ -1,5 +1,6 @@
 import type {FighterName} from './fighter-game';
-export const SCORE_KEY='birthday-boxing-wins-v1';
+// Requested fresh start; the previous key remains available for recovery.
+export const SCORE_KEY='birthday-boxing-wins-v2';
 export type Scores=Record<FighterName,number>;
 export function parseScores(raw:string|null):Scores{
  try{const value=JSON.parse(raw||'null');if(value&&['Jia','Ryan'].every(name=>Number.isSafeInteger(value[name])&&value[name]>=0&&value[name]<=1_000_000))return {Jia:value.Jia,Ryan:value.Ryan}}catch{}

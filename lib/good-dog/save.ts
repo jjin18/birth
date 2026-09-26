@@ -1,7 +1,8 @@
 import {GameWorld} from './world';
 import {VALUE_COUNT,STATE_COUNT} from './brain';
 import {SKILLS,type SkillProgress} from './training';
-export const SAVE_KEY='ryans-22nd-good-dog-v1';
+// Requested fresh start: leave v1 untouched as a recovery backup, not active progress.
+export const SAVE_KEY='ryans-22nd-good-dog-v2';
 const LIMIT=65536;
 type Store=Pick<Storage,'getItem'|'setItem'>;
 function pairs(value:unknown,length:number,min:number,max:number):[number,number][]{
