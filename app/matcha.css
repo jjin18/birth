@@ -14,8 +14,7 @@
 .matcha-history,.matcha-history>div{display:flex;align-items:center;gap:4px}
 .matcha-history{flex-shrink:0;justify-content:space-between;margin-top:5px}
 .matcha-history button{display:flex;align-items:center;gap:5px;min-height:28px;background:transparent;border:1px solid transparent;border-radius:5px;padding:5px 6px;color:#b5bdc1;font-size:10px;white-space:nowrap}
-.matcha-history button:hover:not(:disabled){background:#ffffff09}.matcha-history button:disabled{opacity:.3}.matcha-history .matcha-confirm{border-color:#dbb98477;color:var(--gold)}
-.matcha-clear-note{flex-shrink:0;font-size:10px;color:var(--gold);text-align:right;margin:3px 0}.matcha-clear-note button{background:none;color:inherit;text-decoration:underline;border:0}
+.matcha-history button:hover:not(:disabled){background:#ffffff09}.matcha-history button:disabled{opacity:.3}
 .matcha-tools{min-width:0;display:flex;flex-direction:column;gap:17px}
 .matcha-tool-buttons{display:flex;gap:7px;align-items:center}
 .matcha-tool-buttons>button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:32px;padding:6px 9px;border-radius:6px;border:1px solid #81929c66;background:transparent;color:#b5bdc1;font-size:11px;line-height:1.4;white-space:nowrap}

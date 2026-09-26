@@ -12,7 +12,7 @@ export default function MatchaGame({close}:{close:()=>void}){
  const keyboardPoint=useRef<Point>({x:.5,y:.5}),keyboardDrawing=useRef(false);
  const [tool,setTool]=useState<Tool>('milk'),[size,setSize]=useState(28),[guide,setGuide]=useState<Pattern|null>(null);
  const guideRef=useRef<Pattern|null>(null);
- const [count,setCount]=useState(0),[redoCount,setRedoCount]=useState(0),[ready,setReady]=useState(false),[confirmClear,setConfirmClear]=useState(false);
+ const [count,setCount]=useState(0),[redoCount,setRedoCount]=useState(0),[ready,setReady]=useState(false);
  const [error,setError]=useState(''),[saveError,setSaveError]=useState(''),[keyCursor,setKeyCursor]=useState<Point|null>(null);
  function paint(){const ctx=canvas.current?.getContext('2d');if(ctx&&art.current)paintCup(ctx,art.current,guideRef.current)}
  function schedule(){if(!frame.current)frame.current=requestAnimationFrame(()=>{frame.current=0;paint()})}
@@ -43,7 +43,7 @@ export default function MatchaGame({close}:{close:()=>void}){
   if(!ready||!inTea(point))return false;
   if(!canAddStroke(strokes.current)){setError('This cup has reached its drawing limit. Undo a stroke or start a fresh cup.');return false}
   active.current={tool,size:tool==='etch'?Math.max(10,size*.55):size,points:[point]};lift.current=false;
-  drawStrokePoint(art.current!.getContext('2d')!,active.current,0);schedule();setConfirmClear(false);return true;
+  drawStrokePoint(art.current!.getContext('2d')!,active.current,0);schedule();return true;
  }
  function extend(point:Point){
   const stroke=active.current;if(!stroke)return;
@@ -65,14 +65,14 @@ export default function MatchaGame({close}:{close:()=>void}){
   for(const point of events?.length?events:[event.nativeEvent])extend(cupPoint(point.clientX,point.clientY,event.currentTarget.getBoundingClientRect()));
  }
  function release(event:PointerEvent<HTMLCanvasElement>){if(pointer.current!==event.pointerId)return;finish();if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId)}
- function selectTool(next:Tool){finish();setTool(next);setConfirmClear(false)}
+ function selectTool(next:Tool){finish();setTool(next)}
  function history(redo=false){
   finish();const from=redo?undone.current:strokes.current,to=redo?strokes.current:undone.current,stroke=from.pop();
   if(stroke){to.push(stroke);replayArt(art.current!.getContext('2d')!,strokes.current);paint();sync();setError('')}
  }
  function clear(){
-  finish();if(strokes.current.length&&!confirmClear){setConfirmClear(true);return}
-  strokes.current=[];undone.current=[];blocked.current=false;paintTea(art.current!.getContext('2d')!);paint();sync();setConfirmClear(false);setError('');
+  finish();
+  strokes.current=[];undone.current=[];blocked.current=false;paintTea(art.current!.getContext('2d')!);paint();sync();setError('');
  }
  function keys(event:KeyboardEvent<HTMLCanvasElement>){
   if(event.key==='Escape')return;
@@ -92,8 +92,7 @@ export default function MatchaGame({close}:{close:()=>void}){
      </div>
      <span className="matcha-stage-bottom"><span>ceremonial matcha</span><span>made by you</span></span>
     </div>
-    <div className="matcha-history"><div><button type="button" onClick={()=>history()} disabled={!ready||!count} aria-label="Undo last stroke"><Undo2 size={16}/>Undo</button><button type="button" onClick={()=>history(true)} disabled={!ready||!redoCount} aria-label="Redo last stroke"><Redo2 size={16}/>Redo</button></div><button type="button" onClick={clear} disabled={!ready} className={confirmClear?'matcha-confirm':''}><RotateCcw size={14}/>{confirmClear?'Clear this cup?':'Fresh cup'}</button></div>
-    {confirmClear&&<p className="matcha-clear-note">This clears your drawing. <button type="button" onClick={()=>setConfirmClear(false)}>Keep it</button></p>}
+    <div className="matcha-history"><div><button type="button" onClick={()=>history()} disabled={!ready||!count} aria-label="Undo last stroke"><Undo2 size={16}/>Undo</button><button type="button" onClick={()=>history(true)} disabled={!ready||!redoCount} aria-label="Redo last stroke"><Redo2 size={16}/>Redo</button></div><button type="button" onClick={clear} disabled={!ready}><RotateCcw size={14}/>Fresh cup</button></div>
    </div>
    <aside className="matcha-tools" aria-label="Latte art tools">
     <section><div className="matcha-tool-buttons"><button type="button" aria-pressed={tool==='milk'} disabled={!ready} onClick={()=>selectTool('milk')} title="Draw milk foam"><Droplets size={15}/><span>Pour milk</span></button><button type="button" aria-pressed={tool==='etch'} disabled={!ready} onClick={()=>selectTool('etch')} title="Pull and shape the foam"><PenLine size={15}/><span>Etch</span></button></div>

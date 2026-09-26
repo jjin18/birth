@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {build} from 'esbuild';
 import {readFile} from 'node:fs/promises';
+import {runInNewContext} from 'node:vm';
 const bundle=await build({entryPoints:['lib/matcha-art.ts'],bundle:true,write:false,platform:'node',format:'esm'});
 const {CUP,inTea,cupPoint,serializeArt,parseArt,between,canAddStroke,MAX_STROKES,MAX_POINTS,MATCHA_SAVE_KEY}=await import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles[0].contents).toString('base64'));
 assert(inTea({x:.5,y:.5}));assert(!inTea({x:0,y:0}));assert(!inTea({x:1,y:1}));
@@ -29,6 +30,15 @@ assert(ui.includes('Trace a guide')&&ui.includes("[null,'heart','leaf']")&&ui.in
 assert(ui.includes('localStorage.setItem(MATCHA_SAVE_KEY')&&ui.includes('parseArt(raw)'),'draft persistence survives removal of its status label');
 for(const removed of ['Matcha studio','Choose your tool','Keep my creation','A few little tips','YOUR DAILY DOSE OF GREEN','function download','setMessage'])assert(!ui.includes(removed),`minimal interface removes: ${removed}`);
 assert(ui.includes('eyebrow="Your daily matcha"'),'requested title');
+assert(!ui.includes('confirmClear')&&!ui.includes('Clear this cup?'),'Fresh cup never asks for confirmation');
+const clearBody=ui.match(/function clear\(\)\{([\s\S]*?)\n \}/)[1];
+const clearCode=await build({stdin:{contents:`function clear(){${clearBody}};clear();`,loader:'ts'},write:false,platform:'node'});
+const clearState={strokes:{current:[milk]},undone:{current:[etch]},blocked:{current:true},art:{current:{getContext:()=>({})}}};
+let clearedPaints=0,savedStrokes=null;
+runInNewContext(Buffer.from(clearCode.outputFiles[0].contents).toString(),{...clearState,finish(){},paintTea(){clearedPaints++},paint(){},sync(){savedStrokes=clearState.strokes.current.length},setError(){}});
+assert.equal(clearState.strokes.current.length,0,'first click clears existing strokes');
+assert.equal(clearState.undone.current.length,0,'fresh cup clears redo history');
+assert.equal(clearState.blocked.current,false);assert.equal(clearedPaints,1);assert.equal(savedStrokes,0,'empty cup is persisted immediately');
 assert(ui.includes('{error&&<p'),'only errors reserve feedback space');
 assert(ui.includes('id="matcha-canvas-help" className="matcha-sr-only"'),'keyboard instructions remain accessible without visible tips');
 const css=await readFile('app/matcha.css','utf8');
