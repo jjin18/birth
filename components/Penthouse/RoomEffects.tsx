@@ -4,7 +4,7 @@ import { useFrame,useThree } from '@react-three/fiber';
 import { EffectComposer,ToneMapping,Vignette } from '@react-three/postprocessing';
 import { EffectComposer as Composer,ToneMappingMode } from 'postprocessing';
 import { N8AOPostPass } from 'n8ao';
-import { syncRoomAO } from '@/lib/room-ao';
+import { syncRoomAO,protectRoomShadowMaps } from '@/lib/room-ao';
 
 export default function RoomEffects(){
  const camera=useThree(state=>state.camera);
@@ -13,6 +13,7 @@ export default function RoomEffects(){
  const [ao,setAO]=useState<N8AOPostPass|null>(null);
  useLayoutEffect(()=>{
   const pass=new N8AOPostPass(scene,get().camera);
+  protectRoomShadowMaps(pass);
   Object.assign(pass.configuration,{aoRadius:.35,distanceFalloff:1.1,intensity:1.4,halfRes:true});
   pass.setQualityMode('Medium');setAO(pass);
   return()=>{
