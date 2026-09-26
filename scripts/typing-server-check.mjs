@@ -44,6 +44,17 @@ try{
  assert.deepEqual((await get()).best,{wpm:10,accuracy:100},'lower scores never replace the record');
  const fastId=crypto.randomUUID();await post('/start',{id:fastId,challengeId:added.id});time+=5000;
  assert.equal((await post('/finish',{id:fastId,text,attempts:text.length,mistakes:0,elapsed:5000})).status,200,'finishing a short challenge early is supported');
+ const typoId=crypto.randomUUID();await post('/start',{id:typoId,challengeId:added.id});
+ time+=4800; // Finish request arrives later than the actual final keypress.
+ const typoText='X'+text.slice(1),elapsed=4500.375;
+ assert.equal((await post('/finish',{id:typoId,text:typoText.slice(0,-1),attempts:text.length-1,mistakes:1,elapsed})).status,400,'partial passage cannot finish early');
+ const typoResult={id:typoId,text:typoText,attempts:text.length,mistakes:1,elapsed};
+ assert.equal((await post('/finish',{...typoResult,mistakes:0})).status,400,'final typos still require an accuracy penalty');
+ const typoScore=await post('/finish',typoResult);assert.equal(typoScore.status,200,'last character finishes with earlier errors');
+ const expected={wpm:Math.round((text.length-1)/5/(elapsed/60000)),accuracy:Math.round((text.length-1)/text.length*100)};
+ assert.deepEqual((await typoScore.json()).best,expected,'server uses exact final-key duration, not network arrival time');
+ time+=10000;
+ assert.deepEqual((await (await post('/finish',typoResult)).json()).best,expected,'retries never change the frozen score');
  const before=await get();db.close();db=new DatabaseSync(join(temp,'typing.sqlite'));handler=createTyping(db,()=>time);
  assert.deepEqual(await get(),before,'shared challenges and record survive a server restart');
  assert.equal(db.prepare('SELECT id FROM opened_fortunes').get().id,7);

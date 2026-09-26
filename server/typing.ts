@@ -1,7 +1,7 @@
 import type {IncomingMessage,ServerResponse} from 'node:http';
 import type {DatabaseSync} from 'node:sqlite';
 import {randomUUID} from 'node:crypto';
-import {typingPassages,normalizeTypingChallenge,MAX_CHALLENGE_LENGTH,ROUND_MS} from '../lib/typing-game';
+import {typingPassages,normalizeTypingChallenge,MAX_CHALLENGE_LENGTH,ROUND_MS,typingStats} from '../lib/typing-game';
 
 class TypingError extends Error { constructor(public status:number,message:string){super(message)} }
 function json(res:ServerResponse,status:number,value:unknown){res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value))}
@@ -63,14 +63,12 @@ export function createTyping(db:DatabaseSync,clock:()=>number=Date.now){
         if(typeof value.text!=='string'||value.text.length>ticket.text.length||!Number.isInteger(value.attempts)||value.attempts<value.text.length||value.attempts>4000||!Number.isInteger(value.mistakes)||value.mistakes<0||value.mistakes>value.attempts||!Number.isFinite(value.elapsed)||value.elapsed<0||value.elapsed>ROUND_MS)throw new TypingError(400,'Invalid result.');
         const serverElapsed=clock()-ticket.started;
         if(serverElapsed>5*60*1000||serverElapsed+2000<value.elapsed)throw new TypingError(400,'Round timing is invalid.');
-        if(value.text!==ticket.text&&value.elapsed!==ROUND_MS)throw new TypingError(400,'Finish the round first.');
+        if(value.text.length!==ticket.text.length&&value.elapsed!==ROUND_MS)throw new TypingError(400,'Finish the round first.');
         const correct=value.text.split('').reduce((n:number,char:string,i:number)=>n+Number(char===ticket.text[i]),0);
         if(value.mistakes<value.text.length-correct||value.attempts-value.mistakes<correct)throw new TypingError(400,'Invalid accuracy.');
-        // Recompute, never trust a submitted WPM/high-score field. Network
-        // latency can lower a score slightly, but cannot shorten a full round.
-        const elapsed=value.text===ticket.text?Math.max(1000,value.elapsed,Math.min(ROUND_MS,serverElapsed)):ROUND_MS;
-        const wpm=Math.round((correct/5)/(elapsed/60000));
-        const accuracy=value.attempts?Math.round((value.attempts-value.mistakes)/value.attempts*100):100;
+        // Recompute using the same frozen, high-resolution duration as the UI.
+        // The timing guard above validates it; network latency is not play time.
+        const {wpm,accuracy}=typingStats({text:value.text,attempts:value.attempts,mistakes:value.mistakes,startedAt:0,finishedAt:value.elapsed},ticket.text,value.elapsed);
         if(wpm>400)throw new TypingError(400,'Result is too fast. Try a new round.');
         db.exec('BEGIN IMMEDIATE');
         try{

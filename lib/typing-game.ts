@@ -49,30 +49,33 @@ export function enterTypingText(run: TypingRun, raw: string, target: string, now
     attempts: current.attempts + text.length - prefix - suffix,
     mistakes,
     startedAt: current.startedAt ?? now,
-    finishedAt: text === target ? now : null,
+    // Reaching the end finishes the test, even with earlier errors. Those
+    // errors still count against accuracy and speed; the timer cannot run on.
+    finishedAt: text.length === target.length ? now : null,
   };
 }
 
 export function typingStats(run: TypingRun, target: string, now: number) {
   const elapsed = run.startedAt === null ? 0 : Math.min(ROUND_MS, Math.max(0, (run.finishedAt ?? now) - run.startedAt));
   const correct = run.text.split('').reduce((total, char, index) => total + Number(char === target[index]), 0);
+  const exactWpm = elapsed < 1000 && run.finishedAt === null ? 0 : (correct / 5) / (Math.max(1000, elapsed) / 60_000);
+  const exactAccuracy = run.attempts ? (run.attempts - run.mistakes) / run.attempts * 100 : 100;
   return {
+    elapsed,
+    exactWpm,
+    exactAccuracy,
     remaining: Math.max(0, Math.ceil((ROUND_MS - elapsed) / 1000)),
-    wpm: elapsed < 1000 && run.finishedAt === null ? 0 : Math.round((correct / 5) / (Math.max(1000, elapsed) / 60_000)),
-    accuracy: run.attempts ? Math.round((run.attempts - run.mistakes) / run.attempts * 100) : 100,
+    wpm: Math.round(exactWpm),
+    accuracy: Math.round(exactAccuracy),
     progress: Math.round(correct / target.length * 100),
     correct,
   };
 }
 
-// A lighthearted game rating, not a typing-test certification. Accuracy lowers
-// the effective speed so rushing through mistakes never earns a higher tier.
+// A game score, not a standardized typing assessment. 100 correct WPM at 100%
+// accuracy earns 100. Cap speed BEFORE the accuracy penalty so extra speed
+// cannot cancel mistakes. Use unrounded inputs; round only for display.
 export function typingRating(wpm: number, accuracy: number, started: boolean) {
-  if (!started) return '—';
-  const score = Math.max(0, wpm) * Math.max(0, Math.min(100, accuracy)) / 100;
-  if (score >= 90) return 'Goated';
-  if (score >= 60) return 'Cracked';
-  if (score >= 40) return 'Quick';
-  if (score >= 20) return 'Steady';
-  return 'Warming';
+  if (!started) return null;
+  return Math.min(100, Math.max(0, wpm)) * (Math.max(0, Math.min(100, accuracy)) / 100) ** 2;
 }

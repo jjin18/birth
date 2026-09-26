@@ -14,7 +14,8 @@
 .typing-stats>div+div{border-left:1px solid var(--line);padding-left:8px}.typing-stats dt{font-size:10px;color:var(--dim);margin-bottom:4px}
 .typing-stats dd{font:500 26px/1.1 'DM Sans',Arial,sans-serif;font-variant-numeric:tabular-nums;margin:0;color:var(--gold)}
 .typing-stats small{font-size:10px;margin-left:4px;color:var(--dim)}
-.typing-stats dd.typing-rating{font-size:12px;line-height:28px;white-space:nowrap}
+.typing-stats dd.typing-rating,.typing-stats dd.typing-time-complete{font-size:16px;line-height:28px;white-space:nowrap}
+.typing-stats .typing-rating small{font-size:9px;margin-left:2px}
 .typing-passage{flex:1;position:relative;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;font:16px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.015em;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:#182127}
 .typing-word{display:inline-block;white-space:pre}.typing-pending{color:#819092}.typing-correct{color:#eee8dc}.typing-wrong{background:#b8685829;color:#f1a494;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
 .typing-current{border-left:2px solid var(--gold);margin-left:-2px;color:#e5c595;background:#dbb98412}
