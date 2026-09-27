@@ -214,6 +214,8 @@ export const fortunes = [
   'you will meet a girl and sleep on the floor',
   'you need a haircut',
   "I'm your dictator",
+  'I love my stupid monkey',
+  'I like your muscles',
 ] as const;
 
 export type SavedFortune = { id: number; openedAt: string };
@@ -222,9 +224,13 @@ export type SavedFortune = { id: number; openedAt: string };
 // future draws and the paper clip, without deleting anyone else's saved notes.
 export const removedFortuneIds = new Set([10,16,66,76,126,132,138,140,152,156,168,172]);
 export function isVisibleFortune(id:number){return Number.isInteger(id)&&id>=0&&id<fortunes.length&&!removedFortuneIds.has(id)}
-// Replace one generic in each group of 20 without changing historical text IDs.
-export const personalFortuneIds = Array.from({length:5},(_,index)=>209+index);
-export const genericFortuneIds = Array.from({length:100},(_,index)=>index%20===19?personalFortuneIds[Math.floor(index/20)]:index*2).filter(isVisibleFortune);
+// The first five personal notes replaced one generic in each group of 20.
+// Append later additions without retiring any more notes or changing saved IDs.
+export const personalFortuneIds = Array.from({length:7},(_,index)=>209+index);
+export const genericFortuneIds = [
+  ...Array.from({length:100},(_,index)=>index%20===19?personalFortuneIds[Math.floor(index/20)]:index*2),
+  ...personalFortuneIds.slice(5),
+].filter(isVisibleFortune);
 export const jokeFortuneIds = Array.from({length:9},(_,index)=>200+index);
 export const activeFortuneIds = [...genericFortuneIds,...jokeFortuneIds];
 export const fortunePoolSize = activeFortuneIds.length;
